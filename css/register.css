@@ -1,0 +1,95 @@
+.register-area {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f9fa;
+}
+
+.account-form {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.register-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.register-header img {
+  max-width: 50%;
+}
+
+.register-header .title {
+  text-align: right;
+}
+
+.register-header .title h4 {
+  margin: 0;
+  color: #044128;
+  font-weight: bold;
+}
+
+.register-header .title p {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.form-label .required {
+  color: red;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 5px rgba(1, 46, 20, 0.5);
+  border-color: #044128;
+}
+
+.btn-primary {
+  background-color: #044128;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #033618;
+}
+
+
+.modal-content {
+  margin-top: 75px;
+}
+.modal-footer button{
+  background-color: #044128;
+}
+
+.form-check-label a {
+  color: #1bb4b9;
+  text-decoration: underline;
+}
+
+.form-check-label a:hover {
+  color: #118388;
+}
+
+@media (min-width: 992px) and (max-width: 1200px) {
+  .register-area {
+    margin-top: 75px;
+  }
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  .register-area {
+    margin-top: 75px;
+  }
+}
+@media (max-width: 576px) {
+  .register-area {
+    margin-top: 75px;
+  }
+  .register-header img {
+    max-width: 50%;
+  }
+}

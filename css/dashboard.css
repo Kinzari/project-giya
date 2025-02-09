@@ -1,0 +1,140 @@
+/*----------------------------------------*/
+/*  DASHBOARD CSS
+/*----------------------------------------*/
+body {
+    font-family: "Poppins", sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #044128;
+    padding: 15px 20px;
+    color: white;
+  }
+  
+  .navbar-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  #hamburger-menu {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    margin-right: 15px;
+  }
+  
+  .menu-item {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .navbar-right {
+    display: flex;
+    align-items: center;
+  }
+  
+  .avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .filters-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 15px;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    gap: 15px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  
+  .filter-dropdown,
+  .search-bar {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 23%;
+    flex-shrink: 0;
+  }
+  
+  .search-bar {
+    width: 25%;
+  }
+  
+  .table-container {
+    background: white;
+    padding: 15px;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+  }
+  
+  #usersTable {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+  }
+  
+  #usersTable th,
+  #usersTable td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  #usersTable th {
+    background: #155f37;
+    color: white;
+    text-align: left;
+  }
+  
+  #usersTable tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .dt-buttons {
+    margin-bottom: 10px;
+  }
+  
+  .dt-buttons button {
+    background-color: #044128;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 5px;
+  }
+  
+  .dt-buttons button:hover {
+    background-color: #032d1f;
+  }
+  
+  .active-status {
+    color: #155f37;
+    font-weight: bold;
+    background-color: #e6ffe6;
+  }
+  
+  .deactivated-status {
+    color: #a94442;
+    font-weight: bold;
+    background-color: #ffe6e6;
+  }
+  
+  

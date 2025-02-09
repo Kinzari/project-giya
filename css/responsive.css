@@ -1,0 +1,355 @@
+/*----------------------------------------*/
+/*  LARGE DESKTOP 1920px
+/*----------------------------------------*/
+
+/* 2. Header CSS */
+@media (min-width: 1920px) {
+  .container {
+    width: 1230px;
+    max-width: 1230px;
+  }
+}
+.mainmenu ul#nav li:last-child {
+  margin-right: 0;
+}
+.mainmenu ul#nav li {
+  margin-right: 35px;
+}
+
+/* 3. Login Area */
+
+/* 4. Starting Area */
+
+/* 5. About Area */
+
+/* 6. Class Area */
+
+/* 7. FAQ Area */
+
+/* 8. Footer Area */
+
+/* 9. Dashboard Area */
+
+/*----------------------------------------*/
+/*  NORMAL DESKTOP 1201px - 1365px
+/*----------------------------------------*/
+@media (min-width: 1201px) and (max-width: 1365px) {
+  .mainmenu ul.sub-menu {
+    width: 250px;
+  }
+}
+/*----------------------------------------*/
+/*  NORMAL DESKTOP 992px - 1200px
+/*----------------------------------------*/
+
+/* 2. Header CSS */
+@media (min-width: 992px) and (max-width: 1200px) {
+  .container {
+    width: 970px;
+    max-width: 970px;
+  }
+  .header-logo-menu.stick {
+    height: 55px;
+  }
+  .logo a img {
+    width: 100%;
+  }
+
+  .mainmenu-area {
+    float: right;
+    padding: 19 px 0 0;
+  }
+  .mainmenu ul#nav li {
+    margin-right: 15px;
+  }
+  /* 3. Login Area */
+
+  .login-form {
+    max-width: 100%;
+  }
+
+  /* 4. Starting Area */
+
+  .starting-area {
+    height: 35vh;
+  }
+
+  /* 5. About Area */
+
+  /* 6. Class Area */
+
+  .class-content {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .single-class {
+    flex: 1 1 45%;
+  }
+  .class-des > p {
+    word-spacing: 1px;
+  }
+
+  /* 7. FAQ Area */
+
+  .faq-area {
+    padding: 40px 20px;
+  }
+
+  /* 8. Footer Area */
+
+  .footer-info {
+    text-align: center;
+  }
+  .footer-logo {
+    max-width: 200px;
+  }
+
+  /* 9. Dashboard Area */
+
+  .filters-container {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .filter-dropdown,
+  .search-bar {
+    width: 45%;
+  }
+}
+
+/*----------------------------------------*/
+/*  TABLET DESKTOP 768px - 991px
+/*----------------------------------------*/
+
+/* 2. Header CSS */
+@media (min-width: 768px) and (max-width: 991px) {
+  .container {
+    width: 720px;
+    max-width: 720px;
+  }
+  .header-logo-menu.stick {
+    height: 50px;
+  }
+  .logo-img {
+    max-height: 50px;
+  }
+
+  /* 3. Login Area */
+
+  .login-left {
+    width: 100%;
+    padding: 50px;
+  }
+  .login-right {
+    width: 100%;
+  }
+  .logo-image {
+    max-width: 130%;
+  }
+  .login-form {
+    max-width: 130%;
+    /* margin: 30px auto; */
+  }
+  .math-verification {
+    gap: 5px;
+  }
+
+  /* 4. Starting Area */
+
+  .starting-area {
+    height: 30vh;
+  }
+  .starting-info h1 {
+    font-size: 40px;
+  }
+
+  /* 5. About Area */
+
+  /* 6. Class Area */
+
+  .class-content {
+    flex-direction: column;
+    gap: 15px;
+  }
+  .single-class {
+    text-align: left;
+    padding: 15px;
+  }
+  .section-title h3 {
+    line-height: 30px;
+    font-size: 24px;
+  }
+  .class-area.class-column {
+    padding-top: 40px;
+  }
+  .class-des > p {
+    word-spacing: 0;
+  }
+
+  /* 7. FAQ Area */
+
+  .faq-area {
+    padding: 30px 10px;
+  }
+  .section-title h3 {
+    font-size: 24px;
+  }
+  .section-title p {
+    font-size: 14px;
+  }
+
+  /* 8. Footer Area */
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* 9. Dashboard Area */
+
+  .filters-container {
+    flex-direction: column;
+  }
+  .filter-dropdown,
+  .search-bar {
+    width: 100%;
+  }
+}
+
+/*----------------------------------------*/
+/*  SMALL MOBILE 767px
+/*----------------------------------------*/
+
+/* 2. Header CSS */
+@media (max-width: 767px) {
+  .container {
+    width: 100%;
+    max-width: 100%;
+  }
+  .mobile-menu-area {
+    display: block;
+  }
+  .header-logo-menu.stick {
+    position: inherit;
+  }
+
+  /* 3. Login Area */
+
+  .login-container {
+    flex-direction: column;
+  }
+  .login-form {
+    max-width: 90%;
+    margin: 30px auto;
+  }
+  /* 4. Starting Area */
+  .starting-area {
+    height: 25vh;
+  }
+  .starting-info h1 {
+    font-size: 30px;
+  }
+
+  /* 5. About Area */
+
+  /* 6. Class Area */
+  .section-title h3 {
+    line-height: 30px;
+    font-size: 24px;
+  }
+  .class-des > p {
+    word-spacing: 0;
+  }
+  .class-area.class-column {
+    padding-top: 40px;
+  }
+  /* 7. FAQ Area */
+
+  /* 8. Footer Area */
+  .footer-info > span {
+    line-height: 25px;
+  }
+  .footer-container span {
+    display: block;
+    text-align: center;
+  }
+  .footer-container .social-links {
+    display: block;
+    float: none;
+    margin-top: 10px;
+    text-align: center;
+  }
+  .footer-container .social-links a:first-child {
+    margin-left: 0;
+  }
+  .social-links {
+    margin-left: 0;
+    margin-top: 6px;
+  }
+}
+
+/* 9. Dashboard Area */
+
+/*----------------------------------------*/
+/*  LARGE MOBILE 480px
+/*----------------------------------------*/
+
+/* 2. Header CSS */
+@media only screen and (min-width: 576px) and (max-width: 767px) {
+  .container {
+    width: 540px;
+    max-width: 540px;
+  }
+  body {
+    font-size: 10px;
+  }
+  .logo-menu-bg .logo {
+    float: left;
+  }
+
+  /* 3. Login Area */
+
+  .login-form {
+    max-width: 95%;
+    padding: 20px;
+  }
+  .math-verification {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .math-verification input,
+  .math-verification .number-box {
+    width: 40px;
+    height: 35px;
+  }
+
+  /* 4. Starting Area */
+
+  .starting-area {
+    height: 30vh;
+  }
+  .starting-info h1 {
+    font-size: 30px;
+  }
+
+  /* 5. About Area */
+
+  /* 6. Class Area */
+
+  /* 7. FAQ Area */
+
+  .faq-area {
+    padding: 20px 5px;
+  }
+
+  /* 8. Footer Area */
+
+  .footer-logo {
+    max-width: 100px;
+  }
+
+  /* 9. Dashboard Area */
+
+  #usersTable {
+    font-size: 12px;
+  }
+}
