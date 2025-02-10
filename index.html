@@ -106,7 +106,7 @@
               src="img/logo/coc-white.png"
               alt="PHINMA-COC"
               class="img-fluid"
-              style="max-height: 50px"
+              style="max-height: 50px; "
             />
           </a>
 
@@ -176,7 +176,7 @@
         <div class="login-form">
           <div class="login-title">
             <i class="fa fa-lock"></i>
-            <h4>Login</h4>
+            <h4>LOGIN</h4>
           </div>
           <br />
           <form id="login-form">
@@ -191,7 +191,11 @@
               placeholder="Password"
               id="password"
               required
+              class="position-relative"
             />
+            <i class="fa fa-eye-slash" id="toggle-password"></i>
+            <div id="caps-lock-tooltip" class="tooltip-capslock">Caps Lock is ON!</div>
+            <p id="caps-lock-warning" style="display: none; color: red;">Caps Lock is ON!</p>
             <p class="forgot-password"><a href="#">Forgot Password?</a></p>
 
             <!-- Horizontal Math Verification -->
@@ -205,6 +209,9 @@
             <span id="verification-feedback" style="color: red"></span>
 
             <button type="submit" class="login-button">Login</button>
+            <p class="not-a-student">
+              Not a Student? <a href="register.html" class="register-link">Click here.</a>
+            </p>
           </form>
           <p id="login-message" style="color: red"></p>
         </div>
@@ -362,6 +369,32 @@
               </div>
             </div>
           </div>
+
+          <!-- Question 4 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="faqHeadingTwo">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#faqCollapseFour"
+                aria-expanded="false"
+                aria-controls="faqCollapseFour"
+              >
+                How do I create an account?
+              </button>
+            </h2>
+            <div
+              id="faqCollapseFour"
+              class="accordion-collapse collapse"
+              aria-labelledby="faqHeadingFour"
+              data-bs-parent="#faqAccordion"
+            >
+              <div class="accordion-body">
+                To create an account, you can <a href="register.html" class="register-link"><strong>register here</strong></a>.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -436,7 +469,7 @@
       </div>
       <div class="col-md-6 text-center text-md-end">
         <!-- Privacy Policy Link -->
-        <a data-bs-toggle="modal" data-bs-target="#privacyPolicyModal">PHINMA Privacy Policy</a>
+        <a data-bs-toggle="modal" data-bs-target="#privacyPolicyModal" style="color: aqua;">PHINMA Privacy Policy</a>
       </div>
     </div>
   </div>
@@ -447,8 +480,8 @@
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="privacyPolicyModalLabel">Privacy Policy</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title" id="privacyPolicyModalLabel">PHINMA Privacy Policy</h5>
+        <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
       </div>
       <div class="modal-body">
         <h6><strong>PHINMA Education Holdings, Inc. (PEHI)</strong></h6>
