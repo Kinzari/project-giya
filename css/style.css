@@ -155,8 +155,10 @@ body {
   font-weight: 300;
 }
 .container {
-  width: 1200px;
+  width: 100%;
   max-width: 1200px;
+  padding: 0 15px;
+  margin: 0 auto;
 }
 .section-margin {
   margin: 0px 0 60px 0;
@@ -170,8 +172,7 @@ body {
 .section-padding-top {
   padding-top: 60px;
 }
-.section-title-wrapper,
-.gallery-area.gallery-fullwidth .section-title-wrapper {
+.section-title-wrapper {
   margin-bottom: 35px;
   position: relative;
 }
@@ -217,21 +218,6 @@ body {
   width: 39px;
   z-index: 9;
 }
-.section-title-wrapper.title-yellow:before {
-  background: #f5b120 none repeat scroll 0 0;
-}
-.section-title-wrapper.title-yellow:after {
-  color: #f5b120;
-}
-.section-gray {
-  background: #f0f0f0;
-}
-.section-gray .section-title-wrapper:after {
-  background: #f0f0f0;
-}
-.section-sea-green {
-  background: #1bb4b9;
-}
 .button-default {
   background: #044128 none repeat scroll 0 0;
   border: 0 none;
@@ -264,7 +250,7 @@ body {
 /*----------------------------------------*/
 
 .header-logo-menu.stick {
-  background: #044128;
+  background: #155f37;
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.15);
   justify-content: space-between;
   flex-wrap: nowrap;
@@ -327,7 +313,7 @@ body {
 /* Submenu Styles */
 .mainmenu ul.sub-menu {
   background-color: #ffffff;
-  border-top: 1px solid #044128;
+  border-top: 1px solid #155f37;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   margin: 0;
   padding: 14px 21px;
@@ -428,7 +414,7 @@ navbar {
 }
 
 .navbar-nav .dropdown-item:hover {
-  background-color: #03371c;
+  background-color:#155f37;
 }
 
 /*----------------------------------------*/
@@ -480,7 +466,7 @@ navbar {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #044128;
+  background: #155f37;
   border-radius: 3px 3px 0 0;
   padding: 15px;
   text-align: left;
@@ -510,7 +496,7 @@ navbar {
 }
 
 .login-button {
-  background: #044128;
+  background: #155f37;
   color: #ffffff;
   border: none;
   padding: 12px 20px;
@@ -565,12 +551,73 @@ navbar {
   top: 4px; /* Move input down slightly */
 }
 
+.math-verification input.correct {
+  box-shadow: 0 0 0px 1px green;
+}
+
+.math-verification input.incorrect {
+  box-shadow: 0 0 0px 1px red;
+}
+
 .math-verification span {
   font-size: 20px; /* Match font size with inputs */
   line-height: 45px; /* Align with number-box and input */
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.login-form .position-relative {
+  position: relative;
+}
+
+.login-form .fa-eye,
+.login-form .fa-eye-slash {
+  position: absolute;
+  top: 175px;
+  right: 45px;
+  cursor: pointer;
+}
+
+.tooltip-capslock {
+  display: none;
+  position: absolute;
+  top: 72px;
+  right: 30px;
+  background-color: #ffcc00;
+  color: #000;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.tooltip-capslock::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: 10px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #ffcc00 transparent;
+}
+
+.not-a-student {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  font-size: 14px;
+}
+
+.register-link {
+  color: #1bb4b9;
+  text-decoration: underline;
+}
+
+.register-link:hover {
+  color: #118388;
 }
 
 /*----------------------------------------*/
@@ -646,7 +693,7 @@ navbar {
 .section-title h3 {
   font-size: 40px;
   font-weight: 600;
-  color: #044128;
+  color: #155f37;
   transition: color 0.3s ease;
 }
 
@@ -693,7 +740,7 @@ navbar {
 
 .class-des h4 {
   font-size: 20px;
-  color: #044128;
+  color: #155f37;
   font-weight: 600;
   margin-bottom: 10px;
   transition: color 0.3s ease;
@@ -733,7 +780,7 @@ navbar {
 .section-title h3 {
   font-size: 40px;
   font-weight: 600;
-  color: #044128;
+  color:#155f37;
 }
 
 .section-title p {
@@ -743,7 +790,7 @@ navbar {
 }
 
 .accordion-button {
-  background-color: #044128;
+  background-color:#155f37;
   color: white;
   font-size: 16px;
   font-weight: 500;
@@ -764,7 +811,7 @@ navbar {
   height: 16px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
   background-size: contain;
-  background-repeat: no-repeat;
+  background-repeat: no-rt;
   background-position: center;
   transform: rotate(180deg);
   transition: transform 0.3s ease, fill 0.3s ease;
@@ -774,11 +821,12 @@ navbar {
   color: #ffffff;
 }
 .accordion-button:not(.collapsed)::after {
-  transform: rotate(0deg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  transform: rotate(0deg);;
 }
 
 .accordion-body {
-  font-size: 14px;
+  font-size: 15px;
   color: #444444;
   background: #ffffff;
   border: 1px solid #ddd;
@@ -804,7 +852,7 @@ navbar {
 /*  7. Footer Area
 /*----------------------------------------*/
 .footer-area {
-  background: #044128;
+  background: #155f37;
   padding: 40px 0 0;
   color: #ffffff;
   font-size: 14px;
@@ -871,10 +919,10 @@ navbar {
 
 #privacyPolicyModal .modal-title {
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 500;
   text-transform: uppercase;
+  margin-top: 10px;
 }
-
 #privacyPolicyModal .modal-body {
   font-size: 1rem;
   line-height: 1.6;
