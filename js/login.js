@@ -2,6 +2,7 @@
 // sessionStorage.setItem("baseURL", "http://localhost/api/giya.php");
 // sessionStorage.setItem("baseURL", "https://coc-studentinfo.net/api/giya.php"); // COC
 sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php"); // KINZARI
+
 document
   .getElementById("login-form")
   .addEventListener("submit", async function (event) {
@@ -22,9 +23,15 @@ document
       return;
     }
 
+    const mathAnswerInput = document.getElementById("math-answer");
     if (mathAnswer !== num1 + num2) {
       toastr.error("Incorrect math verification. Please try again.");
+      mathAnswerInput.classList.add("incorrect");
+      mathAnswerInput.classList.remove("correct");
       return;
+    } else {
+      mathAnswerInput.classList.add("correct");
+      mathAnswerInput.classList.remove("incorrect");
     }
 
     try {
@@ -48,7 +55,7 @@ document
         // Redirect based on user type
         if (result.user_typeId === 5 || result.user_typeId === 6) {
           setTimeout(() => {
-            window.location.href = "users.html";
+            window.location.href = "dashboard.html";
           }, 1500); // Delay the redirect to show the success message
         } else {
           toastr.error("You do not have access to this page.");
@@ -69,4 +76,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("num1").textContent = num1;
   document.getElementById("num2").textContent = num2;
+
+  const mathAnswerInput = document.getElementById("math-answer");
+  mathAnswerInput.addEventListener("input", () => {
+    const mathAnswer = parseInt(mathAnswerInput.value.trim());
+    if (mathAnswer === num1 + num2) {
+      mathAnswerInput.classList.add("correct");
+      mathAnswerInput.classList.remove("incorrect");
+    } else {
+      mathAnswerInput.classList.add("incorrect");
+      mathAnswerInput.classList.remove("correct");
+    }
+  });
+
+  // Toggle password visibility
+  const togglePassword = document.getElementById("toggle-password");
+  togglePassword.addEventListener("click", function () {
+    const passwordField = document.getElementById("password");
+    const type = passwordField.type === "password" ? "text" : "password";
+    passwordField.type = type;
+    this.classList.toggle("fa-eye");
+    this.classList.toggle("fa-eye-slash");
+  });
+
+  // Caps Lock warning
+  const passwordField = document.getElementById("password");
+  const capsLockTooltip = document.getElementById("caps-lock-tooltip");
+
+  passwordField.addEventListener("keyup", (event) => {
+    if (event.getModifierState("CapsLock")) {
+      capsLockTooltip.style.display = "block";
+    } else {
+      capsLockTooltip.style.display = "none";
+    }
+  });
 });
