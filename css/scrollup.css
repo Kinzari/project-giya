@@ -7,11 +7,11 @@
     bottom: 20px;
     right: 20px;
     z-index: 1000;
-    background-color: #044128; /* Green background */
+    background-color: #155f37; /* Green background */
     color: white;
-    padding: 12px 15px;
+    padding: 10px 13px;
     border: 1px solid white;
-    border-radius: 50%;
+    /* border-radius: 50%; */
     font-size: 20px;
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
