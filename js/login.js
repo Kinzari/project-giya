@@ -55,7 +55,7 @@ document
         // Redirect based on user type
         if (result.user_typeId === 5 || result.user_typeId === 6) {
           setTimeout(() => {
-            window.location.href = "dashboard.html";
+            window.location.href = "admin-dashboard.html";
           }, 1500); // Delay the redirect to show the success message
         } else {
           toastr.error("You do not have access to this page.");
