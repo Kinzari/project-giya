@@ -92,3 +92,38 @@ a {
   width: 120px;
   text-align: end;
 }
+
+/*```````````````````````````*/
+        /* TABLES */
+/*``````````````````````````*/
+/* Adjust spacing for DataTable pagination */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    margin: 0 5px; /* Adds spacing between buttons */
+}
+
+/* Ensure table expands fully */
+.table {
+    width: 100% !important;
+}
+
+/* Fix action buttons alignment */
+.table td {
+    vertical-align: middle;
+    text-align: begin; /* Aligns content in the center */
+}
+
+/* Ensure action buttons are aligned properly */
+.table td .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px; /* Adjusted size */
+    height: 35px;
+    padding: 5px;
+    margin: 3px; /* Increased space between buttons */
+}
+
+/* Fix icon size inside the button */
+.table td .btn i {
+    font-size: 14px;
+}
