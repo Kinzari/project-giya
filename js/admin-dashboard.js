@@ -2,7 +2,7 @@ let usersData = [];
 let filteredData = [];
 
 // Set the API base URL in sessionStorage
-sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php"); // Update your backend API URL
+sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php");
 
 // Function to fetch visitor, student, and department counts
 async function fetchCounts() {
@@ -11,22 +11,75 @@ async function fetchCounts() {
     const response = await axios.get(`${baseURL}?action=get_counts`);
 
     if (response.data.success) {
-      const visitorCountEl = document.getElementById("visitor-count");
-      const studentCountEl = document.getElementById("student-count");
-      const departmentCountEl = document.getElementById("department-count");
-
-      // Ensure elements exist before updating
-      if (visitorCountEl)
-        visitorCountEl.innerText = response.data.visitors ?? "0";
-      if (studentCountEl)
-        studentCountEl.innerText = response.data.students ?? "0";
-      if (departmentCountEl)
-        departmentCountEl.innerText = response.data.faculties ?? "0";
+      document.getElementById("visitor-count").innerText = response.data.visitors ?? "0";
+      document.getElementById("student-count").innerText = response.data.students ?? "0";
+      document.getElementById("department-count").innerText = response.data.faculties ?? "0";
     } else {
       console.error("Error: Response success flag is false");
     }
   } catch (error) {
     console.error("Error fetching counts:", error);
+  }
+}
+
+// Function to filter users based on the current page
+function filterUsersByType() {
+  if (window.location.pathname.includes("all-visitor.html")) {
+    return usersData.filter(user => user.user_typeId == 1); // Visitors
+  } else if (window.location.pathname.includes("all-student.html")) {
+    return usersData.filter(user => user.user_typeId == 2); // Students
+  } else if (window.location.pathname.includes("all-department.html")) {
+    return usersData.filter(user => [3, 4, 5].includes(user.user_typeId)); // Departments
+  }
+  return [];
+}
+
+// Function to update user status
+async function updateUserStatus(userId, newStatus) {
+  const confirmed = confirm(`Are you sure you want to ${newStatus === 1 ? "activate" : "deactivate"} this user?`);
+  if (!confirmed) return;
+
+  try {
+    const baseURL = sessionStorage.getItem("baseURL");
+    const response = await axios.post(`${baseURL}?action=update_user_status`, {
+      user_id: userId,
+      user_status: newStatus,
+    });
+
+    if (response.data.success) {
+      alert("User status updated successfully.");
+      filteredData = filteredData.map(user =>
+        user.user_id === userId ? { ...user, user_status: newStatus } : user
+      );
+      $("#usersTable").DataTable().clear().rows.add(filteredData).draw();
+    } else {
+      alert("Failed to update user status.");
+    }
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    alert("An error occurred while updating user status.");
+  }
+}
+
+// Function to reset user password
+async function resetUserPassword(userId) {
+  const confirmed = confirm("Are you sure you want to reset this user's password to 'phinma-coc'?");
+  if (!confirmed) return;
+
+  try {
+    const baseURL = sessionStorage.getItem("baseURL");
+    const response = await axios.post(`${baseURL}?action=reset_password`, {
+      user_id: userId,
+    });
+
+    if (response.data.success) {
+      alert("Password has been reset successfully to 'phinma-coc'.");
+    } else {
+      alert("Failed to reset password.");
+    }
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    alert("An error occurred while resetting the password.");
   }
 }
 
@@ -40,11 +93,17 @@ function initializeDataTable(data) {
     {
       title: "Action",
       data: null,
-      render: function () {
+      render: function (data, type, row) {
         return `
-                  <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
-                  <a href="#" class="btn btn-sm btn-danger"><i class="bi bi-trash-fill"></i></a>
-              `;
+          <a href="#" class="btn btn-sm btn-info" title="View"><i class="bi bi-eye"></i></a>
+          <a href="#" class="btn btn-sm btn-warning" onclick="resetUserPassword(${row.user_id})" title="Reset Password">
+            <i class="bi bi-key"></i>
+          </a>
+          <button class="btn btn-sm ${row.user_status === 1 ? 'btn-success' : 'btn-danger'} status-btn"
+            onclick="updateUserStatus(${row.user_id}, ${row.user_status === 1 ? 0 : 1})" title="Status">
+            <i class="bi bi-toggle-${row.user_status === 1 ? 'on' : 'off'}"></i>
+          </button>
+        `;
       },
     },
   ];
@@ -57,7 +116,7 @@ function initializeDataTable(data) {
   $("#usersTable").DataTable({
     data,
     columns,
-    dom: '<"dt-top-container"lfB>rt<"bottom"ip><"clear">',
+    dom: '<"top"lf>rt<"bottom"ip>',
     buttons: [
       {
         extend: "excelHtml5",
@@ -83,17 +142,17 @@ function initializeDataTable(data) {
 async function fetchUsers() {
   try {
     const baseURL = sessionStorage.getItem("baseURL");
-    const response = await axios.get(`${baseURL}?action=latest_users`);
+    const response = await axios.get(`${baseURL}?action=users`);
 
-    console.log("API Response:", response.data); // Debugging output
+    console.log("API Response:", response.data);
 
-    if (response.data.success && Array.isArray(response.data.latest_users)) {
-      usersData = response.data.latest_users;
-      filteredData = [...usersData];
+    if (response.data.success && Array.isArray(response.data.users)) {
+      usersData = response.data.users;
+      filteredData = filterUsersByType(usersData);
     } else {
       usersData = [];
       filteredData = [];
-      console.error("Error: latest_users array missing in API response");
+      console.error("Error: users array missing in API response");
     }
 
     initializeDataTable(filteredData);
@@ -110,15 +169,12 @@ function logout() {
 
 // Initialize the dashboard
 document.addEventListener("DOMContentLoaded", async () => {
-  const firstName = localStorage.getItem("first_name") || "User";
-  const welcomeMessage = document.getElementById("welcome-message");
-
-  if (welcomeMessage) {
-    welcomeMessage.innerText = `Welcome ${firstName}`;
+  if (document.getElementById("visitor-count")) {
+    await fetchCounts();
   }
-
-  await fetchCounts();
   await fetchUsers();
 
-  document.getElementById("logout-button").addEventListener("click", logout);
+  if (document.getElementById("logout-button")) {
+    document.getElementById("logout-button").addEventListener("click", logout);
+  }
 });
