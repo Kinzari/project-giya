@@ -15,12 +15,11 @@ WiP :
 - how to use this page
 - diff pages for inquiry (students and visitors)
 - timeline
-- poc / admin module to reset password students
-
 
 
 
 FINISHED
+- poc / admin module to reset password students
 - faq =  how do i create my account
 - pop up section for terms and conditions / privacy policy
 - footer changes (email and contact number)
