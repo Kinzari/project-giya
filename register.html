@@ -216,6 +216,30 @@
                               <label for="password" class="form-label">Password <span class="required">*</span></label>
                               <input type="password" id="password" class="form-control" placeholder="Password" required>
                               <i class="fa fa-eye-slash position-absolute" style="top: 45px; right: 15px; cursor: pointer;" id="toggle-password"></i>
+
+                              <!-- Add password validation fields -->
+                              <div class="password-validation mt-2">
+                                  <p class="validation-item" id="length-check" style="font-size: 1.0rem;">
+                                      <i class="fa fa-times text-danger"></i>
+                                      <i class="fa fa-check text-success d-none"></i>
+                                      <small>At least 8 characters</small>
+                                  </p>
+                                  <p class="validation-item" id="uppercase-check" style="font-size: 1.0rem;">
+                                      <i class="fa fa-times text-danger"></i>
+                                      <i class="fa fa-check text-success d-none"></i>
+                                      <small>Contains uppercase letter</small>
+                                  </p>
+                                  <p class="validation-item" id="lowercase-check" style="font-size: 1.0rem;">
+                                      <i class="fa fa-times text-danger"></i>
+                                      <i class="fa fa-check text-success d-none"></i>
+                                      <small>Contains lowercase letter</small>
+                                  </p>
+                                  <p class="validation-item" id="number-check" style="font-size: 1.0rem;">
+                                      <i class="fa fa-times text-danger"></i>
+                                      <i class="fa fa-check text-success d-none"></i>
+                                      <small>Contains number</small>
+                                  </p>
+                              </div>
                           </div>
 
                           <div class="mt-3 position-relative">
