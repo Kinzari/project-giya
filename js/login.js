@@ -57,6 +57,14 @@ document
           setTimeout(() => {
             window.location.href = "admin-dashboard.html";
           }, 1500); // Delay the redirect to show the success message
+        } else if (result.user_typeId === 2) {  // Student
+          setTimeout(() => {
+            window.location.href = "student.html";
+          }, 1500);
+        } else if (result.user_typeId === 1) {  // Visitor
+          setTimeout(() => {
+            window.location.href = "visitors.html";
+          }, 1500);
         } else {
           toastr.error("You do not have access to this page.");
         }
