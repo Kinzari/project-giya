@@ -58,11 +58,11 @@
   background-color: #033618;
 }
 
-
 .modal-content {
   margin-top: 75px;
 }
-.modal-footer button{
+
+.modal-footer button {
   background-color: #044128;
 }
 
@@ -80,16 +80,46 @@
     margin-top: 75px;
   }
 }
+
 @media (min-width: 768px) and (max-width: 991px) {
   .register-area {
     margin-top: 75px;
   }
 }
+
 @media (max-width: 576px) {
   .register-area {
     margin-top: 75px;
   }
+
   .register-header img {
     max-width: 50%;
   }
+}
+
+.password-validation {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+.validation-item {
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.validation-item i {
+  width: 14px;
+}
+
+.validation-item small {
+  color: #666;
+}
+
+.d-none {
+  display: none !important;
 }

@@ -7,10 +7,14 @@
 
 * {
   font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
   background-color: #F6F9FF;
+  overflow-x: hidden;
 }
 
 a {
@@ -126,4 +130,233 @@ a {
 /* Fix icon size inside the button */
 .table td .btn i {
     font-size: 14px;
+}
+
+/* Responsive Layout */
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  main {
+    margin-left: var(--offcanvas-width);
+  }
+
+  .sidebar-nav {
+    transform: none !important;
+    visibility: visible !important;
+  }
+
+  .table td .btn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Large devices (desktops, 992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  main {
+    margin-left: var(--offcanvas-width);
+  }
+
+  .container {
+    max-width: calc(100% - 30px);
+  }
+
+  .table td .btn {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* Medium devices (tablets, 768px to 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  :root {
+    --offcanvas-width: 240px;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0 15px;
+  }
+
+  .card {
+    margin-bottom: 15px;
+  }
+
+  /* Adjust table for tablets */
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .table td .btn {
+    width: 32px;
+    height: 32px;
+    padding: 4px;
+  }
+
+  .table td .btn i {
+    font-size: 12px;
+  }
+}
+
+/* Small devices (landscape phones, 576px to 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+  :root {
+    --offcanvas-width: 200px;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
+  .card {
+    margin-bottom: 10px;
+  }
+
+  .fs-3 {
+    font-size: 1.25rem !important;
+  }
+
+  .table td .btn {
+    width: 30px;
+    height: 30px;
+    padding: 3px;
+    margin: 2px;
+  }
+
+  .table td .btn i {
+    font-size: 11px;
+  }
+}
+
+/* Extra small devices (phones, less than 576px) */
+@media (max-width: 575px) {
+  :root {
+    --offcanvas-width: 100%;
+  }
+
+  .container {
+    padding: 0 8px;
+  }
+
+  .navbar-brand {
+    font-size: 1rem;
+  }
+
+  .card {
+    margin-bottom: 10px;
+  }
+
+  .fs-3 {
+    font-size: 1.1rem !important;
+  }
+
+  .breadcrumb-item {
+    font-size: 14px;
+  }
+
+  /* Stack action buttons on mobile */
+  .table td .btn {
+    width: 28px;
+    height: 28px;
+    padding: 2px;
+    margin: 1px;
+  }
+
+  .table td .btn i {
+    font-size: 10px;
+  }
+
+  /* Adjust table for mobile */
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .table th,
+  .table td {
+    min-width: 100px;
+  }
+
+  /* DataTables specific mobile adjustments */
+  .dataTables_length,
+  .dataTables_filter {
+    width: 100%;
+    float: none;
+    text-align: left;
+    margin-bottom: 10px;
+  }
+
+  .dataTables_paginate {
+    float: none !important;
+    text-align: center !important;
+    margin-top: 10px !important;
+  }
+}
+
+/* Dashboard Cards Responsive Styles */
+@media (max-width: 991px) {
+  .dashboard .card {
+    margin-bottom: 15px;
+  }
+
+  .dashboard .col-md-4 {
+    margin-bottom: 15px;
+  }
+}
+
+/* Sidebar Responsive Behavior */
+@media (max-width: 991px) {
+  .offcanvas-backdrop::before {
+    display: block;
+  }
+
+  .sidebar-nav {
+    width: var(--offcanvas-width) !important;
+  }
+}
+
+/* Table Responsive Styles */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix table header and column alignment */
+.table thead th {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* DataTables Responsive Adjustments */
+.dataTables_wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Toast Notifications Responsive Position */
+.toast-top-right {
+  top: 15px;
+  right: 15px;
+}
+
+@media (max-width: 576px) {
+  .toast-top-right {
+    top: 0;
+    right: 0;
+    width: 100%;
+  }
+}
+
+/* SweetAlert Responsive Adjustments */
+.swal2-popup {
+  font-size: 0.9rem !important;
+  width: auto !important;
+  max-width: 90% !important;
+}
+
+@media (max-width: 576px) {
+  .swal2-popup {
+    padding: 0.5em !important;
+  }
 }

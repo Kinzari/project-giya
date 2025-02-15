@@ -515,7 +515,7 @@ navbar {
   display: flex;
   align-items: center; /* Vertically align items */
   justify-content: center; /* Center items horizontally */
-  gap: 8px; /* Adjust spacing between elements */
+  gap: 16px; /* Adjust spacing between elements */
   margin: 15px 0;
 }
 
