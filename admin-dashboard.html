@@ -6,14 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PROJECT : GIYA Dashboard</title>
   <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico" />
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="css/admin-dashboard.css">
-  <link rel="stylesheet" href="css/toastr.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.bootstrap5.min.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css"/>
 </head>
 
 <body>
@@ -36,12 +34,12 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav ms-auto me-md-4 mb-2 mb-lg-0">
           <li class="nav-item dropdown d-flex text-light">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle"  role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="fa-regular fa-user"></i> Admin
             </a>
             <ul class="dropdown-menu border-0 bg-light ms-auto">
               <li><a class="dropdown-item" href="#">Edit Profile</a></li>
-              <li><a class="dropdown-item" href="index.html">Logout</a></li>
+              <li><a class="dropdown-item" href="#" id="logout-button">Logout</a></li>
             </ul>
         </ul>
         </li>
@@ -257,15 +255,46 @@
     </div>
   </main>
   <!-- main content end-->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="js/admin-dashboard.js"></script>
   <script src="js/toastr-config.js"></script>
-</body>
 
+  <!-- User Details Modal -->
+  <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="userModalLabel">User Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>School ID:</strong> <span id="detail-schoolId"></span></p>
+          <p><strong>First Name:</strong> <span id="detail-firstName"></span></p>
+          <p><strong>Middle Name:</strong> <span id="detail-middleName"></span></p>
+          <p><strong>Last Name:</strong> <span id="detail-lastName"></span></p>
+          <p><strong>Suffix:</strong> <span id="detail-suffix"></span></p>
+          <p><strong>Phinmaed Email / User Email:</strong> <span id="detail-email"></span></p>
+          <p><strong>Contact Number:</strong> <span id="detail-contact"></span></p>
+          <p><strong>Department:</strong> <span id="detail-department"></span></p>
+          <p><strong>Course:</strong> <span id="detail-course"></span></p>
+          <p><strong>User Type:</strong> <span id="detail-userType"></span></p>
+          <p><strong>User Status:</strong> <span id="detail-status"></span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
 </html>
