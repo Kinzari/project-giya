@@ -1,66 +1,58 @@
+/* Import fonts and define variables */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
 :root {
   --offcanvas-width: 270px;
   --topNavbarHeight: 56px;
 }
 
+/* Global resets and base styles */
 * {
   font-family: 'Poppins', sans-serif;
   margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
+/* Base body and common elements */
 body {
   background-color: #F6F9FF;
   overflow-x: hidden;
 }
-
 a {
   text-decoration: none;
 }
 
+/* Sidebar and Navbar styles */
 .sidenav .bordered {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
-
 .sidebar-nav {
   width: var(--offcanvas-width) !important;
 }
-
 .sidebar-link {
   display: flex;
   align-items: center;
 }
-
 .sidebar-link .right-icon {
   display: inline-flex;
   transition: all ease 0.25s;
 }
-
 .sidebar-link[aria-expanded="true"] .right-icon {
   transform: rotate(180deg) !important;
 }
-
 .bg-purple {
   background-color: #155f37;
 }
-
 .offcanvas-header {
   background-color: #155f37;
   font-size: 25px;
   padding: 10px;
 }
-
 .breadcrumb-item {
   font-size: 18px;
 }
-
 .text-center {
   text-align: center !important;
 }
-
 .navbar-brand {
   text-transform: uppercase;
 }
@@ -97,12 +89,48 @@ a {
   text-align: end;
 }
 
-/*```````````````````````````*/
-        /* TABLES */
-/*``````````````````````````*/
-/* Adjust spacing for DataTable pagination */
+/* TABLES */
+/* Adjust spacing for DataTable pagination and buttons */
+.dataTables_wrapper .dataTables_paginate {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+.dataTables_wrapper .paginate_button.previous {
+  margin-right: 15px !important;
+}
+.dataTables_wrapper .paginate_button.next {
+  margin-left: 15px !important;
+}
 .dataTables_wrapper .dataTables_paginate .paginate_button {
-    margin: 0 5px; /* Adds spacing between buttons */
+  padding: 6px 12px !important;
+  border: 1px solid #dee2e6 !important;
+  margin: 0 5px !important;
+  border-radius: 4px !important;
+  min-width: 38px !important;
+  background: #fff !important;
+  color: #155f37 !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  position: relative !important;
+}
+.dataTables_wrapper .dataTables_paginate span .paginate_button {
+  margin: 0 8px !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: #155f37 !important;
+  color: white !important;
+  border-color: #155f37 !important;
+  font-weight: 500;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+  background: #e9ecef !important;
+  border-color: #155f37 !important;
+  color: #155f37 !important;
 }
 
 /* Ensure table expands fully */
@@ -116,20 +144,30 @@ a {
     text-align: begin; /* Aligns content in the center */
 }
 
-/* Ensure action buttons are aligned properly */
+/* Fix action buttons alignment */
 .table td .btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 35px; /* Adjusted size */
-    height: 35px;
-    padding: 5px;
-    margin: 3px; /* Increased space between buttons */
 }
 
-/* Fix icon size inside the button */
 .table td .btn i {
-    font-size: 14px;
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Ensure the action column doesn't wrap */
+.table td:last-child {
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+/* Add gap between buttons */
+.table td .d-flex.gap-1 > * {
+    margin: 0 2px;
 }
 
 /* Responsive Layout */
@@ -256,14 +294,14 @@ a {
 
   /* Stack action buttons on mobile */
   .table td .btn {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     padding: 2px;
     margin: 1px;
   }
 
   .table td .btn i {
-    font-size: 10px;
+    font-size: 14px;
   }
 
   /* Adjust table for mobile */
@@ -316,6 +354,50 @@ a {
   }
 }
 
+/* Update mobile sidebar behavior */
+@media (max-width: 991px) {
+  :root {
+    --offcanvas-width: 75% !important;  /* Reduce width on mobile */
+  }
+
+  .sidebar-nav {
+    width: var(--offcanvas-width) !important;
+    max-height: 100vh !important;  /* Make sidebar shorter */
+  }
+
+  .offcanvas-body {
+    max-height: calc(85vh - 60px) !important;  /* Account for header height */
+    overflow-y: auto;
+  }
+
+  /* Make the main content area scrollable independently */
+  main {
+    height: calc(100vh - var(--topNavbarHeight));
+    overflow-y: auto;
+  }
+}
+
+/* Extra small devices adjustments */
+@media (max-width: 575px) {
+  :root {
+    --offcanvas-width: 80% !important;  /* Slightly wider on phones */
+  }
+}
+
+/* Add smooth scrolling to sidebar */
+.offcanvas-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.offcanvas-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.offcanvas-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
 /* Table Responsive Styles */
 .table-responsive {
   overflow-x: auto;
@@ -334,20 +416,6 @@ a {
   overflow-x: auto;
 }
 
-/* Toast Notifications Responsive Position */
-.toast-top-right {
-  top: 15px;
-  right: 15px;
-}
-
-@media (max-width: 576px) {
-  .toast-top-right {
-    top: 0;
-    right: 0;
-    width: 100%;
-  }
-}
-
 /* SweetAlert Responsive Adjustments */
 .swal2-popup {
   font-size: 0.9rem !important;
@@ -359,4 +427,14 @@ a {
   .swal2-popup {
     padding: 0.5em !important;
   }
+}
+
+/* Modal backdrop fix */
+.modal-backdrop {
+    opacity: 0.5;
+}
+
+body.modal-open {
+    overflow: auto !important;
+    padding-right: 0 !important;
 }

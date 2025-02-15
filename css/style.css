@@ -16,13 +16,14 @@
     5. About Area
     6. Class Area
     7. Footer Area
-    8. Dashboard
-    9. Toaster
+    8. Toaster
+    9. Scroll Up
 -----------------------------------------------------------------------------------*/
 
 /*----------------------------------------*/
 /*  1. Theme default CSS
 /*----------------------------------------*/
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 .wrapper {
   overflow-x: hidden;
 }
@@ -385,6 +386,15 @@ navbar {
   min-height: 10px;
 }
 
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #155f37;
+    padding: 15px 20px;
+    color: white;
+  }
+
 .navbar-brand img {
   max-height: 40px;
 }
@@ -403,7 +413,7 @@ navbar {
 }
 
 .navbar-nav .dropdown-menu {
-  background-color: #044128;
+  background-color: #155f37;
   border: none;
 }
 
@@ -972,3 +982,61 @@ navbar {
   border: none;
   font-size: 1.2rem;
 }
+/*----------------------------------------*/
+/*  TOASTR CSS
+/*----------------------------------------*/
+.toast-success {
+    background-color: #51a351 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5) !important;
+  }
+
+
+  .toast-error {
+    background-color: #bd362f !important;
+    color: #fff !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5) !important;
+  }
+
+
+  .toast-warning {
+    background-color: #f89406 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5) !important;
+  }
+
+
+  .toast-info {
+    background-color: #2f96b4 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .toast-close-button {
+    color: #fff !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5) !important;
+  }
+/*----------------------------------------*/
+/*  SCROLL UP CSS
+/*----------------------------------------*/
+#scrollUpBtn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background-color: #155f37;
+    color: white;
+    padding: 10px 13px;
+    border: 1px solid white;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, background-color 0.3s, border-color 0.3s;
+  }
+
+  #scrollUpBtn:hover {
+    background-color: #032d1f;
+    border-color: #f5f5f5;
+    transform: scale(1.1);
+  }
