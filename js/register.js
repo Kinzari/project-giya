@@ -1,11 +1,48 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Set base URL for API requests
+    const baseURL = 'http://localhost/api/giya.php';
+    sessionStorage.setItem('baseURL', baseURL);
+
     const registerForm = document.getElementById("register-form");
+    const passwordInput = document.getElementById("password");
 
     if (!registerForm) {
         toastr.error("Error: Registration form not found!", "Error");
         console.error("Error: The form element with ID 'register-form' was not found.");
         return;
     }
+
+    // Password validation function
+    function validatePassword(password) {
+        const validations = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /\d/.test(password)
+        };
+
+        // Update validation icons
+        Object.entries(validations).forEach(([key, valid]) => {
+            const item = document.getElementById(`${key}-check`);
+            const checkIcon = item.querySelector('.fa-check');
+            const timesIcon = item.querySelector('.fa-times');
+
+            if (valid) {
+                checkIcon.classList.remove('d-none');
+                timesIcon.classList.add('d-none');
+            } else {
+                checkIcon.classList.add('d-none');
+                timesIcon.classList.remove('d-none');
+            }
+        });
+
+        return Object.values(validations).every(Boolean);
+    }
+
+    // Add password input listener
+    passwordInput.addEventListener('input', function() {
+        validatePassword(this.value);
+    });
 
     registerForm.addEventListener("submit", async function (event) {
         event.preventDefault(); // Prevent page reload
@@ -17,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const suffix = document.getElementById("suffix").value.trim();
         const email = document.getElementById("user_email").value.trim();
         const contactNumber = document.getElementById("user_contact").value.trim();
-        const password = document.getElementById("password").value.trim();
+        const password = passwordInput.value.trim();
         const confirmPassword = document.getElementById("confirm_password").value.trim();
         const agreeTerms = document.getElementById("terms").checked;
 
@@ -36,6 +73,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        if (!validatePassword(password)) {
+            toastr.error("Password does not meet requirements");
+            return;
+        }
+
         const userData = {
             first_name: firstName,
             middle_name: middleName,
@@ -47,8 +89,11 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         try {
-            const baseURL = sessionStorage.getItem("baseURL");
-            const response = await axios.post(`${baseURL}?action=register`, userData);
+            const response = await axios.post(`${baseURL}?action=register`, userData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
 
             console.log("API Response:", response.data); // Debugging output
 
@@ -58,17 +103,27 @@ document.addEventListener("DOMContentLoaded", function () {
                     window.location.href = "index.html"; // Redirect after success
                 }, 2000);
             } else {
-                toastr.error(response.data.message, "Registration Failed");
+                toastr.error(response.data.message || "Registration failed", "Error");
             }
         } catch (error) {
             console.error("Error:", error);
-            toastr.error("An error occurred. Please try again.", "Error");
+            const errorMessage = error.response?.data?.message || "An error occurred. Please try again.";
+            toastr.error(errorMessage, "Error");
         }
     });
 
     // Toggle Password Visibility
     const togglePassword = document.getElementById("toggle-password");
     const toggleConfirmPassword = document.getElementById("toggle-confirm-password");
+
+    function toggleVisibility(fieldId, icon) {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.type = field.type === "password" ? "text" : "password";
+            icon.classList.toggle("fa-eye");
+            icon.classList.toggle("fa-eye-slash");
+        }
+    }
 
     if (togglePassword && toggleConfirmPassword) {
         togglePassword.addEventListener("click", function () {
@@ -80,12 +135,5 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     } else {
         console.error("Error: Toggle password elements not found.");
-    }
-
-    function toggleVisibility(fieldId, icon) {
-        const field = document.getElementById(fieldId);
-        field.type = field.type === "password" ? "text" : "password";
-        icon.classList.toggle("fa-eye");
-        icon.classList.toggle("fa-eye-slash");
     }
 });

@@ -2,6 +2,7 @@ let usersData = [];
 let filteredData = [];
 
 // Set the API base URL in sessionStorage
+// sessionStorage.setItem("baseURL", "http://localhost/api/giya.php");
 sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php");
 
 // Function to fetch visitor, student, and department counts
@@ -24,72 +25,149 @@ async function fetchCounts() {
 
 // Function to filter users based on the current page
 function filterUsersByType() {
-  if (window.location.pathname.includes("all-visitor.html")) {
-    return usersData.filter(user => user.user_typeId == 1); // Visitors
-  } else if (window.location.pathname.includes("all-student.html")) {
-    return usersData.filter(user => user.user_typeId == 2); // Students
-  } else if (window.location.pathname.includes("all-department.html")) {
-    return usersData.filter(user => [3, 4, 5].includes(user.user_typeId)); // Departments
+  const currentPath = window.location.pathname;
+  console.log("Current path:", currentPath);
+  console.log("All users before filtering:", usersData);
+
+  // First filter out admin users (assuming admin has user_typeId of 0)
+  let filtered = usersData.filter(user => user.user_typeId !== "6");
+
+  if (currentPath.includes("all-visitor")) {
+    filtered = filtered.filter(user => {
+      console.log("Visitor check - user:", user.user_typeId, typeof user.user_typeId);
+      return user.user_typeId == 1 || user.user_typeId === "1";
+    });
+  } else if (currentPath.includes("all-student")) {
+    filtered = filtered.filter(user => {
+      console.log("Student check - user:", user.user_typeId, typeof user.user_typeId);
+      return user.user_typeId == 2 || user.user_typeId === "2";
+    });
+  } else if (currentPath.includes("all-department")) {
+    filtered = filtered.filter(user => {
+      console.log("Department check - user:", user.user_typeId, typeof user.user_typeId);
+      return ["3", "4", "5", 3, 4, 5].includes(Number(user.user_typeId));
+    });
+  } else if (currentPath.includes("admin-dashboard") || currentPath.endsWith("/")) {
+    // On dashboard, show all except admin
+    filtered = filtered;
   }
-  return [];
+
+  console.log("Filtered results:", filtered);
+  return filtered;
 }
+
+// Configure Toastr
+toastr.options = {
+  closeButton: true,
+  progressBar: true,
+  positionClass: "toast-top-right",
+  timeOut: 3000
+};
 
 // Function to update user status
 async function updateUserStatus(userId, newStatus) {
-  const confirmed = confirm(`Are you sure you want to ${newStatus === 1 ? "activate" : "deactivate"} this user?`);
-  if (!confirmed) return;
-
   try {
-    const baseURL = sessionStorage.getItem("baseURL");
-    const response = await axios.post(`${baseURL}?action=update_user_status`, {
-      user_id: userId,
-      user_status: newStatus,
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: `Do you want to ${newStatus === 1 ? "activate" : "deactivate"} this user?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, proceed!'
     });
 
-    if (response.data.success) {
-      alert("User status updated successfully.");
-      filteredData = filteredData.map(user =>
-        user.user_id === userId ? { ...user, user_status: newStatus } : user
-      );
-      $("#usersTable").DataTable().clear().rows.add(filteredData).draw();
-    } else {
-      alert("Failed to update user status.");
+    if (result.isConfirmed) {
+      const baseURL = sessionStorage.getItem("baseURL");
+      const response = await axios.post(`${baseURL}?action=update_user_status`, {
+        user_id: userId,
+        user_status: newStatus,
+      });
+
+      if (response.data.success) {
+        toastr.success("User status updated successfully");
+        filteredData = filteredData.map(user =>
+          user.user_id === userId ? { ...user, user_status: newStatus } : user
+        );
+        $("#usersTable").DataTable().clear().rows.add(filteredData).draw();
+      } else {
+        toastr.error("Failed to update user status");
+      }
     }
   } catch (error) {
     console.error("Error updating user status:", error);
-    alert("An error occurred while updating user status.");
+    toastr.error("An error occurred while updating user status");
   }
 }
 
 // Function to reset user password
 async function resetUserPassword(userId) {
-  const confirmed = confirm("Are you sure you want to reset this user's password to 'phinma-coc'?");
-  if (!confirmed) return;
-
   try {
-    const baseURL = sessionStorage.getItem("baseURL");
-    const response = await axios.post(`${baseURL}?action=reset_password`, {
-      user_id: userId,
+    const result = await Swal.fire({
+      title: 'Reset Password?',
+      text: "Password will be reset to 'phinma-coc'",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, reset it!'
     });
 
-    if (response.data.success) {
-      alert("Password has been reset successfully to 'phinma-coc'.");
-    } else {
-      alert("Failed to reset password.");
+    if (result.isConfirmed) {
+      const baseURL = sessionStorage.getItem("baseURL");
+      const response = await axios.post(`${baseURL}?action=reset_password`, {
+        user_id: userId,
+      });
+
+      if (response.data.success) {
+        Swal.fire(
+          'Success!',
+          "Password has been reset to 'phinma-coc'",
+          'success'
+        );
+      } else {
+        Swal.fire(
+          'Error!',
+          'Failed to reset password',
+          'error'
+        );
+      }
     }
   } catch (error) {
     console.error("Error resetting password:", error);
-    alert("An error occurred while resetting the password.");
+    Swal.fire(
+      'Error!',
+      'An error occurred while resetting the password',
+      'error'
+    );
   }
 }
 
 // Initialize DataTable
 function initializeDataTable(data) {
+  console.log("Initializing DataTable with data:", data);
+
   const columns = [
-    { title: "School ID", data: "user_schoolId" },
-    { title: "Full Name", data: "full_name" },
-    { title: "Department", data: "department_name" },
-    { title: "Course", data: "course_name" },
+    {
+      title: "School ID",
+      data: "user_schoolId",
+      defaultContent: "-"
+    },
+    {
+      title: "Full Name",
+      data: "full_name", // This matches the CONCAT in your PHP query
+      defaultContent: "-"
+    },
+    {
+      title: "Department",
+      data: "department_name", // Matches the PHP query field
+      defaultContent: "-"
+    },
+    {
+      title: "Course",
+      data: "course_name", // Matches the PHP query field
+      defaultContent: "-"
+    },
     {
       title: "Action",
       data: null,
@@ -110,31 +188,23 @@ function initializeDataTable(data) {
 
   if ($.fn.DataTable.isDataTable("#usersTable")) {
     $("#usersTable").DataTable().destroy();
-    $("#usersTable thead tr").empty();
   }
 
   $("#usersTable").DataTable({
-    data,
-    columns,
+    data: data,
+    columns: columns,
     dom: '<"top"lf>rt<"bottom"ip>',
-    buttons: [
-      {
-        extend: "excelHtml5",
-        text: "Export to Excel",
-        className: "btn btn-success",
-      },
-      {
-        extend: "pdfHtml5",
-        text: "Export to PDF",
-        className: "btn btn-danger",
-      },
-      { extend: "print", text: "Print", className: "btn btn-primary" },
-    ],
-    lengthMenu: [10, 15, 20],
-    pageLength: 10,
     responsive: true,
     ordering: true,
     searching: true,
+    lengthMenu: [10, 15, 20],
+    pageLength: 10,
+    language: {
+      emptyTable: "No data available"
+    },
+    drawCallback: function() {
+      console.log("Table redrawn with data count:", data.length);
+    }
   });
 }
 
@@ -143,28 +213,48 @@ async function fetchUsers() {
   try {
     const baseURL = sessionStorage.getItem("baseURL");
     const response = await axios.get(`${baseURL}?action=users`);
-
     console.log("API Response:", response.data);
 
     if (response.data.success && Array.isArray(response.data.users)) {
       usersData = response.data.users;
-      filteredData = filterUsersByType(usersData);
-    } else {
-      usersData = [];
-      filteredData = [];
-      console.error("Error: users array missing in API response");
-    }
+      console.log("Raw user data:", usersData);
 
-    initializeDataTable(filteredData);
+      // Log a sample user to check data structure
+      if (usersData.length > 0) {
+        console.log("Sample user data:", usersData[0]);
+      }
+
+      filteredData = filterUsersByType();
+      console.log("Filtered Data:", filteredData);
+      initializeDataTable(filteredData);
+    } else {
+      console.error("Error: Invalid API response format");
+      toastr.error("Failed to load user data");
+      initializeDataTable([]);
+    }
   } catch (error) {
     console.error("Error fetching users:", error);
+    toastr.error("Error loading user data");
+    initializeDataTable([]);
   }
 }
 
 // Logout function
 function logout() {
-  localStorage.clear();
-  window.location.href = "index.html";
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "You will be logged out of the system",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, logout!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+  });
 }
 
 // Initialize the dashboard
