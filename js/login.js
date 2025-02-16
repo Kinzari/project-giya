@@ -1,121 +1,123 @@
-// Set API base URL (Ensure it correctly points to the API folder)
-// sessionStorage.setItem("baseURL", "http://localhost/api/giya.php");
-// sessionStorage.setItem("baseURL", "https://coc-studentinfo.net/api/giya.php"); // COC
-sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php"); // KINZARI
+// Set API base URL
+sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php");
 
-document
-  .getElementById("login-form")
-  .addEventListener("submit", async function (event) {
+document.getElementById("login-form").addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const loginInput = document.getElementById("login_input").value.trim();
     const password = document.getElementById("password").value.trim();
     const num1 = parseInt(document.getElementById("num1").textContent);
     const num2 = parseInt(document.getElementById("num2").textContent);
-    const mathAnswer = parseInt(
-      document.getElementById("math-answer").value.trim()
-    );
+    const mathAnswer = parseInt(document.getElementById("math-answer").value.trim());
 
-    toastr.clear(); // Clear any previous Toastr notifications
+    toastr.clear();
 
     if (!loginInput || !password || isNaN(mathAnswer)) {
-      toastr.error("All fields are required.");
-      return;
+        toastr.error("All fields are required.");
+        return;
     }
 
     const mathAnswerInput = document.getElementById("math-answer");
     if (mathAnswer !== num1 + num2) {
-      toastr.error("Incorrect math verification. Please try again.");
-      mathAnswerInput.classList.add("incorrect");
-      mathAnswerInput.classList.remove("correct");
-      return;
+        toastr.error("Incorrect math verification. Please try again.");
+        mathAnswerInput.classList.add("incorrect");
+        mathAnswerInput.classList.remove("correct");
+        return;
     } else {
-      mathAnswerInput.classList.add("correct");
-      mathAnswerInput.classList.remove("incorrect");
+        mathAnswerInput.classList.add("correct");
+        mathAnswerInput.classList.remove("incorrect");
     }
 
+    // Rest of login code...
     try {
-      const response = await axios.post(
-        `${sessionStorage.getItem("baseURL")}?action=login`, // Corrected URL
-        {
-          loginInput: loginInput,
-          password: password,
-        }
-      );
+        const response = await axios.post(
+            `${sessionStorage.getItem("baseURL")}?action=login`,
+            {
+                loginInput: loginInput,
+                password: password,
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                withCredentials: false
+            }
+        );
 
-      const result = response.data;
+        const result = response.data;
 
-      if (result.success) {
-        // Store user details in localStorage or sessionStorage
-        localStorage.setItem("user_typeId", result.user_typeId);
-        localStorage.setItem("first_name", result.first_name);
+        if (result.success) {
+            localStorage.clear(); // Clear any old data
 
-        toastr.success("Login successful!");
+            localStorage.setItem("user_typeId", result.user_typeId.toString());
+            localStorage.setItem("first_name", result.first_name);
 
-        // Redirect based on user type
-        if (result.user_typeId === 5 || result.user_typeId === 6) {
-          setTimeout(() => {
-            window.location.href = "admin-dashboard.html";
-          }, 1500); // Delay the redirect to show the success message
-        } else if (result.user_typeId === 2) {  // Student
-          setTimeout(() => {
-            window.location.href = "student.html";
-          }, 1500);
-        } else if (result.user_typeId === 1) {  // Visitor
-          setTimeout(() => {
-            window.location.href = "visitors.html";
-          }, 1500);
+            if (result.user_typeId === 1) {
+                localStorage.setItem("visitorId", result.user_schoolId);
+            } else {
+                localStorage.setItem("studentId", result.user_schoolId);
+                localStorage.setItem("courseYear", result.courseYear || '');
+            }
+
+            console.log('Stored auth data:', {
+                userType: result.user_typeId,
+                schoolId: result.user_schoolId,
+                stored: localStorage
+            });
+
+            toastr.success("Login successful!");
+            setTimeout(() => {
+                window.location.href = "choose-concern.html";
+            }, 2000);
         } else {
-          toastr.error("You do not have access to this page.");
+            toastr.error(result.message || "Login failed.");
         }
-      } else {
-        toastr.error(result.message || "Login failed.");
-      }
     } catch (error) {
-      toastr.error("An error occurred during login. Please try again.");
-      console.error(error);
+        console.error('Login error:', error);
+        toastr.error("An error occurred during login. Please try again.");
     }
-  });
+});
 
 // Initialize Math Verification
 document.addEventListener("DOMContentLoaded", () => {
-  const num1 = Math.floor(Math.random() * 50) + 10; // Range: 10-99
-  const num2 = Math.floor(Math.random() * 9) + 1; // Range: 1-9
+    // Generate random numbers for math verification
+    const num1 = Math.floor(Math.random() * 50) + 10; // Range: 10-99
+    const num2 = Math.floor(Math.random() * 9) + 1;   // Range: 1-9
+    document.getElementById("num1").textContent = num1;
+    document.getElementById("num2").textContent = num2;
 
-  document.getElementById("num1").textContent = num1;
-  document.getElementById("num2").textContent = num2;
+    // Math answer input handler
+    const mathAnswerInput = document.getElementById("math-answer");
+    mathAnswerInput.addEventListener("input", () => {
+        const mathAnswer = parseInt(mathAnswerInput.value.trim());
+        if (mathAnswer === num1 + num2) {
+            mathAnswerInput.classList.add("correct");
+            mathAnswerInput.classList.remove("incorrect");
+        } else {
+            mathAnswerInput.classList.add("incorrect");
+            mathAnswerInput.classList.remove("correct");
+        }
+    });
 
-  const mathAnswerInput = document.getElementById("math-answer");
-  mathAnswerInput.addEventListener("input", () => {
-    const mathAnswer = parseInt(mathAnswerInput.value.trim());
-    if (mathAnswer === num1 + num2) {
-      mathAnswerInput.classList.add("correct");
-      mathAnswerInput.classList.remove("incorrect");
-    } else {
-      mathAnswerInput.classList.add("incorrect");
-      mathAnswerInput.classList.remove("correct");
-    }
-  });
+    // Password visibility toggle
+    const togglePassword = document.getElementById("toggle-password");
+    togglePassword.addEventListener("click", function () {
+        const passwordField = document.getElementById("password");
+        const type = passwordField.type === "password" ? "text" : "password";
+        passwordField.type = type;
+        this.classList.toggle("fa-eye");
+        this.classList.toggle("fa-eye-slash");
+    });
 
-  // Toggle password visibility
-  const togglePassword = document.getElementById("toggle-password");
-  togglePassword.addEventListener("click", function () {
+    // Caps Lock detection
     const passwordField = document.getElementById("password");
-    const type = passwordField.type === "password" ? "text" : "password";
-    passwordField.type = type;
-    this.classList.toggle("fa-eye");
-    this.classList.toggle("fa-eye-slash");
-  });
+    const capsLockTooltip = document.getElementById("caps-lock-tooltip");
 
-  // Caps Lock warning
-  const passwordField = document.getElementById("password");
-  const capsLockTooltip = document.getElementById("caps-lock-tooltip");
-
-  passwordField.addEventListener("keyup", (event) => {
-    if (event.getModifierState("CapsLock")) {
-      capsLockTooltip.style.display = "block";
-    } else {
-      capsLockTooltip.style.display = "none";
-    }
-  });
+    passwordField.addEventListener("keyup", (event) => {
+        if (event.getModifierState("CapsLock")) {
+            capsLockTooltip.style.display = "block";
+        } else {
+            capsLockTooltip.style.display = "none";
+        }
+    });
 });
