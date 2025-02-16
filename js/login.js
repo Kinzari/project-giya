@@ -52,18 +52,24 @@ document.getElementById("login-form").addEventListener("submit", async function 
             localStorage.setItem("user_typeId", result.user_typeId.toString());
             localStorage.setItem("first_name", result.first_name);
 
-            if (result.user_typeId === 1) {
+            const userTypeId = parseInt(result.user_typeId);
+
+            // Handle admin users (types 5 and 6)
+            if (userTypeId === 5 || userTypeId === 6) {
+                toastr.success("Welcome Admin!");
+                setTimeout(() => {
+                    window.location.href = "admin-dashboard.html";
+                }, 2000);
+                return;
+            }
+
+            // Handle regular users
+            if (userTypeId === 1) {
                 localStorage.setItem("visitorId", result.user_schoolId);
             } else {
                 localStorage.setItem("studentId", result.user_schoolId);
                 localStorage.setItem("courseYear", result.courseYear || '');
             }
-
-            console.log('Stored auth data:', {
-                userType: result.user_typeId,
-                schoolId: result.user_schoolId,
-                stored: localStorage
-            });
 
             toastr.success("Login successful!");
             setTimeout(() => {
