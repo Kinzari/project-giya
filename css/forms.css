@@ -1,4 +1,5 @@
 /* Shared styles for inquiry, feedback and suggestion forms */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 .form-container {
     min-height: 100vh;
     padding: 2rem 0;
