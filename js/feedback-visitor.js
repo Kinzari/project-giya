@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Use AuthHelper for authentication
+    // authhelper.js
     if (!AuthHelper.isVisitor()) {
         window.location.href = 'choose-concern.html';
         return;
@@ -8,10 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const visitorId = AuthHelper.getId();
     document.getElementById('visitorId').value = visitorId;
 
-    // Load departments
+    // load departments
     loadDepartments();
 
-    // Form submission
+    // form submission
     document.getElementById('visitorFeedbackForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Reuse loadDepartments function
+// maybe recycle this function from feedback-student.js
 async function loadDepartments() {
     // ...same as feedback-student.js...
 }

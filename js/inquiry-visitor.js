@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Ensure user_typeId is '1' (visitor)
+    // visitor = 1
     const userTypeId = localStorage.getItem('user_typeId');
     if (userTypeId !== '1') {
         window.location.href = 'choose-concern.html';
         return;
     }
 
-    // 2. Get user info with fallbacks
+    // 2. get user info with fallbacks
     const userInfo = {
         userId: localStorage.getItem('user_id') || '',
         schoolId: localStorage.getItem('user_schoolId') || '',
@@ -14,12 +14,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         middleName: localStorage.getItem('user_middlename') || '',
         lastName: localStorage.getItem('user_lastname') || '',
         suffix: localStorage.getItem('user_suffix') || '',
-        email: localStorage.getItem('user_email') || '', // Use user_email for visitors
+        email: localStorage.getItem('user_email') || '', // user_email for visitors
         contactNumber: localStorage.getItem('user_contact') || '',
         postType: localStorage.getItem('selectedPostType') || ''
     };
 
-    // 3. Fill in form fields
+    // fill in form fields
     document.getElementById('schoolId').value = userInfo.schoolId;
     document.getElementById('fullName').value = formatFullName(
         userInfo.firstName,
@@ -30,13 +30,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('email').value = userInfo.email;
     document.getElementById('contactNumber').value = userInfo.contactNumber;
 
-    // 4. Set the inquiry type if previously selected
+    // set the inquiry type
     const inquirySelect = document.getElementById('inquiryType');
     if (userInfo.postType) {
         inquirySelect.value = userInfo.postType;
     }
 
-    // 5. Handle form submission
+    // orm submission handler
     const form = document.getElementById('visitorInquiryForm');
     if (form) {
         form.addEventListener('submit', handleSubmit);
@@ -68,7 +68,7 @@ async function handleSubmit(e) {
     const formData = {
         user_id: localStorage.getItem('user_id'),
         post_type: inquiryType,
-        post_title: getInquiryTypeFullText(inquiryType), // Use the full text description
+        post_title: getInquiryTypeFullText(inquiryType),
         post_message: inquiryMessage
     };
 

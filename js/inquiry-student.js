@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // Ensure the user is a student
+    // student = 2
     const userTypeId = localStorage.getItem('user_typeId');
     if (userTypeId !== '2') {
         window.location.href = 'choose-concern.html';
         return;
     }
 
-    // Retrieve user data from localStorage with fallbacks
+    // localStorage user info with fallbacks
     const userInfo = {
         userId: localStorage.getItem('user_id') || '',
         schoolId: localStorage.getItem('user_schoolId') || '',
@@ -17,12 +17,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         departmentName: localStorage.getItem('department_name') || 'Not Assigned',
         courseName: localStorage.getItem('course_name') || 'Not Assigned',
         yearLevel: localStorage.getItem('user_schoolyearId') || '',
-        email: localStorage.getItem('phinmaed_email') || '', // Use phinmaed_email for students
+        email: localStorage.getItem('phinmaed_email') || '', // phinmaed_email for students
         contactNumber: localStorage.getItem('user_contact') || '',
         postType: localStorage.getItem('selectedPostType') || ''
     };
-
-    // Fill in the form fields with fallback handling
+    // fill in form fields
     document.getElementById('schoolId').value = userInfo.schoolId;
     document.getElementById('fullName').value = formatFullName(
         userInfo.firstName,
@@ -36,20 +35,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('email').value = userInfo.email;
     document.getElementById('contactNumber').value = userInfo.contactNumber;
 
-    // Set the inquiry type if it was previously selected
+    // inquiry type
     const inquirySelect = document.getElementById('inquiryType');
     if (userInfo.postType) {
         inquirySelect.value = userInfo.postType;
     }
 
-    // Form submission handler
+    // form submission handler
     const form = document.getElementById('studentInquiryForm');
     if (form) {
         form.addEventListener('submit', handleSubmit);
     }
 });
 
-// Function to display full name with middle initial (if present)
+// full name formatter
 function formatFullName(firstName, middleName, lastName, suffix) {
     const middleInitial = middleName ? middleName.trim().charAt(0).toUpperCase() + '.' : '';
     let fullName = firstName || '';
@@ -95,7 +94,7 @@ async function handleSubmit(e) {
     const formData = {
         user_id: localStorage.getItem('user_id'),
         post_type: inquiryType,
-        post_title: getInquiryTypeFullText(inquiryType), // Use the full text description
+        post_title: getInquiryTypeFullText(inquiryType), // inquiry type full text
         post_message: inquiryMessage
     };
 

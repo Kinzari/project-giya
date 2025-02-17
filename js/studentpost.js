@@ -7,13 +7,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function setupEventListeners() {
+    // Add logout handler
+    document.getElementById('logout-button').addEventListener('click', (e) => {
+        e.preventDefault();
+        handleLogout();
+    });
+
     // Filter buttons
     document.querySelectorAll('[data-filter]').forEach(button => {
         button.addEventListener('click', (e) => {
             currentFilter = e.target.dataset.filter;
-            displayPosts(); // Changed from filterPosts() to displayPosts()
+            displayPosts();
 
-            // Update active button state
             document.querySelectorAll('[data-filter]').forEach(btn =>
                 btn.classList.remove('active'));
             e.target.classList.add('active');
@@ -35,7 +40,6 @@ function setupEventListeners() {
 async function loadPosts() {
     try {
         const response = await axios.get(`${sessionStorage.getItem('baseURL')}?action=get_posts`);
-        console.log('API Response:', response.data); // Debug log
 
         if (response.data.success) {
             postsData = response.data.posts;
@@ -51,7 +55,7 @@ async function loadPosts() {
 
 function displayPosts() {
     const container = document.getElementById('postsContainer');
-    container.innerHTML = ''; // Clear container
+    container.innerHTML = '';
 
     const filteredPosts = postsData.filter(post => {
         if (currentFilter === 'all') return true;
@@ -239,4 +243,14 @@ function getYearLevelText(yearLevel) {
         '5': '5th Year'
     };
     return yearLevels[yearLevel] || 'Not Assigned';
+}
+
+// Add this function at the end of the file
+function handleLogout() {
+    // Clear all stored data
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Redirect to login page
+    window.location.href = 'index.html';
 }

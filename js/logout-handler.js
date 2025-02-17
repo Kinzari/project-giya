@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Add logout functionality
+    // ambot unsay pulos ani (logout function)
     $('#logoutBtn').click(function() {
         Swal.fire({
             title: 'Logout Confirmation',

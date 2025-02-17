@@ -38,7 +38,7 @@ function showPrivacyModal(onAccept) {
     modal.show();
 }
 
-// Check submenu clicks - update the event listener
+// check submenu clicks - update the event listener
 document.addEventListener('DOMContentLoaded', () => {
     const subMenuLinks = document.querySelectorAll('.sub-menu a, .dropdown-menu a');
     subMenuLinks.forEach(link => {
@@ -50,10 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 toastr.warning('Please login first to access this feature.');
                 return;
             }
-            // Instead of showing modal directly, redirect to concern page
             window.location.href = 'choose-concern.html';
         });
     });
 });
-
-// Remove the showConcernModal function from here as it will be moved to choose-concern.js

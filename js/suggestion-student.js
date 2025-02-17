@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Check authentication
+
     const userTypeId = localStorage.getItem('user_typeId');
     const firstName = localStorage.getItem('first_name');
     const studentId = localStorage.getItem('studentId');
@@ -9,14 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Populate student info
+
     document.getElementById('studentId').value = studentId;
     document.getElementById('courseYear').value = localStorage.getItem('courseYear') || '';
 
-    // Load departments
+
     loadDepartments();
 
-    // Form submission
     document.getElementById('studentSuggestionForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 

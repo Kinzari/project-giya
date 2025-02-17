@@ -7,7 +7,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function setupEventListeners() {
-    // Filter buttons
+    // add logout button
+    document.getElementById('logout-button').addEventListener('click', (e) => {
+        e.preventDefault();
+        handleLogout();
+    });
+
+    // Filter buttons (All, Pending, Resolved)
     document.querySelectorAll('[data-filter]').forEach(button => {
         button.addEventListener('click', (e) => {
             currentFilter = e.target.dataset.filter;
@@ -34,7 +40,6 @@ function setupEventListeners() {
 async function loadPosts() {
     try {
         const response = await axios.get(`${sessionStorage.getItem('baseURL')}?action=get_visitor_posts`);
-        console.log('API Response:', response.data);
 
         if (response.data.success) {
             postsData = response.data.posts;
@@ -120,7 +125,7 @@ function displayPosts() {
             ` : ''}
         `;
 
-        // Add avatar click handler
+        // added avatar click event to show user details
         const avatarContainer = postElement.querySelector('.avatar-container');
         avatarContainer.addEventListener('click', () => showUserDetails(post.post_userId));
 
@@ -214,4 +219,13 @@ async function resolvePost(postId) {
         console.error('Error resolving post:', err);
         toastr.error('Failed to resolve post');
     }
+}
+
+function handleLogout() {
+    // clear all local storage and session storage
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // redirect to login page
+    window.location.href = 'index.html';
 }
