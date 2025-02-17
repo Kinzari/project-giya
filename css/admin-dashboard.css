@@ -1,58 +1,99 @@
-/* Import fonts and define variables */
+/*
+-----------------------------------------------------------------------------------
+
+    PROJECT GIYA ADMIN DASHBOARD CSS INDEX
+    ===================
+
+    1. Theme Default CSS (variables, fonts, resets)
+    2. Layout Components
+        2.1 Sidebar Navigation
+        2.2 Main Content Area
+        2.3 Cards & Containers
+    3. Table Styles
+        3.1 DataTables Customization
+        3.2 Table Responsive Design
+    4. Post Management
+        4.1 Post Cards
+        4.2 Replies Section
+    5. Modal Styles
+    6. Responsive Design
+        6.1 Desktop (1200px+)
+        6.2 Laptop (992px-1199px)
+        6.3 Tablet (768px-991px)
+        6.4 Mobile (576px-767px)
+        6.5 Small Mobile (<576px)
+-----------------------------------------------------------------------------------*/
+
+/*----------------------------------------*/
+/*  1. Theme Default CSS
+/*----------------------------------------*/
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
 :root {
     --offcanvas-width: 270px;
     --topNavbarHeight: 56px;
 }
 
-/* Global resets and base styles */
 * {
     font-family: "Poppins", sans-serif;
     margin: 0;
     box-sizing: border-box;
 }
 
-/* Base body and common elements */
 body {
     background-color: #f6f9ff;
     overflow-x: hidden;
 }
+
 a {
     text-decoration: none;
 }
 
-/* Sidebar and Navbar styles */
-.sidenav .bordered {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
+/*----------------------------------------*/
+/*  2. Layout Components
+/*----------------------------------------*/
+
+/* 2.1 Sidebar Navigation */
 .sidebar-nav {
     width: var(--offcanvas-width) !important;
 }
+
+.sidenav .bordered {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 .sidebar-link {
     display: flex;
     align-items: center;
 }
+
 .sidebar-link .right-icon {
     display: inline-flex;
     transition: all ease 0.25s;
 }
+
 .sidebar-link[aria-expanded="true"] .right-icon {
     transform: rotate(180deg) !important;
 }
+
 .bg-purple {
     background-color: #155f37;
 }
+
 .offcanvas-header {
     background-color: #155f37;
     font-size: 25px;
     padding: 10px;
 }
+
 .breadcrumb-item {
     font-size: 18px;
 }
+
 .text-center {
     text-align: center !important;
 }
+
 .navbar-brand {
     text-transform: uppercase;
 }
@@ -89,8 +130,11 @@ a {
     text-align: end;
 }
 
-/* TABLES */
-/* Adjust spacing for DataTable pagination and buttons */
+/*----------------------------------------*/
+/*  3. Table Styles
+/*----------------------------------------*/
+
+/* 3.1 DataTables Customization */
 .dataTables_wrapper .dataTables_paginate {
     margin-top: 20px;
     margin-bottom: 10px;
@@ -100,12 +144,15 @@ a {
     align-items: center;
     padding: 10px;
 }
+
 .dataTables_wrapper .paginate_button.previous {
     margin-right: 15px !important;
 }
+
 .dataTables_wrapper .paginate_button.next {
     margin-left: 15px !important;
 }
+
 .dataTables_wrapper .dataTables_paginate .paginate_button {
     padding: 6px 12px !important;
     border: 1px solid #dee2e6 !important;
@@ -118,33 +165,36 @@ a {
     display: inline-block !important;
     position: relative !important;
 }
+
 .dataTables_wrapper .dataTables_paginate span .paginate_button {
     margin: 0 8px !important;
 }
+
 .dataTables_wrapper .dataTables_paginate .paginate_button.current {
     background: #155f37 !important;
     color: white !important;
     border-color: #155f37 !important;
     font-weight: 500;
 }
+
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
     background: #e9ecef !important;
     border-color: #155f37 !important;
     color: #155f37 !important;
 }
 
-/* Ensure table expands fully */
+
 .table {
     width: 100% !important;
 }
 
-/* Fix action buttons alignment */
+
 .table td {
     vertical-align: middle;
-    text-align: begin; /* Aligns content in the center */
+    text-align: begin; /
 }
 
-/* Fix action buttons alignment */
+
 .table td .btn {
     width: 32px;
     height: 32px;
@@ -159,19 +209,143 @@ a {
     line-height: 1;
 }
 
-/* Ensure the action column doesn't wrap */
+
 .table td:last-child {
     white-space: nowrap;
     min-width: 120px;
 }
 
-/* Add gap between buttons */
+
 .table td .d-flex.gap-1 > * {
     margin: 0 2px;
 }
 
-/* Responsive Layout */
-/* Extra large devices (large desktops, 1200px and up) */
+/*----------------------------------------*/
+/*  4. Post Management
+/*----------------------------------------*/
+
+/* 4.1 Post Cards */
+.post-card {
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-height: 1000px;
+    overflow-y: auto;
+}
+
+.avatar-container {
+    transition: transform 0.2s;
+}
+
+.avatar-container:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+.post-message {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: #333;
+}
+
+.post-header {
+    border-bottom: 1px solid #eee;
+}
+
+.replies-section {
+    background-color: #f8f9fa;
+    border-top: 1px solid #eee;
+}
+
+.reply-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+.post-content {
+    padding: 15px 0;
+    white-space: pre-wrap;
+    min-height: 120px; 
+}
+.post-footer {
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #eee;
+}
+.post-metadata {
+    padding: 8px 0;
+    color: #666;
+    font-size: 0.85em;
+    margin-bottom: 5px;
+}
+.replies-section {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-top: 1px solid #eee;
+}
+.reply-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.reply-input {
+    border-radius: 20px;
+    padding: 8px 15px;
+}
+.status-pending {
+    color: #ffc107;
+}
+.status-resolved {
+    color: #28a745;
+}
+
+.concern-header {
+    border-bottom: 1px solid #eee;
+    background-color: #f8f9fa;
+}
+
+.concern-type {
+    color: #155f37;
+    font-size: 1.5rem;
+    margin-bottom: 0.2rem;
+    font-weight: 600;
+}
+
+.inquiry-category {
+    color: #666;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.post-message {
+    font-size: 1.1rem !important;
+    line-height: 1.5;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+/*----------------------------------------*/
+/*  5. Modal Styles
+/*----------------------------------------*/
+.modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/*----------------------------------------*/
+/*  6. Responsive Design
+/*----------------------------------------*/
+
+/* 6.1 Desktop (1200px+) */
 @media (min-width: 1200px) {
     main {
         margin-left: var(--offcanvas-width);
@@ -188,7 +362,7 @@ a {
     }
 }
 
-/* Large devices (desktops, 992px to 1199px) */
+/* 6.2 Laptop (992px-1199px) */
 @media (min-width: 992px) and (max-width: 1199px) {
     main {
         margin-left: var(--offcanvas-width);
@@ -204,7 +378,7 @@ a {
     }
 }
 
-/* Medium devices (tablets, 768px to 991px) */
+/* 6.3 Tablet (768px-991px) */
 @media (min-width: 768px) and (max-width: 991px) {
     :root {
         --offcanvas-width: 240px;
@@ -235,7 +409,7 @@ a {
     }
 }
 
-/* Small devices (landscape phones, 576px to 767px) */
+/* 6.4 Mobile (576px-767px) */
 @media (min-width: 576px) and (max-width: 767px) {
     :root {
         --offcanvas-width: 200px;
@@ -266,7 +440,7 @@ a {
     }
 }
 
-/* Extra small devices (phones, less than 576px) */
+/* 6.5 Small Mobile (<576px) */
 @media (max-width: 575px) {
     :root {
         --offcanvas-width: 100%;
@@ -439,112 +613,4 @@ a {
 body.modal-open {
     overflow: auto !important;
     padding-right: 0 !important;
-}
-
-/* Student Post Styles */
-.post-card {
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    max-height: 1000px; /* Make posts shorter */
-    overflow-y: auto;
-}
-
-.avatar-container {
-    transition: transform 0.2s;
-}
-
-.avatar-container:hover {
-    transform: scale(1.1);
-    cursor: pointer;
-}
-
-.post-message {
-    font-size: 1.1rem;
-    line-height: 1.5;
-    color: #333;
-}
-
-.post-header {
-    border-bottom: 1px solid #eee;
-}
-
-.replies-section {
-    background-color: #f8f9fa;
-    border-top: 1px solid #eee;
-}
-
-.reply-card {
-    background-color: white;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.post-header {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-}
-.post-content {
-    padding: 15px 0; /* Reduced padding */
-    white-space: pre-wrap;
-    min-height: 120px; /* Add minimum height to ensure space for timestamp */
-}
-.post-footer {
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-top: 1px solid #eee;
-}
-.post-metadata {
-    padding: 8px 0;
-    color: #666;
-    font-size: 0.85em;
-    margin-bottom: 5px;
-}
-.replies-section {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-top: 1px solid #eee;
-}
-.reply-card {
-    background-color: white;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-.reply-input {
-    border-radius: 20px;
-    padding: 8px 15px;
-}
-.status-pending {
-    color: #ffc107;
-}
-.status-resolved {
-    color: #28a745;
-}
-
-.concern-header {
-    border-bottom: 1px solid #eee;
-    background-color: #f8f9fa;
-}
-
-.concern-type {
-    color: #155f37;
-    font-size: 1.5rem;
-    margin-bottom: 0.2rem;
-    font-weight: 600;
-}
-
-.inquiry-category {
-    color: #666;
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-}
-
-.post-message {
-    font-size: 1.1rem !important;
-    line-height: 1.5;
-    color: #333;
-    margin-bottom: 1rem;
 }
