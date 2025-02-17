@@ -1,6 +1,5 @@
-// Set API base URL
 sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php");
-// sessionStorage.setItem("baseURL", "http://localhost/api/giya.php");
+// sessionStorage.setItem("baseURL", "http://localhost/api/giya.php"); //uncomment lang ni pag mag localhost
 document.getElementById("login-form").addEventListener("submit", async function (event) {
     event.preventDefault();
 
@@ -38,8 +37,9 @@ document.getElementById("login-form").addEventListener("submit", async function 
             {
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                withCredentials: false
+                withCredentials: true
             }
         );
 
@@ -48,7 +48,7 @@ document.getElementById("login-form").addEventListener("submit", async function 
         if (result.success) {
             localStorage.clear();
 
-            // Store ALL user data in localStorage
+            // e store niya tanan data sa localStorage
             localStorage.setItem('user_id', result.user_id);
             localStorage.setItem('user_schoolId', result.user_schoolId);
             localStorage.setItem('user_firstname', result.user_firstname);
@@ -61,11 +61,20 @@ document.getElementById("login-form").addEventListener("submit", async function 
             localStorage.setItem('phinmaed_email', result.phinmaed_email);
             localStorage.setItem('user_contact', result.user_contact);
             localStorage.setItem('user_typeId', result.user_typeId);
-            localStorage.setItem('user_email', result.user_email); // Make sure user_email is stored
+            localStorage.setItem('user_email', result.user_email);
 
             const userTypeId = parseInt(result.user_typeId);
 
-            // Handle admin redirect
+            // Check if password is default 'phinma-coc' and user is student/visitor
+            if (password === 'phinma-coc' && (userTypeId === 1 || userTypeId === 2)) {
+                toastr.warning("Please change your default password.");
+                setTimeout(() => {
+                    window.location.href = "change-password.html";
+                }, 2000);
+                return;
+            }
+
+            // userTypeId 5 = POC, 6 = Admin
             if (userTypeId === 5 || userTypeId === 6) {
                 toastr.success("Welcome Admin!");
                 setTimeout(() => {
@@ -74,7 +83,7 @@ document.getElementById("login-form").addEventListener("submit", async function 
                 return;
             }
 
-            // Normal user redirect
+            // userTypeId 1 = Visitor, 2 = Student, 3 = Faculty, 4 = Staff
             toastr.success("Login successful!");
             setTimeout(() => {
                 window.location.href = "choose-concern.html";
@@ -88,15 +97,15 @@ document.getElementById("login-form").addEventListener("submit", async function 
     }
 });
 
-// Initialize Math Verification
+// Initialize Math Verification (mura mag SIS)
 document.addEventListener("DOMContentLoaded", () => {
-    // Generate random numbers for math verification
-    const num1 = Math.floor(Math.random() * 50) + 10; // Range: 10-99
-    const num2 = Math.floor(Math.random() * 9) + 1;   // Range: 1-9
+    // rng numbers
+    const num1 = Math.floor(Math.random() * 50) + 10;
+    const num2 = Math.floor(Math.random() * 9) + 1;
     document.getElementById("num1").textContent = num1;
     document.getElementById("num2").textContent = num2;
 
-    // Math answer input handler
+    // math answer input handler
     const mathAnswerInput = document.getElementById("math-answer");
     mathAnswerInput.addEventListener("input", () => {
         const mathAnswer = parseInt(mathAnswerInput.value.trim());
@@ -109,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Password visibility toggle
+    // password visibility toggle
     const togglePassword = document.getElementById("toggle-password");
     togglePassword.addEventListener("click", function () {
         const passwordField = document.getElementById("password");
@@ -119,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
         this.classList.toggle("fa-eye-slash");
     });
 
-    // Caps Lock detection
+    // Caps Lock detection (WOW!)
     const passwordField = document.getElementById("password");
     const capsLockTooltip = document.getElementById("caps-lock-tooltip");
 

@@ -1,10 +1,10 @@
 let usersData = [];
 let filteredData = [];
 
-// Update baseURL to use the correct IP
-sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php");
+sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php"); //KINZARI
+// sessionStorage.setItem("baseURL", "http://localhost/api/giya.php"); //uncomment lang ni pag mag localhost
 
-// Function to fetch visitor, student, and department counts
+
 async function fetchCounts() {
   try {
     const baseURL = sessionStorage.getItem("baseURL");

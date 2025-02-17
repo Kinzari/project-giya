@@ -1,7 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Set base URL for API requests
-    const baseURL = 'http://localhost/api/giya.php';
-    sessionStorage.setItem('baseURL', baseURL);
+    // const baseURL = 'http://localhost/api/giya.php';
+    // sessionStorage.setItem('baseURL', baseURL);
+
+    const baseURL = sessionStorage.getItem("baseURL");
+    sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php"); //KINZARI
+    // sessionStorage.setItem("baseURL", "http://localhost/api/giya.php"); //uncomment lang ni pag mag localhost
+
 
     const registerForm = document.getElementById("register-form");
     const passwordInput = document.getElementById("password");
@@ -12,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // Password validation function
+    // password validation function
     function validatePassword(password) {
         const validations = {
             length: password.length >= 8,
@@ -21,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
             number: /\d/.test(password)
         };
 
-        // Update validation icons
+        // validation icons
         Object.entries(validations).forEach(([key, valid]) => {
             const item = document.getElementById(`${key}-check`);
             const checkIcon = item.querySelector('.fa-check');
@@ -39,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return Object.values(validations).every(Boolean);
     }
 
-    // Add password input listener
+    // added password validation on input
     passwordInput.addEventListener('input', function() {
         validatePassword(this.value);
     });
@@ -47,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
     registerForm.addEventListener("submit", async function (event) {
         event.preventDefault(); // Prevent page reload
 
-        // Get form inputs safely
+        // kuhaon ang value sa mga fields
         const firstName = document.getElementById("first_name").value.trim();
         const middleName = document.getElementById("middle_name").value.trim();
         const lastName = document.getElementById("family_name").value.trim();
@@ -94,13 +98,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     'Content-Type': 'application/json'
                 }
             });
-
-            console.log("API Response:", response.data); // Debugging output
-
             if (response.data.status === "success") {
                 toastr.success(response.data.message, "Registration Successful");
                 setTimeout(() => {
-                    window.location.href = "index.html"; // Redirect after success
+                    window.location.href = "index.html"; // redirect to homepage pag successful registration
                 }, 2000);
             } else {
                 toastr.error(response.data.message || "Registration failed", "Error");
@@ -112,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Toggle Password Visibility
+    // toggle password visibility (eye icon)
     const togglePassword = document.getElementById("toggle-password");
     const toggleConfirmPassword = document.getElementById("toggle-confirm-password");
 
