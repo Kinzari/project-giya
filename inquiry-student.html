@@ -36,46 +36,63 @@
                         </div>
                         <div class="card-body">
                             <form id="studentInquiryForm">
-                                <!-- Student-specific fields -->
+                                <!-- Pre-filled Student Info -->
                                 <div class="mb-3">
-                                    <label class="form-label">Student ID</label>
-                                    <input type="text" class="form-control" id="studentId" readonly>
+                                    <label class="form-label">School ID</label>
+                                    <input type="text" class="form-control" id="schoolId" readonly>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Course & Year Level</label>
-                                    <input type="text" class="form-control" id="courseYear" readonly>
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="fullName" readonly>
                                 </div>
-
-                                <!-- Common fields -->
                                 <div class="mb-3">
                                     <label class="form-label">Department</label>
-                                    <select class="form-select" required id="department">
-                                        <option value="">Select Department</option>
+                                    <input type="text" class="form-control" id="department" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Course</label>
+                                    <input type="text" class="form-control" id="course" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Year Level</label>
+                                    <input type="text" class="form-control" id="yearLevel" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">PHINMA Email</label>
+                                    <input type="email" class="form-control" id="email" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Contact Number</label>
+                                    <input type="text" class="form-control" id="contactNumber" readonly>
+                                </div>
+
+                                <!-- Inquiry Details -->
+                                <div class="mb-3">
+                                    <label class="form-label">Type of Inquiry</label>
+                                    <select class="form-select" id="inquiryType" required>
+                                        <option value="" disabled selected>Select type of inquiry...</option>
+                                        <option value="ENROLLMENT">ENROLLMENT (Enrollment Process, ORF, SIS, ID, Email, Down Payment, Module)</option>
+                                        <option value="ACADEMICS">ACADEMICS (Grades, Teachers, Dean)</option>
+                                        <option value="REGISTRAR">REGISTRAR (TOR, Diploma, Credentials, School Related Documents)</option>
+                                        <option value="FINANCE">FINANCE (Balance, Assessment, Scholarships)</option>
+                                        <option value="BUSINESS_CENTER">BUSINESS CENTER (Books, Uniforms)</option>
+                                        <option value="CSDL">CSDL (Guidance Counseling, Student Loan, Financial Aid, Scholarship Renewal, Duty Assignment)</option>
+                                        <option value="MARKETING">MARKETING (New Students, Promotion)</option>
+                                        <option value="IT_SERVICES">IT SERVICES (SIS Account, Gmail Account, GCR)</option>
+                                        <option value="LIBRARY">LIBRARY (Books, E-Library)</option>
+                                        <option value="CLINIC">CLINIC (School Physician, School Nurse)</option>
+                                        <option value="GSD">GENERAL SERVICES DEPARTMENT (Facilities, Classrooms, Laboratories, Canteen, Comfort Rooms, Parkings)</option>
+                                        <option value="GRADUATE_SCHOOL">GRADUATE SCHOOL (Courses available, Virtual Classroom)</option>
+                                        <option value="SSG">SSG (Modules)</option>
+                                        <option value="HR">HUMAN RESOURCE (Hiring, Contract)</option>
+                                        <option value="ACE">ACE (Alumni, Job Placement, Career Talks, Graduation Pictures, Exclusive Hiring)</option>
+                                        <option value="OTHERS">OTHERS</option>
                                     </select>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Category</label>
-                                    <select class="form-select" required id="category">
-                                        <option value="">Select Category</option>
-                                        <option value="academic">Academic</option>
-                                        <option value="enrollment">Enrollment</option>
-                                        <option value="grades">Grades</option>
-                                        <option value="schedule">Class Schedule</option>
-                                        <option value="requirements">Requirements</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Subject</label>
-                                    <input type="text" class="form-control" required id="subject"
-                                           placeholder="Brief subject of your inquiry">
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Message</label>
-                                    <textarea class="form-control" rows="5" required id="message"
+                                    <label class="form-label">Please state your inquiry</label>
+                                    <textarea class="form-control" rows="5" required id="inquiryMessage"
                                               placeholder="Please provide details of your inquiry..."></textarea>
                                 </div>
 
@@ -99,6 +116,7 @@
     <script src="js/auth-helper.js"></script>
     <script src="js/toastr-config.js"></script>
     <script src="js/logout-handler.js"></script>
+    <script src="js/inquiry-shared.js"></script>  <!-- Add this line -->
     <script src="js/inquiry-student.js"></script>
 </body>
 </html>
