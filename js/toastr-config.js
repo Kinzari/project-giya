@@ -1,10 +1,9 @@
-// Toastr Configuration
 toastr.options = {
   closeButton: false,
   debug: false,
   newestOnTop: true,
   progressBar: true,
-  positionClass: "toast-bottom-right", // Adjust position if needed
+  positionClass: "toast-bottom-right",
   preventDuplicates: true,
   onclick: null,
   showDuration: "300",

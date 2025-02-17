@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Use AuthHelper for authentication
+
     if (!AuthHelper.isVisitor()) {
         window.location.href = 'choose-concern.html';
         return;
@@ -8,10 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const visitorId = AuthHelper.getId();
     document.getElementById('visitorId').value = visitorId;
 
-    // Load departments
+
     loadDepartments();
 
-    // Form submission
     document.getElementById('visitorSuggestionForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 

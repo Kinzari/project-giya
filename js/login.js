@@ -1,6 +1,6 @@
 // Set API base URL
 sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php");
-
+// sessionStorage.setItem("baseURL", "http://localhost/api/giya.php");
 document.getElementById("login-form").addEventListener("submit", async function (event) {
     event.preventDefault();
 
@@ -28,7 +28,6 @@ document.getElementById("login-form").addEventListener("submit", async function 
         mathAnswerInput.classList.remove("incorrect");
     }
 
-    // Rest of login code...
     try {
         const response = await axios.post(
             `${sessionStorage.getItem("baseURL")}?action=login`,
@@ -47,14 +46,26 @@ document.getElementById("login-form").addEventListener("submit", async function 
         const result = response.data;
 
         if (result.success) {
-            localStorage.clear(); // Clear any old data
+            localStorage.clear();
 
-            localStorage.setItem("user_typeId", result.user_typeId.toString());
-            localStorage.setItem("first_name", result.first_name);
+            // Store ALL user data in localStorage
+            localStorage.setItem('user_id', result.user_id);
+            localStorage.setItem('user_schoolId', result.user_schoolId);
+            localStorage.setItem('user_firstname', result.user_firstname);
+            localStorage.setItem('user_middlename', result.user_middlename);
+            localStorage.setItem('user_lastname', result.user_lastname);
+            localStorage.setItem('user_suffix', result.user_suffix);
+            localStorage.setItem('department_name', result.department_name);
+            localStorage.setItem('course_name', result.course_name);
+            localStorage.setItem('user_schoolyearId', result.user_schoolyearId);
+            localStorage.setItem('phinmaed_email', result.phinmaed_email);
+            localStorage.setItem('user_contact', result.user_contact);
+            localStorage.setItem('user_typeId', result.user_typeId);
+            localStorage.setItem('user_email', result.user_email); // Make sure user_email is stored
 
             const userTypeId = parseInt(result.user_typeId);
 
-            // Handle admin users (types 5 and 6)
+            // Handle admin redirect
             if (userTypeId === 5 || userTypeId === 6) {
                 toastr.success("Welcome Admin!");
                 setTimeout(() => {
@@ -63,14 +74,7 @@ document.getElementById("login-form").addEventListener("submit", async function 
                 return;
             }
 
-            // Handle regular users
-            if (userTypeId === 1) {
-                localStorage.setItem("visitorId", result.user_schoolId);
-            } else {
-                localStorage.setItem("studentId", result.user_schoolId);
-                localStorage.setItem("courseYear", result.courseYear || '');
-            }
-
+            // Normal user redirect
             toastr.success("Login successful!");
             setTimeout(() => {
                 window.location.href = "choose-concern.html";

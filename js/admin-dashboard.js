@@ -1,7 +1,7 @@
 let usersData = [];
 let filteredData = [];
 
-// Set the API base URL in sessionStorage
+// Update baseURL to use the correct IP
 sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php");
 
 // Function to fetch visitor, student, and department counts

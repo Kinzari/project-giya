@@ -75,10 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const formType = AuthHelper.isVisitor() ? 'visitor' : 'student';
             const url = `${type}-${formType}.html`;
 
-            // Store the URL for the privacy modal
+            // Store both the URL and the selected type
             localStorage.setItem('pendingRedirect', url);
+            localStorage.setItem('selectedPostType', type);
 
-            // Show privacy modal without toastr
+            // Show privacy modal
             const privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
             privacyModal.show();
         });

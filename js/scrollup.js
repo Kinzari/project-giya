@@ -6,16 +6,15 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Show the button when scrolling down
+
   window.addEventListener("scroll", () => {
-    if (window.scrollY > 100) {
+     if (window.scrollY > 100) {
       scrollUpBtn.style.display = "block";
     } else {
       scrollUpBtn.style.display = "none";
     }
   });
 
-  // Scroll to the top when clicking the button
   scrollUpBtn.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
