@@ -1,11 +1,3 @@
-// Initialize toastr
-toastr.options = {
-    closeButton: true,
-    progressBar: true,
-    positionClass: "toast-top-right",
-    timeOut: 3000
-};
-
 // Toggle password visibility
 document.querySelectorAll('.toggle-password').forEach(icon => {
     icon.addEventListener('click', function() {
@@ -113,7 +105,7 @@ document.getElementById('change-password-form').addEventListener('submit', async
                 timer: 2000,
                 showConfirmButton: false
             });
-            window.location.href = 'choose-concern.html';
+            window.location.href = 'index.html';
         } else {
             Swal.fire({
                 icon: 'error',

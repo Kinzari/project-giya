@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then((result) => {
             if (result.isConfirmed) {
                 toastr.success('Logging out...');
-                localStorage.clear();
+                sessionStorage.clear();
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 2000);

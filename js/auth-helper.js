@@ -1,14 +1,14 @@
 const AuthHelper = {
     isVisitor() {
-        return localStorage.getItem('user_typeId') === '1';
+        return sessionStorage.getItem('user_typeId') === '1';
     },
     isStudent() {
-        return localStorage.getItem('user_typeId') === '2';
+        return sessionStorage.getItem('user_typeId') === '2';
     },
     checkAuth() {
-        const userTypeId = localStorage.getItem('user_typeId');
-        const firstName = localStorage.getItem('user_firstname');
-        const id = localStorage.getItem('user_id');
+        const userTypeId = sessionStorage.getItem('user_typeId');
+        const firstName = sessionStorage.getItem('user_firstname');
+        const id = sessionStorage.getItem('user_id');
         return {
             isValid: !!(userTypeId && firstName && id),
             userTypeId,

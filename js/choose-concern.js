@@ -1,6 +1,8 @@
+// Make sure you set this once at the start, e.g. in a global script or top of choose-concern.js:
+sessionStorage.setItem("baseURL", "http://localhost/api/");
+
 document.addEventListener('DOMContentLoaded', () => {
     const auth = AuthHelper.checkAuth();
-
     if (!auth.isValid) {
         window.location.href = 'index.html';
         return;
@@ -9,83 +11,83 @@ document.addEventListener('DOMContentLoaded', () => {
     // Display user's name
     document.getElementById('userFirstName').textContent = auth.firstName;
 
-
-
     // Initialize Bootstrap dropdowns
-    const dropdowns = document.querySelectorAll('.dropdown-toggle');
-    dropdowns.forEach(dropdown => {
+    document.querySelectorAll('.dropdown-toggle').forEach(dropdown => {
         new bootstrap.Dropdown(dropdown);
     });
 
-    let selectedFormUrl = '';
-    const privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
+    // Privacy Modal
+    const privacyModalElement = document.getElementById('privacyModal');
+    const privacyModal = new bootstrap.Modal(privacyModalElement);
     const privacyContent = document.getElementById('privacyContent');
     const acceptBtn = document.getElementById('acceptPrivacyBtn');
 
-    // Improved scroll detection
     privacyContent.addEventListener('scroll', () => {
         const isAtBottom = Math.abs(
-            privacyContent.scrollHeight -
-            privacyContent.scrollTop -
-            privacyContent.clientHeight
-        ) < 2; // Added tolerance for floating point
-
+            privacyContent.scrollHeight - privacyContent.scrollTop - privacyContent.clientHeight
+        ) < 2;
         if (isAtBottom) {
             acceptBtn.removeAttribute('disabled');
-            // Optional: Add visual feedback
             acceptBtn.classList.add('btn-pulse');
         }
     });
 
-    // Reset scroll state when modal opens
-    document.getElementById('privacyModal').addEventListener('show.bs.modal', () => {
+    privacyModalElement.addEventListener('show.bs.modal', () => {
         acceptBtn.setAttribute('disabled', 'disabled');
         acceptBtn.classList.remove('btn-pulse');
         privacyContent.scrollTop = 0;
     });
 
-    // Update privacy modal accept handler with toastr
-    document.getElementById('acceptPrivacyBtn').addEventListener('click', () => {
-        const pendingUrl = localStorage.getItem('pendingRedirect');
+    document.getElementById('acceptPrivacyBtn').addEventListener('click', async () => {
+        const pendingUrl = sessionStorage.getItem('pendingRedirect');
         if (pendingUrl) {
-            const type = pendingUrl.split('-')[0]; // get the concern type from URL
-
-            // Configure friendly messages
-            const concernMessages = {
-                'inquiry': 'Opening inquiry form...',
-                'feedback': 'Opening feedback form...',
-                'suggestion': 'Opening suggestion form...'
-            };
-
-            // Show toastr after accepting privacy policy
-            toastr.success(concernMessages[type] || 'Redirecting...', 'Privacy Policy Accepted');
-
-            // Remove stored URL and redirect
-            localStorage.removeItem('pendingRedirect');
-            setTimeout(() => {
-                window.location.href = pendingUrl;
-            }, 1500); // Give time for toastr to be visible
+            try {
+                const userId = sessionStorage.getItem('user_id');
+                console.log("User ID from sessionStorage:", userId);
+                await axios.post(
+                    `${sessionStorage.getItem('baseURL')}inquiry.php?action=update_privacy_policy`,
+                    {
+                        user_id: userId,
+                        privacy_policy_check: 1
+                    }
+                );
+                sessionStorage.setItem('privacyPolicyAccepted', 'true');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Privacy Policy Accepted',
+                    text: 'Redirecting...',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                sessionStorage.removeItem('pendingRedirect');
+                setTimeout(() => {
+                    window.location.href = pendingUrl;
+                }, 1500);
+            } catch (error) {
+                console.error('Failed to update privacy policy flag:', error);
+            }
         }
     });
 
-    // Simplified concern button handlers
+
+    // Concern Buttons
     document.querySelectorAll('.concern-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const type = btn.dataset.type;
-            const formType = AuthHelper.isVisitor() ? 'visitor' : 'student';
-            const url = `${type}-${formType}.html`;
+            const type = btn.dataset.type; // inquiry, feedback, or suggestion
+            sessionStorage.setItem('selectedPostType', type);
 
-            // Store both the URL and the selected type
-            localStorage.setItem('pendingRedirect', url);
-            localStorage.setItem('selectedPostType', type);
+            const targetUrl = 'form.html';
+            sessionStorage.setItem('pendingRedirect', targetUrl);
 
-            // Show privacy modal
-            const privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
-            privacyModal.show();
+            if (sessionStorage.getItem('privacyPolicyAccepted') === 'true') {
+                window.location.href = targetUrl;
+            } else {
+                privacyModal.show();
+            }
         });
     });
 
-    // Logout functionality
+    // Logout
     document.getElementById('logoutBtn').addEventListener('click', function() {
         Swal.fire({
             title: 'Logout Confirmation',
@@ -98,11 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then((result) => {
             if (result.isConfirmed) {
                 toastr.success('Logging out...');
-
-                // Clear user data
-                localStorage.clear(); // Clear all stored data
-
-                // Redirect after delay
+                sessionStorage.clear();
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 2000);

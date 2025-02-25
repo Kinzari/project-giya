@@ -51,7 +51,7 @@ body {
     background: url("../img/whitebg.png") no-repeat center center fixed;
     background-size: cover;
     min-height: 100vh;
-    padding: 2rem 0;
+    padding: 1.5rem 0;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     position: relative;
@@ -72,13 +72,13 @@ body {
 }
 
 .form-card .card-header {
-    padding: 1rem;
+    padding: 0rem;
     border-bottom: none;
     background-color: #155f37;
 }
 
 .form-card .card-body {
-    padding: 2rem;
+    padding: 1.5rem;
 }
 
 /* 2.3 Form Controls */
@@ -118,6 +118,13 @@ body {
     background-color: #155f37;
     border-color: #155f37;
     color: white
+}
+.btn-custom-green:hover {
+    background-color: #0d3e24;
+    border-color: #0d3e24;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .btn-primary {
     background-color: #155f37;

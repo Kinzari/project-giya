@@ -1,591 +1,522 @@
 <!DOCTYPE html>
 <html class="no-js" lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>PROJECT : GIYA</title>
+    <title>GIYA</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- favicon
-		============================================ -->
+    <!-- favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico" />
-
-    <!-- Google Fonts
-		============================================ -->
-    <link
-      href="https://fonts.googleapis.com/css?family=Poppins:400,300,500,600,700"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <!-- Bootstrap CSS
-		============================================ -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
-    />
-
-    <!-- Font Awesome CSS
-		============================================ -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-    />
-
-    <!-- Animate CSS
-		============================================ -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,300,500,600,700" rel="stylesheet" type="text/css" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Toastr CSS -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css"
-    />
-    <!-- Style CSS
-		============================================ -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" />
+    <!-- Style CSS -->
     <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
+</head>
+
+<body>
 
     <div class="wrapper">
-    <!-- Header Area Start -->
-    <header>
-      <div class="header-logo-menu stick">
-        <div class="container">
-          <div class="logo-menu-bg">
-            <div class="row align-items-center">
-              <!-- Logo -->
-              <div class="col-6 col-lg-3">
-                <div class="logo">
-                  <a href="index.html">
-                    <img
-                      src="img/logo/coc-white.png"
-                      alt="PHINMA-COC"
-                      class="logo-img"
-                    />
-                  </a>
+        <!-- Header Area Start -->
+        <header>
+            <div class="header-logo-menu stick">
+                <div class="container">
+                    <div class="logo-menu-bg">
+                        <div class="row align-items-center">
+                            <!-- Logo -->
+                            <div class="col-6 col-lg-3">
+                                <div class="logo">
+                                    <a href="index.html">
+                                        <img src="img/logo/coc-white.png" alt="PHINMA-COC" class="logo-img" />
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Desktop Menu -->
+                            <div class="col-6 col-lg-9 d-flex justify-content-end align-items-center">
+                                <div class="mainmenu-area d-none d-lg-block">
+                                    <div class="mainmenu">
+                                        <nav>
+                                            <ul id="nav">
+                                                <li class="current">
+                                                    <a href="index.html">Home</a>
+
+                                                </li>
+                                                <li><a href="#starting-area">About us</a></li>
+                                                <li><a href="#faq-area">FAQ</a></li>
+                                                <li><a href="#footer-area">Contact Us</a></li>
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                </div>
+
+                                <!-- Mobile Navbar -->
+                                <nav class="navbar navbar-dark fixed-top d-lg-none">
+                                    <div class="container">
+                                        <!-- Logo -->
+                                        <a class="navbar-brand" href="index.html">
+                                            <img src="img/logo/coc-white.png" alt="PHINMA-COC" class="img-fluid"
+                                                style="max-height: 50px; " />
+                                        </a>
+
+                                        <!-- Mobile Toggle Button -->
+                                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#mobileMenu">
+                                            <i class="fa fa-bars"></i>
+                                        </button>
+
+                                        <!-- Collapsible Mobile Menu -->
+                                        <div class="collapse navbar-collapse" id="mobileMenu">
+                                            <ul class="navbar-nav w-100 text-center">
+                                                <li class="nav-item dropdown">
+                                                    <a class="nav-link">Home</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#starting-area">About us</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#faq-area">FAQ</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#footer-area">Contact Us</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </nav>
+        </header>
+        <!-- End of Header Area -->
+
+        <!-- Login Area Start -->
+        <div class="login-container">
+            <div class="login-left">
+                <img src="img/logo/giyalogo2.png" alt="GIYA Logo" class="logo-image" />
+            </div>
+            <div class="login-right">
+                <div class="login-form">
+                    <div class="login-title">
+                        <i class="fa fa-lock"></i>
+                        <h4>GIYA : LOGIN</h4>
+                    </div>
+                    <br />
+                    <form id="login-form">
+                        <input type="text" placeholder="Student ID, Employee ID, Visitor ID or Email" id="login_input"
+                            required />
+                        <input type="password" placeholder="Password" id="password" required
+                            class="position-relative" />
+                        <i class="fa fa-eye-slash" id="toggle-password"></i>
+                        <div id="caps-lock-tooltip" class="tooltip-capslock">Caps Lock is ON!</div>
+                        <p id="caps-lock-warning" style="display: none; color: red;">Caps Lock is ON!</p>
+                        <p class="forgot-password"><a href="#">Forgot Password?</a></p>
+
+                        <!-- Horizontal Math Verification -->
+                        <div class="math-verification">
+                            <div class="number-box" id="num1"></div>
+                            <span>+</span>
+                            <div class="number-box" id="num2"></div>
+                            <span>=</span>
+                            <input type="text" id="math-answer" required />
+                        </div>
+                        <span id="verification-feedback" style="color: red"></span>
+
+                        <button type="submit" class="login-button">Login</button>
+                        <p class="not-a-student">
+                            Not a Student? <a href="register.html" class="register-link">Click here.</a>
+                        </p>
+                    </form>
+                    <p id="login-message" style="color: red"></p>
                 </div>
-              </div>
+            </div>
+        </div>
+        <!-- Login Area End -->
 
-              <!-- Desktop Menu -->
-              <div
-                class="col-6 col-lg-9 d-flex justify-content-end align-items-center"
-              >
-                <div class="mainmenu-area d-none d-lg-block">
-                  <div class="mainmenu">
-                    <nav>
-                      <ul id="nav">
-                        <li class="current">
-                          <a href="index.html"
-                            >Home <i class="fa fa-angle-down"></i
-                          ></a>
-                          <ul class="sub-menu">
-                            <li><a href="inquiry.html">Inquiry</a></li>
-                            <li><a href="feedback.html">Feedback</a></li>
-                            <li><a href="suggestion.html">Suggestion</a></li>
-                          </ul>
-                        </li>
-                        <li><a href="#starting-area">About us</a></li>
-                        <li><a href="#faq-area">FAQ</a></li>
-                        <li><a href="#footer-area">Contact Us</a></li>
-                      </ul>
-                    </nav>
-                  </div>
+        <!--Starting Area-->
+        <div id="starting-area" class="starting-area">
+            <div class="starting-info">
+                <h1>WHAT IS GIYA?</h1>
+            </div>
+        </div>
+        <!--End of Starting  Area-->
+
+        <!--Class Area Start-->
+        <div class="class-area section-padding">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="section-title-wrapper">
+                            <div class="section-title">
+                                <h3>GIYA</h3>
+                                <p style="font-size: 18px">
+                                    A PHINMA - COC STUDENTS SERVICE GROUP
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-      <!-- Mobile Navbar -->
-      <nav class="navbar navbar-dark fixed-top d-lg-none">
-        <div class="container">
-          <!-- Logo -->
-          <a class="navbar-brand" href="index.html">
-            <img
-              src="img/logo/coc-white.png"
-              alt="PHINMA-COC"
-              class="img-fluid"
-              style="max-height: 50px; "
-            />
-          </a>
-
-          <!-- Mobile Toggle Button -->
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#mobileMenu"
-          >
-            <i class="fa fa-bars"></i>
-          </button>
-
-          <!-- Collapsible Mobile Menu -->
-          <div class="collapse navbar-collapse" id="mobileMenu">
-            <ul class="navbar-nav w-100 text-center">
-              <li class="nav-item dropdown">
-                <a
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  id="homeDropdown"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                >
-                  Home
-                </a>
-                <ul class="dropdown-menu">
-                  <li>
-                    <a class="dropdown-item" href="inquiry.html">Inquiry</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="feedback.html">Feedback</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="suggestion.html"
-                      >Suggestion</a
-                    >
-                  </li>
-                </ul>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#starting-area">About us</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#faq-area">FAQ</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#footer-area">Contact Us</a>
-              </li>
-            </ul>
-          </div>
+                <div class="class-content">
+                    <div class="single-class">
+                        <div class="class-des">
+                            <h4>INQUIRY</h4>
+                            <p>
+                                Easily submit your questions and get prompt responses from the
+                                PHINMA COC team.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="single-class">
+                        <div class="class-des">
+                            <h4>FEEDBACK</h4>
+                            <p>
+                                Voice your concerns and help us improve the services and
+                                experience we provide.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="single-class">
+                        <div class="class-des">
+                            <h4>SUGGESTIONS</h4>
+                            <p>
+                                Share your compliments and ideas to help us grow and recognize
+                                excellence within our community.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </nav>
-    </header>
-    <!-- End of Header Area -->
+        <!--End of Class Area-->
 
-    <!-- Login Area Start -->
-    <div class="login-container">
-      <div class="login-left">
-        <img
-          src="img/logo/giyalogo2.png"
-          alt="GIYA Logo"
-          class="logo-image"
-        />
-      </div>
-      <div class="login-right">
-        <div class="login-form">
-          <div class="login-title">
-            <i class="fa fa-lock"></i>
-            <h4>LOGIN</h4>
-          </div>
-          <br />
-          <form id="login-form">
-            <input
-              type="text"
-              placeholder="Student ID, PHINMA Email, or User Email"
-              id="login_input"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              id="password"
-              required
-              class="position-relative"
-            />
-            <i class="fa fa-eye-slash" id="toggle-password"></i>
-            <div id="caps-lock-tooltip" class="tooltip-capslock">Caps Lock is ON!</div>
-            <p id="caps-lock-warning" style="display: none; color: red;">Caps Lock is ON!</p>
-            <p class="forgot-password"><a href="#">Forgot Password?</a></p>
+        <!-- FAQ Area Start -->
+        <div id="faq-area" class="faq-area section-padding">
+            <div class="container">
+                <div class="section-title-wrapper">
+                    <div class="section-title">
+                        <h3>Frequently Asked Questions</h3>
+                        <p>Find answers to the most common questions about our services.</p>
+                    </div>
+                </div>
+                <div class="accordion" id="faqAccordion">
 
-            <!-- Horizontal Math Verification -->
-            <div class="math-verification">
-              <div class="number-box" id="num1"></div>
-              <span>+</span>
-              <div class="number-box" id="num2"></div>
-              <span>=</span>
-              <input type="text" id="math-answer" required />
+                    <!-- Question 1 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faqCollapseOne" aria-expanded="true" aria-controls="faqCollapseOne">
+                                How can I submit an inquiry?
+                            </button>
+                        </h2>
+                        <div id="faqCollapseOne" class="accordion-collapse collapse" aria-labelledby="faqHeadingOne"
+                            data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                You can submit an inquiry by filling out the inquiry form on our
+                                website. Simply go to the "Inquiry" section, provide your
+                                details, and click submit. We'll get back to you promptly.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 2 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faqCollapseTwo" aria-expanded="false" aria-controls="faqCollapseTwo">
+                                How do I provide feedback about your services?
+                            </button>
+                        </h2>
+                        <div id="faqCollapseTwo" class="accordion-collapse collapse" aria-labelledby="faqHeadingTwo"
+                            data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                To provide feedback, navigate to the "Feedback" section of our
+                                website. Share your thoughts, suggestions, or concerns to help
+                                us improve. We value your input!
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 3 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faqCollapseThree" aria-expanded="false"
+                                aria-controls="faqCollapseThree">
+                                Can I share compliments or suggestions?
+                            </button>
+                        </h2>
+                        <div id="faqCollapseThree" class="accordion-collapse collapse" aria-labelledby="faqHeadingThree"
+                            data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Absolutely! Visit the "Suggestion" section to share your
+                                compliments or ideas. Your suggestions help us grow and improve
+                                our community.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 4 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingFour">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faqCollapseFour" aria-expanded="false" aria-controls="faqCollapseFour">
+                              Do I already have an account as current student of PHINMA COC?
+                            </button>
+                        </h2>
+                        <div id="faqCollapseFour" class="accordion-collapse collapse" aria-labelledby="faqHeadingFour"
+                            data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes, all PHINMA -  COC  students automatically have a Giya account.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 5 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingFive">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faqCollapseFive" aria-expanded="false" aria-controls="faqCollapseFive">
+                                How do I create an account?
+                        </h2>
+                        <div id="faqCollapseFive" class="accordion-collapse collapse" aria-labelledby="faqHeadingFive"
+                            data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                To create an account, you can <a href="register.html"
+                                    class="register-link"><strong>register here</strong></a>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <span id="verification-feedback" style="color: red"></span>
-
-            <button type="submit" class="login-button">Login</button>
-            <p class="not-a-student">
-              Not a Student? <a href="register.html" class="register-link">Click here.</a>
-            </p>
-          </form>
-          <p id="login-message" style="color: red"></p>
         </div>
-      </div>
-    </div>
-    <!-- Login Area End -->
+        <!-- FAQ Area End -->
 
-    <!--Starting Area-->
-    <div id="starting-area" class="starting-area">
-      <div class="starting-info">
-        <h1>WHAT IS PROJECT GIYA?</h1>
-      </div>
-    </div>
-    <!--End of Starting  Area-->
+        <!-- Footer Area Start -->
+        <div id="footer-area" class="footer-area">
+            <div class="container">
+                <div class="row">
+                    <!-- Left Section: Campus Details -->
+                    <div class="col-lg-8 col-md-12">
+                        <h4>CONTACT US</h4>
+                        <div class="row">
+                            <!-- Carmen Campus -->
+                            <div class="col-md-6">
+                                <h5>Carmen Campus</h5>
+                                <p>
+                                    <i class="fa fa-map-marker"></i> Max Suniel Street, Carmen, Cagayan de Oro City,
+                                    9000, Misamis Oriental
+                                </p>
+                                <p><i class="fa fa-mobile"></i> 0953-614-5310</p>
+                                <p><i class="fa fa-envelope"></i> pedro.coc@phinmaed.com</p>
+                                <hr />
+                            </div>
 
-    <!--Class Area Start-->
-    <div class="class-area section-padding">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="section-title-wrapper">
-              <div class="section-title">
-                <h3>PROJECT: GIYA</h3>
-                <p style="font-size: 18px">
-                  A PHINMA - COC STUDENTS SERVICE GROUP
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="class-content">
-          <div class="single-class">
-            <div class="class-des">
-              <h4>INQUIRY</h4>
-              <p>
-                Easily submit your questions and get prompt responses from the
-                PHINMA COC team.
-              </p>
-            </div>
-          </div>
-          <div class="single-class">
-            <div class="class-des">
-              <h4>FEEDBACK</h4>
-              <p>
-                Voice your concerns and help us improve the services and
-                experience we provide.
-              </p>
-            </div>
-          </div>
-          <div class="single-class">
-            <div class="class-des">
-              <h4>SUGGESTIONS</h4>
-              <p>
-                Share your compliments and ideas to help us grow and recognize
-                excellence within our community.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--End of Class Area-->
+                            <!-- Puerto Campus -->
+                            <div class="col-md-6">
+                                <h5>Puerto Campus</h5>
+                                <p>
+                                    <i class="fa fa-map-marker"></i> Purok 6, Puerto, Cagayan de Oro City, 9000, Misamis
+                                    Oriental
+                                </p>
+                                <p><i class="fa fa-mobile"></i> 0953-614-5310</p>
+                                <p><i class="fa fa-envelope"></i> pedro.coc@phinmaed.com</p>
+                                <hr />
+                            </div>
 
-    <!-- FAQ Area Start -->
-    <div id="faq-area" class="faq-area section-padding">
-      <div class="container">
-        <div class="section-title-wrapper">
-          <div class="section-title">
-            <h3>Frequently Asked Questions</h3>
-            <p>Find answers to the most common questions about our services.</p>
-          </div>
-        </div>
-        <div class="accordion" id="faqAccordion">
+                            <!-- Iligan Campus -->
+                            <div class="col-md-6">
+                                <h5>Iligan Campus</h5>
+                                <p>
+                                    <i class="fa fa-map-marker"></i> Pedro Permites Rd., Brgy. Pala-o, Iligan City
+                                </p>
+                                <p><i class="fa fa-mobile"></i> 0953-614-5310</p>
+                                <p><i class="fa fa-envelope"></i> pedro.coc@phinmaed.com</p>
+                                <hr />
+                            </div>
+                        </div>
 
-          <!-- Question 1 -->
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="faqHeadingOne">
-              <button
-                class="accordion-button collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#faqCollapseOne"
-                aria-expanded="true"
-                aria-controls="faqCollapseOne"
-              >
-                How can I submit an inquiry?
-              </button>
-            </h2>
-            <div
-              id="faqCollapseOne"
-              class="accordion-collapse collapse"
-              aria-labelledby="faqHeadingOne"
-              data-bs-parent="#faqAccordion"
-            >
-              <div class="accordion-body">
-                You can submit an inquiry by filling out the inquiry form on our
-                website. Simply go to the "Inquiry" section, provide your
-                details, and click submit. We'll get back to you promptly.
-              </div>
-            </div>
-          </div>
+                        <!-- Social Media -->
+                        <h5>Social Media</h5>
+                        <div class="social-links">
+                            <a href="https://www.facebook.com/phinmacoc/"><i class="fa-brands fa-facebook"></i></a>
+                            <a href="https://x.com/phinmacoc"><i class="fa-brands fa-twitter"></i></a>
+                            <a href="https://www.instagram.com/phinmacoc/"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="https://www.youtube.com/user/phinmaed"><i class="fa-brands fa-youtube"></i></a>
+                        </div>
+                    </div>
 
-          <!-- Question 2 -->
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="faqHeadingTwo">
-              <button
-                class="accordion-button collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#faqCollapseTwo"
-                aria-expanded="false"
-                aria-controls="faqCollapseTwo"
-              >
-                How do I provide feedback about your services?
-              </button>
-            </h2>
-            <div
-              id="faqCollapseTwo"
-              class="accordion-collapse collapse"
-              aria-labelledby="faqHeadingTwo"
-              data-bs-parent="#faqAccordion"
-            >
-              <div class="accordion-body">
-                To provide feedback, navigate to the "Feedback" section of our
-                website. Share your thoughts, suggestions, or concerns to help
-                us improve. We value your input!
-              </div>
-            </div>
-          </div>
-
-          <!-- Question 3 -->
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="faqHeadingThree">
-              <button
-                class="accordion-button collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#faqCollapseThree"
-                aria-expanded="false"
-                aria-controls="faqCollapseThree"
-              >
-                Can I share compliments or suggestions?
-              </button>
-            </h2>
-            <div
-              id="faqCollapseThree"
-              class="accordion-collapse collapse"
-              aria-labelledby="faqHeadingThree"
-              data-bs-parent="#faqAccordion"
-            >
-              <div class="accordion-body">
-                Absolutely! Visit the "Suggestion" section to share your
-                compliments or ideas. Your suggestions help us grow and improve
-                our community.
-              </div>
-            </div>
-          </div>
-
-          <!-- Question 4 -->
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="faqHeadingTwo">
-              <button
-                class="accordion-button collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#faqCollapseFour"
-                aria-expanded="false"
-                aria-controls="faqCollapseFour"
-              >
-                How do I create an account?
-              </button>
-            </h2>
-            <div
-              id="faqCollapseFour"
-              class="accordion-collapse collapse"
-              aria-labelledby="faqHeadingFour"
-              data-bs-parent="#faqAccordion"
-            >
-              <div class="accordion-body">
-                To create an account, you can <a href="register.html" class="register-link"><strong>register here</strong></a>.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- FAQ Area End -->
-
-     <!-- Footer Area Start -->
-     <div id="footer-area" class="footer-area">
-      <div class="container">
-        <div class="row">
-          <!-- Left Section: Campus Details -->
-          <div class="col-lg-8 col-md-12">
-            <h4>CONTACT US</h4>
-            <div class="row">
-              <!-- Carmen Campus -->
-              <div class="col-md-6">
-                <h5>Carmen Campus</h5>
-                <p>
-                  <i class="fa fa-map-marker"></i> Max Suniel Street, Carmen, Cagayan de Oro City, 9000, Misamis Oriental
-                </p>
-                <p><i class="fa fa-mobile"></i> 0953-614-5310</p>
-                <p><i class="fa fa-envelope"></i> pedro.coc@phinmaed.com</p>
-                <hr />
-              </div>
-
-              <!-- Puerto Campus -->
-              <div class="col-md-6">
-                <h5>Puerto Campus</h5>
-                <p>
-                  <i class="fa fa-map-marker"></i> Purok 6, Puerto, Cagayan de Oro City, 9000, Misamis Oriental
-                </p>
-                <p><i class="fa fa-mobile"></i> 0953-614-5310</p>
-                <p><i class="fa fa-envelope"></i> pedro.coc@phinmaed.com</p>
-                <hr />
-              </div>
-
-              <!-- Iligan Campus -->
-              <div class="col-md-6">
-                <h5>Iligan Campus</h5>
-                <p>
-                  <i class="fa fa-map-marker"></i> Pedro Permites Rd., Brgy. Pala-o, Iligan City
-                </p>
-                <p><i class="fa fa-mobile"></i> 0953-614-5310</p>
-                <p><i class="fa fa-envelope"></i> pedro.coc@phinmaed.com</p>
-                <hr />
-              </div>
+                    <!-- Right Section: Logo -->
+                    <div class="col-lg-4 col-md-12 text-lg-end text-center">
+                        <img src="img/logo/coc-white.png" alt="PHINMA COC Logo" class="footer-logo" />
+                        <img src="img/logo/phinma-white.png" alt="PHINMA COC Logo" class="footer-logo" />
+                    </div>
+                </div>
             </div>
 
-            <!-- Social Media -->
-            <h5>Social Media</h5>
-            <div class="social-links">
-              <a href="https://www.facebook.com/phinmacoc/"><i class="fa-brands fa-facebook"></i></a>
-              <a href="https://x.com/phinmacoc"><i class="fa-brands fa-twitter"></i></a>
-              <a href="https://www.instagram.com/phinmacoc/"><i class="fa-brands fa-instagram"></i></a>
-              <a href="https://www.youtube.com/user/phinmaed"><i class="fa-brands fa-youtube"></i></a>
-            </div>
-          </div>
-
-          <!-- Right Section: Logo -->
-          <div class="col-lg-4 col-md-12 text-lg-end text-center">
-            <img src="img/logo/coc-white.png" alt="PHINMA COC Logo" class="footer-logo" />
-            <img src="img/logo/phinma-white.png" alt="PHINMA COC Logo" class="footer-logo" />
-          </div>
-        </div>
-      </div>
-
-   <!-- Footer Bottom -->
-<div class="footer-bottom">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-md-6 text-center text-md-start">
-        &copy; 2025 PHINMA Cagayan de Oro College. All rights reserved.
-      </div>
-      <div class="col-md-6 text-center text-md-end">
-        <!-- Privacy Policy Link -->
-        <a data-bs-toggle="modal" data-bs-target="#privacyPolicyModal"">PHINMA Privacy Policy</a>
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 text-center text-md-start">
+                            &copy; 2025 PHINMA Cagayan de Oro College. All rights reserved.
+                        </div>
+                        <div class="col-md-6 text-center text-md-end">
+                            <!-- Privacy Policy Link -->
+                            <a data-bs-toggle="modal" data-bs-target="#privacyPolicyModal"">PHINMA Privacy Policy</a>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Privacy Policy Modal -->
-<div class="modal fade" id="privacyPolicyModal" tabindex="-1" aria-labelledby="privacyPolicyModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="privacyPolicyModalLabel">PHINMA Privacy Policy</h5>
-        <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
-      </div>
-      <div class="modal-body">
-        <h6><strong>PHINMA Education Holdings, Inc. (PEHI)</strong></h6>
-        <p>
-          PHINMA Education Holdings, Inc. (PEHI) recognizes its responsibilities under the Republic Act No. 10173 (RA 10173),
-          also known as the Data Privacy Act of 2012, with respect to the data they collect, record, organize, update, use, consolidate,
-          or destruct from the data subject. The personal data obtained from this portal is entered and stored within the college-authorized
-          information, enrollment, and communication system and will only be accessed by the PEHI authorized personnel.
-        </p>
-        <p>
-          The PEHI has instituted appropriate organizational, technical, and physical security measures to ensure the protection of the
-          Students' personal data. Furthermore, the information collected and stored in the portal shall only be used for the following purposes:
-        </p>
-        <ul>
-          <li>
-            Processing and reporting of documents related to the enrollment, CHED, DepEd, and other accrediting agencies under certain
-            conditions as required by law.
-          </li>
-          <li>
-            Announcements/promotions of events, programs, courses, and other activities offered/organized by the College and its partners.
-          </li>
-          <li>
-            Activities pertaining to establishing relations with students. PEHI shall not disclose my personal information without my
-            consent and shall retain my information over a period of ten years for the effective implementation and management of information.
-          </li>
-        </ul>
-        <h6>Data Protection Notice</h6>
-        <p>
-          In compliance with the Data Privacy Act of 2012, Cagayan de Oro College (“Company”) issues this Personal Data Protection Notice
-          (“Notice”). This Notice sets our Company’s practice and procedure in collecting, processing, and storing personal data about you
-          when you avail of the Company’s products and services, including but not limited to entering into a contract, participating in any event,
-          accessing its websites and mobile applications, and applying for a Notice. The policy may be amended by the Company without prior notice.
-        </p>
-        <h6>1. Collection of Personal Data</h6>
-        <p>
-          In the regular course of business, the Company will request that you provide certain personal information elements to enable us to
-          enter into transactions/events with you or deliver the necessary goods, services, and/or communications. These include:
-        </p>
-        <ul>
-          <li>Name, age, date of birth, nationality, civil status, mailing address, email address, phone number</li>
-          <li>Passport Number, Tax Identification Number (if applicable), or other government-issued ID Nos.</li>
-          <li>Occupation, company/office information, or other personal details</li>
-        </ul>
-        <h6>2. Use and Processing of Personal Data</h6>
-        <p>
-          The Company may use and process the personal data collected about you to:
-        </p>
-        <ul>
-          <li>Assist you in complying with the requirements of your account</li>
-          <li>Participate in events or similar activities organized by the Company</li>
-          <li>Provide discounts, promos, advertisements, and other commercial communications</li>
-        </ul>
-        <h6>3. Sharing of Personal Data</h6>
-        <p>
-          The Company may share personal data between and among its entities or third-party service providers to deliver personalized services.
-          Sharing may also occur with government agencies as required by law.
-        </p>
-        <h6>4. Storage and Protection of Personal Data</h6>
-        <p>
-          The Company implements strict safeguards, including SSL encryption and malware scanning, to ensure the safety of your personal data.
-        </p>
-        <h6>5. Use of Cookies</h6>
-        <p>
-          Cookies are utilized to enhance your experience on the Company’s websites by storing preferences and tracking site activity.
-        </p>
-        <h6>6. Your Rights Under the Privacy Act</h6>
-        <ul>
-          <li>The right to be informed of data collection and processing</li>
-          <li>The right to object to data processing</li>
-          <li>The right to access, correct, or rectify personal data</li>
-          <li>The right to suspend, withdraw, or block data processing</li>
-          <li>The right to obtain a copy of your personal data</li>
-          <li>The right to indemnification in case of damages due to unauthorized use</li>
-        </ul>
-        <h6>7. Contacting Us</h6>
-        <ul>
-          <li><strong>Title/Designation:</strong> Data Protection Officer</li>
-          <li><strong>Address:</strong> Araullo University, Maharlika Highway, Barangay Bitas, Cabanatuan City, 3100, Nueva Ecija</li>
-          <li><strong>Email Address:</strong> dpo.au@phinmaed.com</li>
-        </ul>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
+<div class=" modal fade" id="privacyPolicyModal" tabindex="-1" aria-labelledby="privacyPolicyModalLabel"
+                                aria-hidden="true">
+                                <div class="modal-dialog modal-xl">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="privacyPolicyModalLabel">PHINMA Privacy Policy
+                                            </h5>
+                                            <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+                                        </div>
+                                        <div class="modal-body">
+                                            <h6><strong>PHINMA Education Holdings, Inc. (PEHI)</strong></h6>
+                                            <p>
+                                                PHINMA Education Holdings, Inc. (PEHI) recognizes its responsibilities
+                                                under the Republic Act No. 10173 (RA 10173),
+                                                also known as the Data Privacy Act of 2012, with respect to the data
+                                                they collect, record, organize, update, use, consolidate,
+                                                or destruct from the data subject. The personal data obtained from this
+                                                portal is entered and stored within the college-authorized
+                                                information, enrollment, and communication system and will only be
+                                                accessed by the PEHI authorized personnel.
+                                            </p>
+                                            <p>
+                                                The PEHI has instituted appropriate organizational, technical, and
+                                                physical security measures to ensure the protection of the
+                                                Students' personal data. Furthermore, the information collected and
+                                                stored in the portal shall only be used for the following purposes:
+                                            </p>
+                                            <ul>
+                                                <li>
+                                                    Processing and reporting of documents related to the enrollment,
+                                                    CHED, DepEd, and other accrediting agencies under certain
+                                                    conditions as required by law.
+                                                </li>
+                                                <li>
+                                                    Announcements/promotions of events, programs, courses, and other
+                                                    activities offered/organized by the College and its partners.
+                                                </li>
+                                                <li>
+                                                    Activities pertaining to establishing relations with students. PEHI
+                                                    shall not disclose my personal information without my
+                                                    consent and shall retain my information over a period of ten years
+                                                    for the effective implementation and management of information.
+                                                </li>
+                                            </ul>
+                                            <h6>Data Protection Notice</h6>
+                                            <p>
+                                                In compliance with the Data Privacy Act of 2012, Cagayan de Oro College
+                                                (“Company”) issues this Personal Data Protection Notice
+                                                (“Notice”). This Notice sets our Company’s practice and procedure in
+                                                collecting, processing, and storing personal data about you
+                                                when you avail of the Company’s products and services, including but not
+                                                limited to entering into a contract, participating in any event,
+                                                accessing its websites and mobile applications, and applying for a
+                                                Notice. The policy may be amended by the Company without prior notice.
+                                            </p>
+                                            <h6>1. Collection of Personal Data</h6>
+                                            <p>
+                                                In the regular course of business, the Company will request that you
+                                                provide certain personal information elements to enable us to
+                                                enter into transactions/events with you or deliver the necessary goods,
+                                                services, and/or communications. These include:
+                                            </p>
+                                            <ul>
+                                                <li>Name, age, date of birth, nationality, civil status, mailing
+                                                    address, email address, phone number</li>
+                                                <li>Passport Number, Tax Identification Number (if applicable), or other
+                                                    government-issued ID Nos.</li>
+                                                <li>Occupation, company/office information, or other personal details
+                                                </li>
+                                            </ul>
+                                            <h6>2. Use and Processing of Personal Data</h6>
+                                            <p>
+                                                The Company may use and process the personal data collected about you
+                                                to:
+                                            </p>
+                                            <ul>
+                                                <li>Assist you in complying with the requirements of your account</li>
+                                                <li>Participate in events or similar activities organized by the Company
+                                                </li>
+                                                <li>Provide discounts, promos, advertisements, and other commercial
+                                                    communications</li>
+                                            </ul>
+                                            <h6>3. Sharing of Personal Data</h6>
+                                            <p>
+                                                The Company may share personal data between and among its entities or
+                                                third-party service providers to deliver personalized services.
+                                                Sharing may also occur with government agencies as required by law.
+                                            </p>
+                                            <h6>4. Storage and Protection of Personal Data</h6>
+                                            <p>
+                                                The Company implements strict safeguards, including SSL encryption and
+                                                malware scanning, to ensure the safety of your personal data.
+                                            </p>
+                                            <h6>5. Use of Cookies</h6>
+                                            <p>
+                                                Cookies are utilized to enhance your experience on the Company’s
+                                                websites by storing preferences and tracking site activity.
+                                            </p>
+                                            <h6>6. Your Rights Under the Privacy Act</h6>
+                                            <ul>
+                                                <li>The right to be informed of data collection and processing</li>
+                                                <li>The right to object to data processing</li>
+                                                <li>The right to access, correct, or rectify personal data</li>
+                                                <li>The right to suspend, withdraw, or block data processing</li>
+                                                <li>The right to obtain a copy of your personal data</li>
+                                                <li>The right to indemnification in case of damages due to unauthorized
+                                                    use</li>
+                                            </ul>
+                                            <h6>7. Contacting Us</h6>
+                                            <ul>
+                                                <li><strong>Title/Designation:</strong> Data Protection Officer</li>
+                                                <li><strong>Address:</strong> Cagayan de Oro College, Max Suniel Street,
+                                                    Carmen, Cagayan de Oro City, 9000, Misamis Oriental</li>
+                                                <!-- <li><strong>Email Address:</strong> dpo.au@phinmaed.com</li> -->
+                                            </ul>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
 
 
-  <!-- Footer Area End -->
-    </div>
+                        <!-- Footer Area End -->
+                    </div>
 
-    <a href="#" id="scrollUpBtn" class="to-top">
-      <i class="fas fa-chevron-up"></i>
-    </a>
+                    <a href="#" id="scrollUpBtn" class="to-top">
+                        <i class="fas fa-chevron-up"></i>
+                    </a>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="js/scrollup.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script src="js/toastr-config.js"></script>
-    <script src="js/login.js"></script>
-    <script src="js/animation.js"></script>
-    <script src="js/auth-modal.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  </body>
+                    <!-- Scripts -->
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+                    <script src="js/scrollup.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+                    <script src="js/toastr-config.js"></script>
+                    <script src="js/login.js"></script>
+                    <script src="js/animation.js"></script>
+                    <script src="js/auth-modal.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</body>
+
 </html>

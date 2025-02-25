@@ -1,23 +1,23 @@
 let usersData = [];
 let filteredData = [];
 
-sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php"); //KINZARI
-// sessionStorage.setItem("baseURL", "http://localhost/api/giya.php"); //uncomment lang ni pag mag localhost
+// sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php"); //KINZARI
+sessionStorage.setItem("baseURL", "http://localhost/api/posts.php"); //uncomment lang ni pag mag localhost
 
 
-async function fetchCounts() {
-  try {
-    const baseURL = sessionStorage.getItem("baseURL");
-    const response = await axios.get(`${baseURL}?action=get_counts`);
-    if (response.data.success) {
-      document.getElementById("visitor-count").innerText = response.data.visitors ?? "0";
-      document.getElementById("student-count").innerText = response.data.students ?? "0";
-      document.getElementById("department-count").innerText = response.data.faculties ?? "0";
-    }
-  } catch (error) {
-    console.error("Error fetching counts:", error);
-  }
-}
+// async function fetchCounts() {
+//   try {
+//     const baseURL = sessionStorage.getItem("baseURL");
+//     const response = await axios.get(`${baseURL}?action=get_counts`);
+//     if (response.data.success) {
+//       document.getElementById("visitor-count").innerText = response.data.visitors ?? "0";
+//       document.getElementById("student-count").innerText = response.data.students ?? "0";
+//       document.getElementById("department-count").innerText = response.data.faculties ?? "0";
+//     }
+//   } catch (error) {
+//     console.error("Error fetching counts:", error);
+//   }
+// }
 
 // Function to filter users based on the current page
 function filterUsersByType() {
@@ -35,22 +35,30 @@ function filterUsersByType() {
   return filtered;
 }
 
-// Configure Toastr
-toastr.options = {
-  closeButton: true,
-  progressBar: true,
-  positionClass: "toast-top-right",
-  timeOut: 3000
-};
 
 // Initialize DataTable
 function initializeDataTable(data) {
   const columns = [
-    { title: "School ID", data: "user_schoolId", defaultContent: "-" },
-    { title: "Full Name", data: "full_name", defaultContent: "-" },
-    { title: "Department", data: "department_name", defaultContent: "-" },
-    { title: "Course", data: "course_name", defaultContent: "-",
-      visible: !window.location.pathname.includes("all-department") },
+    // { title: "School ID", data: "user_schoolId", defaultContent: "-" },
+    // { title: "Full Name", data: "full_name", defaultContent: "-" },
+    // { title: "Department", data: "department_name", defaultContent: "-" },
+    // { title: "Course", data: "course_name", defaultContent: "-",
+    //   visible: !window.location.pathname.includes("all-department") },
+      { title: "School ID", data: "user_schoolId", defaultContent: "-" },
+      { title: "Full Name", data: "full_name", defaultContent: "-" },
+    //   { title: "Department", data: "department_name", defaultContent: "-" },
+      {
+        title: "Email",
+        data: null,
+        render: function(_, type, row) {
+          if (type === 'display') {
+            return (row.user_typeId == 1 || row.user_typeId == 2) ?
+              row.user_email || "-" :
+              row.phinmaed_email || "-";
+          }
+          return row.user_email || row.phinmaed_email || "-";
+        }
+      },
     {
       title: "Action",
       data: null,
@@ -95,13 +103,11 @@ function initializeDataTable(data) {
     }
   });
 
-  // Handle view button click
   $('#usersTable').on('click', '.view-btn', function(e) {
     e.preventDefault();
     const data = table.row($(this).closest('tr')).data();
 
     if(data) {
-      // Match field names with your database columns from tblusers table
       $('#detail-schoolId').text(data.user_schoolId || '-');
       $('#detail-firstName').text(data.user_firstname || '-');
       $('#detail-middleName').text(data.user_middlename || '-');
@@ -113,26 +119,26 @@ function initializeDataTable(data) {
       $('#detail-userType').text(data.user_type || '-');
       $('#detail-status').text(data.user_status === 1 ? 'Active' : 'Inactive');
 
-      // Handle email display based on user type
+
       if(String(data.user_typeId) === "1") {
-        $('#detail-email').text(data.user_email || '-');  // For visitors
+        $('#detail-email').text(data.user_email || '-');
       } else {
-        $('#detail-email').text(data.phinmaed_email || '-');  // For students/faculty/staff
+        $('#detail-email').text(data.phinmaed_email || '-');
       }
 
-      // Show modal using Bootstrap's method
+
       $('#userModal').modal('show');
     }
   });
 
-  // Add this cleanup code for modal handling
+
   $('#userModal').on('hidden.bs.modal', function () {
     $('body').removeClass('modal-open');
     $('.modal-backdrop').remove();
   });
 }
 
-// Function to update user status
+
 async function updateUserStatus(userId, newStatus) {
   try {
     const result = await Swal.fire({
@@ -168,7 +174,7 @@ async function updateUserStatus(userId, newStatus) {
   }
 }
 
-// Function to reset user password
+
 async function resetUserPassword(userId) {
   try {
     const result = await Swal.fire({
@@ -211,7 +217,7 @@ async function resetUserPassword(userId) {
   }
 }
 
-// Fetch users from the API
+
 async function fetchUsers() {
   try {
     const baseURL = sessionStorage.getItem("baseURL");
@@ -231,7 +237,7 @@ async function fetchUsers() {
   }
 }
 
-// Logout function
+
 function logout() {
   Swal.fire({
     title: 'Are you sure?',
@@ -249,18 +255,183 @@ function logout() {
   });
 }
 
-// Initialize the dashboard
-document.addEventListener("DOMContentLoaded", async () => {
-  if (document.getElementById("visitor-count")) {
-    await fetchCounts();
-  }
-  await fetchUsers();
+// Initialize Latest Posts DataTable
+function initializeLatestPostsTable() {
+    if ($.fn.DataTable.isDataTable('#latestPostsTable')) {
+        $('#latestPostsTable').DataTable().destroy();
+    }
 
-  const logoutButton = document.getElementById("logout-button");
-  if (logoutButton) {
-    logoutButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      logout();
+    $('#latestPostsTable').DataTable({
+        ajax: {
+            url: `${sessionStorage.getItem('baseURL')}?action=get_posts`,
+            dataSrc: 'posts'
+        },
+        columns: [
+            {
+                data: 'is_read',
+                render: function(data) {
+                    let status = data ? 'Read' : 'Unread';
+                    let color = data ? 'success' : 'secondary';
+                    return `<span class="badge bg-${color}">${status}</span>`;
+                }
+            },
+            {
+                data: null,
+                render: function(data) {
+                    return `<a href="#" class="view-post text-decoration-none" data-post-id="${data.post_id}">
+                        ${data.user_fullname}
+                    </a>`;
+                }
+            },
+            { data: 'postType_name' },
+            { data: 'post_title' },
+            {
+                data: null,
+                render: function(data) {
+                    return `${data.post_date} ${data.post_time}`;
+                }
+            }
+        ],
+        order: [[4, 'desc']],
+
     });
-  }
+
+
+    $('#latestPostsTable').on('click', '.view-post', async function(e) {
+        e.preventDefault();
+        const postId = $(this).data('post-id');
+
+
+        try {
+            await axios.post(`${sessionStorage.getItem('baseURL')}?action=mark_post_read`, {
+                post_id: postId
+            });
+
+
+            await showPostDetails(postId);
+
+
+            $('#latestPostsTable').DataTable().ajax.reload(null, false);
+        } catch (error) {
+            console.error('Error handling post view:', error);
+            toastr.error('Error viewing post details');
+        }
+    });
+}
+
+
+async function showPostDetails(postId) {
+    try {
+        const response = await axios.get(`${sessionStorage.getItem('baseURL')}?action=get_post_details&post_id=${postId}`);
+
+        if (response.data.success && response.data.post) {
+            const post = response.data.post;
+            const container = document.getElementById('postContainer');
+
+            container.innerHTML = `
+                <div class="post-card card mb-4">
+                    <div class="post-header p-3">
+                        <!-- User Info at Top -->
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-person-circle fs-4"></i>
+                                <div>
+                                    <div class="fs-4 fw-bold">${post.user_fullname}</div>
+                                    <small class="text-muted">${post.user_schoolId}</small>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <div class="fs-5 text-primary">${post.postType_name}</div>
+                                <div class="fs-5 text-secondary">${post.post_title}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-content px-3 pb-4 position-relative">
+                        <p class="mb-4">${post.post_message}</p>
+                        <div class="text-muted small position-absolute bottom-0 end-0 pe-3 pb-2">
+                            <i class="bi bi-clock"></i> ${post.post_date} ${post.post_time}
+                        </div>
+                    </div>
+
+                    <div class="replies-section bg-light p-3">
+                        <h6 class="fw-bold mb-3">Replies</h6>
+                        <div class="replies-container mb-3">
+                            ${post.replies ? post.replies.map(reply => `
+                                <div class="reply-card mb-2 p-2 border-start border-4 border-primary bg-white">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>${reply.admin_name}</strong>
+                                        <small class="text-muted">${reply.reply_date}</small>
+                                    </div>
+                                    <p class="mb-0">${reply.reply_message}</p>
+                                </div>
+                            `).join('') : '<p>No replies yet.</p>'}
+                        </div>
+
+                        <form class="reply-form" onsubmit="submitReply(event, ${post.post_id})">
+                            <div class="input-group">
+                                <input type="text" class="form-control reply-input"
+                                    placeholder="Write a reply..." required>
+                                <button class="btn btn-primary" type="submit">Reply</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+
+            const modal = new bootstrap.Modal(document.getElementById('postDetailsModal'));
+            modal.show();
+        } else {
+            toastr.error('Failed to load post details');
+        }
+    } catch (error) {
+        console.error('Error fetching post details:', error);
+        toastr.error('Error loading post details');
+    }
+}
+
+
+async function submitReply(event, postId) {
+    event.preventDefault();
+    const input = event.target.querySelector('.reply-input');
+    const message = input.value;
+
+    try {
+        const response = await axios.post(`${sessionStorage.getItem('baseURL')}?action=submit_reply`, {
+            post_id: postId,
+            reply_message: message,
+            admin_id: '25'
+        });
+
+        if (response.data.success) {
+            toastr.success('Reply submitted successfully');
+            input.value = '';
+
+            await showPostDetails(postId);
+        } else {
+            toastr.error('Failed to submit reply');
+        }
+    } catch (error) {
+        console.error('Error submitting reply:', error);
+        toastr.error('Error submitting reply');
+    }
+}
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+    if (document.getElementById("visitor-count")) {
+        await fetchCounts();
+        await fetchUsers();
+    }
+
+    const logoutButton = document.getElementById("logout-button");
+    if (logoutButton) {
+        logoutButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            logout();
+        });
+    }
+
+    initializeLatestPostsTable();
 });

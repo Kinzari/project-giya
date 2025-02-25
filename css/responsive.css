@@ -412,15 +412,22 @@
     text-align: left;
     padding: 10px 20px;
   }
+  .login-container{
+    width: 100%;
+    height: 150%;
+  }
+  .login-left {
+    width: 0px;
+  }
   .login-form {
     max-width: 90%;
-    margin: 30px auto;
+
   }
   .starting-area {
-    height: 25vh;
+    height: 30vh;
   }
   .starting-info h1 {
-    font-size: 24px;
+    font-size: 25px;
   }
   .class-content {
     flex-direction: column;
@@ -438,7 +445,7 @@
     padding: 20px 5px;
   }
   .footer-logo {
-    max-width: 100px;
+    max-width: 250px;
   }
   .footer-bottom {
     flex-direction: column;
