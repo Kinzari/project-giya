@@ -2,63 +2,40 @@ let usersData = [];
 let filteredData = [];
 
 // sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php"); //KINZARI
-sessionStorage.setItem("baseURL", "http://localhost/api/posts.php"); //uncomment lang ni pag mag localhost
+sessionStorage.setItem("baseURL", "http://localhost/api/"); // For localhost
+// sessionStorage.setItem("baseURL", "http://192.168.137.190/api/posts.php");
 
-
-// async function fetchCounts() {
-//   try {
-//     const baseURL = sessionStorage.getItem("baseURL");
-//     const response = await axios.get(`${baseURL}?action=get_counts`);
-//     if (response.data.success) {
-//       document.getElementById("visitor-count").innerText = response.data.visitors ?? "0";
-//       document.getElementById("student-count").innerText = response.data.students ?? "0";
-//       document.getElementById("department-count").innerText = response.data.faculties ?? "0";
-//     }
-//   } catch (error) {
-//     console.error("Error fetching counts:", error);
-//   }
-// }
-
-// Function to filter users based on the current page
 function filterUsersByType() {
   const currentPath = window.location.pathname;
   let filtered = usersData.filter(user => user.user_typeId !== "6");
 
   if (currentPath.includes("all-visitor")) {
-    filtered = filtered.filter(user => user.user_typeId == 1 || user.user_typeId === "1");
+    filtered = filtered.filter(user => user.user_typeId == 1);
   } else if (currentPath.includes("all-student")) {
-    filtered = filtered.filter(user => user.user_typeId == 2 || user.user_typeId === "2");
+    filtered = filtered.filter(user => user.user_typeId == 2);
   } else if (currentPath.includes("all-department")) {
-    filtered = filtered.filter(user => ["3", "4", "5", 3, 4, 5].includes(Number(user.user_typeId)));
+    filtered = filtered.filter(user => ["3", "4", "5"].includes(user.user_typeId));
   }
-
   return filtered;
 }
 
 
-// Initialize DataTable
 function initializeDataTable(data) {
   const columns = [
-    // { title: "School ID", data: "user_schoolId", defaultContent: "-" },
-    // { title: "Full Name", data: "full_name", defaultContent: "-" },
-    // { title: "Department", data: "department_name", defaultContent: "-" },
-    // { title: "Course", data: "course_name", defaultContent: "-",
-    //   visible: !window.location.pathname.includes("all-department") },
-      { title: "School ID", data: "user_schoolId", defaultContent: "-" },
-      { title: "Full Name", data: "full_name", defaultContent: "-" },
-    //   { title: "Department", data: "department_name", defaultContent: "-" },
-      {
-        title: "Email",
-        data: null,
-        render: function(_, type, row) {
-          if (type === 'display') {
-            return (row.user_typeId == 1 || row.user_typeId == 2) ?
-              row.user_email || "-" :
-              row.phinmaed_email || "-";
-          }
-          return row.user_email || row.phinmaed_email || "-";
+    { title: "School ID", data: "user_schoolId", defaultContent: "-" },
+    { title: "Full Name", data: "full_name", defaultContent: "-" },
+    {
+      title: "Email",
+      data: null,
+      render: function(_, type, row) {
+        if (type === 'display') {
+          return (row.user_typeId == 1 || row.user_typeId == 2) ?
+            row.user_email || "-" :
+            row.phinmaed_email || "-";
         }
-      },
+        return row.user_email || row.phinmaed_email || "-";
+      }
+    },
     {
       title: "Action",
       data: null,
@@ -77,7 +54,7 @@ function initializeDataTable(data) {
             </button>
           </div>
         `;
-      },
+      }
     }
   ];
 
@@ -88,9 +65,6 @@ function initializeDataTable(data) {
   const table = $("#usersTable").DataTable({
     data: data,
     columns: columns,
-    // dom: "<'row'<'col-sm-6'l><'col-sm-6'Bf>>" +
-    //      "<'row'<'col-sm-12'tr>>" +
-    //      "<'row'<'col-sm-5'i><'col-sm-7'p>>",
     dom: "<'row'<'col-sm-6'l><'col-sm-6'Bf>>rtip",
     buttons: ['excel', 'pdf', 'print'],
     responsive: true,
@@ -119,18 +93,14 @@ function initializeDataTable(data) {
       $('#detail-userType').text(data.user_type || '-');
       $('#detail-status').text(data.user_status === 1 ? 'Active' : 'Inactive');
 
-
       if(String(data.user_typeId) === "1") {
         $('#detail-email').text(data.user_email || '-');
       } else {
         $('#detail-email').text(data.phinmaed_email || '-');
       }
-
-
       $('#userModal').modal('show');
     }
   });
-
 
   $('#userModal').on('hidden.bs.modal', function () {
     $('body').removeClass('modal-open');
@@ -138,42 +108,55 @@ function initializeDataTable(data) {
   });
 }
 
-
 async function updateUserStatus(userId, newStatus) {
-  try {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: `Do you want to ${newStatus === 1 ? "activate" : "deactivate"} this user?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, proceed!'
-    });
+    try {
+        const result = await Swal.fire({
+            title: "Are you sure?",
+            text: `Do you want to ${newStatus === 1 ? "activate" : "deactivate"} this user?`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, proceed!"
+        });
 
-    if (result.isConfirmed) {
-      const baseURL = sessionStorage.getItem("baseURL");
-      const response = await axios.post(`${baseURL}?action=update_user_status`, {
-        user_id: userId,
-        user_status: newStatus,
-      });
+        if (!result.isConfirmed) return;
 
-      if (response.data.success) {
-        toastr.success("User status updated successfully");
-        filteredData = filteredData.map(user =>
-          user.user_id === userId ? { ...user, user_status: newStatus } : user
-        );
-        $("#usersTable").DataTable().clear().rows.add(filteredData).draw();
-      } else {
-        toastr.error("Failed to update user status");
-      }
+        const baseURL = sessionStorage.getItem("baseURL");
+        const response = await axios.post(`${baseURL}giya.php?action=update_user_status`, {
+            user_id: userId,
+            user_status: newStatus
+        });
+
+        if (response.data.success) {
+            await Swal.fire("Success!", "User status updated successfully", "success");
+
+            // Refresh both tables if they exist
+            if ($.fn.DataTable.isDataTable("#usersTable")) {
+                await $("#usersTable").DataTable().ajax.reload(null, false);
+            }
+            if ($.fn.DataTable.isDataTable("#postsTable")) {
+                await $("#postsTable").DataTable().ajax.reload(null, false);
+            }
+            if ($.fn.DataTable.isDataTable("#latestPostsTable")) {
+                await $("#latestPostsTable").DataTable().ajax.reload(null, false);
+            }
+
+            // Update any visible user details modal
+            if ($('#userModal').is(':visible')) {
+                const modalUserId = $('#userModal').data('userId');
+                if (modalUserId === userId) {
+                    document.getElementById('detail-status').textContent = newStatus === 1 ? 'Active' : 'Inactive';
+                }
+            }
+        } else {
+            Swal.fire("Error!", response.data.message || "Failed to update user status", "error");
+        }
+    } catch (error) {
+        console.error("Error updating user status:", error);
+        Swal.fire("Error!", "An error occurred while updating user status", "error");
     }
-  } catch (error) {
-    console.error("Error updating user status:", error);
-    toastr.error("An error occurred while updating user status");
-  }
 }
-
 
 async function resetUserPassword(userId) {
   try {
@@ -189,39 +172,26 @@ async function resetUserPassword(userId) {
 
     if (result.isConfirmed) {
       const baseURL = sessionStorage.getItem("baseURL");
-      const response = await axios.post(`${baseURL}?action=reset_password`, {
+      const response = await axios.post(`${baseURL}giya.php?action=reset_password`, {
         user_id: userId,
       });
 
       if (response.data.success) {
-        Swal.fire(
-          'Success!',
-          "Password has been reset to 'phinma-coc'",
-          'success'
-        );
+        Swal.fire('Success!', "Password has been reset to 'phinma-coc'", 'success');
       } else {
-        Swal.fire(
-          'Error!',
-          'Failed to reset password',
-          'error'
-        );
+        Swal.fire('Error!', 'Failed to reset password', 'error');
       }
     }
   } catch (error) {
     console.error("Error resetting password:", error);
-    Swal.fire(
-      'Error!',
-      'An error occurred while resetting the password',
-      'error'
-    );
+    Swal.fire('Error!', 'An error occurred while resetting the password', 'error');
   }
 }
-
 
 async function fetchUsers() {
   try {
     const baseURL = sessionStorage.getItem("baseURL");
-    const response = await axios.get(`${baseURL}?action=users`);
+    const response = await axios.get(`${baseURL}giya.php?action=users`);
 
     if (response.data.success && Array.isArray(response.data.users)) {
       usersData = response.data.users;
@@ -237,201 +207,116 @@ async function fetchUsers() {
   }
 }
 
+function initializeSidebar() {
+    // Toggle sidebar collapse
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const sidebar = document.querySelector('.sidebar-nav');
 
-function logout() {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: "You will be logged out of the system",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, logout!'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
-  });
-}
-
-// Initialize Latest Posts DataTable
-function initializeLatestPostsTable() {
-    if ($.fn.DataTable.isDataTable('#latestPostsTable')) {
-        $('#latestPostsTable').DataTable().destroy();
-    }
-
-    $('#latestPostsTable').DataTable({
-        ajax: {
-            url: `${sessionStorage.getItem('baseURL')}?action=get_posts`,
-            dataSrc: 'posts'
-        },
-        columns: [
-            {
-                data: 'is_read',
-                render: function(data) {
-                    let status = data ? 'Read' : 'Unread';
-                    let color = data ? 'success' : 'secondary';
-                    return `<span class="badge bg-${color}">${status}</span>`;
-                }
-            },
-            {
-                data: null,
-                render: function(data) {
-                    return `<a href="#" class="view-post text-decoration-none" data-post-id="${data.post_id}">
-                        ${data.user_fullname}
-                    </a>`;
-                }
-            },
-            { data: 'postType_name' },
-            { data: 'post_title' },
-            {
-                data: null,
-                render: function(data) {
-                    return `${data.post_date} ${data.post_time}`;
-                }
-            }
-        ],
-        order: [[4, 'desc']],
-
-    });
-
-
-    $('#latestPostsTable').on('click', '.view-post', async function(e) {
-        e.preventDefault();
-        const postId = $(this).data('post-id');
-
-
-        try {
-            await axios.post(`${sessionStorage.getItem('baseURL')}?action=mark_post_read`, {
-                post_id: postId
-            });
-
-
-            await showPostDetails(postId);
-
-
-            $('#latestPostsTable').DataTable().ajax.reload(null, false);
-        } catch (error) {
-            console.error('Error handling post view:', error);
-            toastr.error('Error viewing post details');
-        }
-    });
-}
-
-
-async function showPostDetails(postId) {
-    try {
-        const response = await axios.get(`${sessionStorage.getItem('baseURL')}?action=get_post_details&post_id=${postId}`);
-
-        if (response.data.success && response.data.post) {
-            const post = response.data.post;
-            const container = document.getElementById('postContainer');
-
-            container.innerHTML = `
-                <div class="post-card card mb-4">
-                    <div class="post-header p-3">
-                        <!-- User Info at Top -->
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="bi bi-person-circle fs-4"></i>
-                                <div>
-                                    <div class="fs-4 fw-bold">${post.user_fullname}</div>
-                                    <small class="text-muted">${post.user_schoolId}</small>
-                                </div>
-                            </div>
-                            <div class="mt-2">
-                                <div class="fs-5 text-primary">${post.postType_name}</div>
-                                <div class="fs-5 text-secondary">${post.post_title}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="post-content px-3 pb-4 position-relative">
-                        <p class="mb-4">${post.post_message}</p>
-                        <div class="text-muted small position-absolute bottom-0 end-0 pe-3 pb-2">
-                            <i class="bi bi-clock"></i> ${post.post_date} ${post.post_time}
-                        </div>
-                    </div>
-
-                    <div class="replies-section bg-light p-3">
-                        <h6 class="fw-bold mb-3">Replies</h6>
-                        <div class="replies-container mb-3">
-                            ${post.replies ? post.replies.map(reply => `
-                                <div class="reply-card mb-2 p-2 border-start border-4 border-primary bg-white">
-                                    <div class="d-flex justify-content-between">
-                                        <strong>${reply.admin_name}</strong>
-                                        <small class="text-muted">${reply.reply_date}</small>
-                                    </div>
-                                    <p class="mb-0">${reply.reply_message}</p>
-                                </div>
-                            `).join('') : '<p>No replies yet.</p>'}
-                        </div>
-
-                        <form class="reply-form" onsubmit="submitReply(event, ${post.post_id})">
-                            <div class="input-group">
-                                <input type="text" class="form-control reply-input"
-                                    placeholder="Write a reply..." required>
-                                <button class="btn btn-primary" type="submit">Reply</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            `;
-
-
-            const modal = new bootstrap.Modal(document.getElementById('postDetailsModal'));
-            modal.show();
-        } else {
-            toastr.error('Failed to load post details');
-        }
-    } catch (error) {
-        console.error('Error fetching post details:', error);
-        toastr.error('Error loading post details');
-    }
-}
-
-
-async function submitReply(event, postId) {
-    event.preventDefault();
-    const input = event.target.querySelector('.reply-input');
-    const message = input.value;
-
-    try {
-        const response = await axios.post(`${sessionStorage.getItem('baseURL')}?action=submit_reply`, {
-            post_id: postId,
-            reply_message: message,
-            admin_id: '25'
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
         });
+    }
 
-        if (response.data.success) {
-            toastr.success('Reply submitted successfully');
-            input.value = '';
-
-            await showPostDetails(postId);
-        } else {
-            toastr.error('Failed to submit reply');
-        }
-    } catch (error) {
-        console.error('Error submitting reply:', error);
-        toastr.error('Error submitting reply');
+    // Restore sidebar state
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
     }
 }
 
+function handleLogout() {
+    localStorage.removeItem('user');
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+}
 
-document.addEventListener("DOMContentLoaded", async () => {
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize sidebar
+    initializeSidebar();
+
+    // Setup logout handlers
+    const logoutBtn = document.getElementById('logout-button');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // Add user info to sidebar
+    const userString = localStorage.getItem('user');
+    if (userString) {
+        const user = JSON.parse(userString);
+        const userProfile = document.querySelector('.user-profile .user-name');
+        if (userProfile) {
+            userProfile.textContent = user.user_firstname;
+        }
+    }
+
+    // Initialize other dashboard features
     if (document.getElementById("visitor-count")) {
-        await fetchCounts();
         await fetchUsers();
     }
+});
 
-    const logoutButton = document.getElementById("logout-button");
-    if (logoutButton) {
-        logoutButton.addEventListener("click", (e) => {
-            e.preventDefault();
-            logout();
-        });
+// Update initialization code
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle active nav links
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.offcanvas .nav-link').forEach(link => {
+        if (link.getAttribute('href') === currentPath.split('/').pop()) {
+            link.classList.add('active');
+        }
+    });
+
+    // Update user name in sheet if logged in
+    const userString = localStorage.getItem('user');
+    if (userString) {
+        const user = JSON.parse(userString);
+        const userNameElement = document.querySelector('.user-profile .user-name');
+        if (userNameElement && user.user_firstname) {
+            userNameElement.textContent = user.user_firstname;
+        }
     }
 
-    initializeLatestPostsTable();
+    // Initialize tooltips if using them
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 });
+
+// Example: define viewUserDetails if not already defined.
+async function viewUserDetails(userId, fullName, schoolId, userStatus) {
+    try {
+        const baseURL = sessionStorage.getItem("baseURL");
+        const response = await axios.get(`${baseURL}giya.php?action=get_user_details&user_id=${userId}`);
+
+        if (response.data.success) {
+            const user = response.data.user;
+            document.getElementById('detail-schoolId').textContent = user.user_schoolId || '-';
+            document.getElementById('detail-firstName').textContent = user.user_firstname || '-';
+            document.getElementById('detail-middleName').textContent = user.user_middlename || '-';
+            document.getElementById('detail-lastName').textContent = user.user_lastname || '-';
+            document.getElementById('detail-suffix').textContent = user.user_suffix || '-';
+            document.getElementById('detail-email').textContent = user.phinmaed_email || user.user_email || '-';
+            document.getElementById('detail-contact').textContent = user.user_contact || '-';
+            document.getElementById('detail-department').textContent = user.department_name || '-';
+            document.getElementById('detail-course').textContent = user.course_name || '-';
+            document.getElementById('detail-userType').textContent = user.user_type || '-';
+            document.getElementById('detail-status').textContent = user.user_status == 1 ? 'Active' : 'Inactive';
+            var modal = new bootstrap.Modal(document.getElementById('userModal'));
+            modal.show();
+        } else {
+            toastr.error('Failed to load user details');
+        }
+    } catch (error) {
+        console.error('Error fetching user details:', error);
+        toastr.error('Error loading user details');
+    }
+}
+
+// Expose functions to global scope
+window.updateUserStatus = updateUserStatus;
+window.resetUserPassword = resetUserPassword;
+window.viewUserDetails = viewUserDetails;
