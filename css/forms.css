@@ -117,7 +117,7 @@ body {
 .btn-custom-green {
     background-color: #155f37;
     border-color: #155f37;
-    color: white
+    color: white;
 }
 .btn-custom-green:hover {
     background-color: #0d3e24;
@@ -321,6 +321,48 @@ body {
 
 #privacyContent::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+/* Submission Status Styles */
+.bg-light-success {
+    background-color: rgba(21, 95, 55, 0.1);
+}
+
+.submission-row {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submission-row:hover {
+    background-color: rgba(21, 95, 55, 0.1);
+}
+
+#replies .card {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+}
+
+#replies .card.admin-reply {
+    border-color: #155f37;
+}
+
+#replies .card.admin-reply .card-header {
+    background-color: rgba(21, 95, 55, 0.1);
+}
+
+#replyFormContainer {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+#replyFormContainer textarea {
+    resize: none;
+    border-radius: 6px;
+}
+
+.badge {
+    padding: 0.5em 1em;
+    font-size: 0.875em;
 }
 
 /*----------------------------------------*/

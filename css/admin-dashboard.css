@@ -1,199 +1,119 @@
 /*
 -----------------------------------------------------------------------------------
-
-    PROJECT GIYA ADMIN DASHBOARD CSS INDEX
+    PROJECT GIYA ADMIN DASHBOARD CSS
     ===================
-
-    1. Theme Default CSS (variables, fonts, resets)
-    2. Layout Components
-        2.1 Sidebar Navigation
-        2.2 Main Content Area
-        2.3 Cards & Containers
-    3. Table Styles
-        3.1 DataTables Customization
-        3.2 Table Responsive Design
-    4. Post Management
-        4.1 Post Cards
-        4.2 Replies Section
-    5. Modal Styles
-    6. Responsive Design
-        6.1 Desktop (1200px+)
-        6.2 Laptop (992px-1199px)
-        6.3 Tablet (768px-991px)
-        6.4 Mobile (576px-767px)
-        6.5 Small Mobile (<576px)
+    1. Core Styles (variables, fonts)
+    2. Layout Components (sidebar, navigation)
+    3. Table Customizations
+    4. Post Management Styles
+    5. Responsive Adjustments
 -----------------------------------------------------------------------------------*/
 
-/*----------------------------------------*/
-/*  1. Theme Default CSS
-/*----------------------------------------*/
+/* 1. Core Styles */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
 :root {
-    --offcanvas-width: 270px;
+    --offcanvas-width: 40px;
+    --sidebar-sheet-width: 240px;
     --topNavbarHeight: 56px;
-}
-
-* {
-    font-family: "Poppins", sans-serif;
-    margin: 0;
-    box-sizing: border-box;
+    --primary-color: #155f37;
 }
 
 body {
+    font-family: "Poppins", sans-serif;
     background-color: #f6f9ff;
-    overflow-x: hidden;
 }
 
-a {
-    text-decoration: none;
-}
-
-/*----------------------------------------*/
-/*  2. Layout Components
-/*----------------------------------------*/
-
-/* 2.1 Sidebar Navigation */
-.sidebar-nav {
-    width: var(--offcanvas-width) !important;
-}
-
-.sidenav .bordered {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.sidebar-link {
-    display: flex;
-    align-items: center;
-}
-
-.sidebar-link .right-icon {
-    display: inline-flex;
-    transition: all ease 0.25s;
-}
-
-.sidebar-link[aria-expanded="true"] .right-icon {
-    transform: rotate(180deg) !important;
-}
-
+/* 2. Layout Components */
 .bg-purple {
-    background-color: #155f37;
+    background-color: var(--primary-color);
 }
 
 .offcanvas-header {
-    background-color: #155f37;
-    font-size: 25px;
-    padding: 10px;
+    background-color: var(--primary-color);
+    padding: 10px 15px;
 }
 
-.breadcrumb-item {
-    font-size: 18px;
+.offcanvas-title {
+    padding-left: 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
-.text-center {
-    text-align: center !important;
+/* Sidebar Navigation */
+.sidebar-toggle {
+    position: relative;
+    left: 0;
+    margin-right: 10px;
+    z-index: 1030;
 }
 
-.navbar-brand {
-    text-transform: uppercase;
+.offcanvas-body .nav-items a {
+    padding: 12px 15px;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    margin-bottom: 15px;
 }
 
-@media (min-width: 992px) {
-    body {
-        overflow: auto !important;
-    }
-
-    .offcanvas-backdrop::before {
-        display: none;
-    }
-
-    main {
-        margin-left: var(--offcanvas-width);
-    }
-
-    .sidebar-nav {
-        transform: none !important;
-        visibility: visible !important;
-        /* top: var(--topNavbarHeight) !important;
-    height: calc(100%- var(--topNavbarHeight)) !important; */
-    }
+.offcanvas-body .nav-items a i {
+    margin-right: 10px;
+    font-size: 1.2rem;
 }
 
-.profile-details li {
-    display: inline-block;
-    list-style: none;
-    font-size: 17px;
-}
-
-.profile-details > .text-muted {
-    width: 120px;
-    text-align: end;
-}
-
-/*----------------------------------------*/
-/*  3. Table Styles
-/*----------------------------------------*/
-
-/* 3.1 DataTables Customization */
-.dataTables_wrapper .dataTables_paginate {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    text-align: center;
+/* User Profile in Sidebar */
+.user-profile {
     display: flex;
-    justify-content: center;
     align-items: center;
-    padding: 10px;
+    gap: 10px;
+    cursor: pointer;
 }
 
-.dataTables_wrapper .paginate_button.previous {
-    margin-right: 15px !important;
+.user-profile i {
+    font-size: 20px;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
 }
 
-.dataTables_wrapper .paginate_button.next {
-    margin-left: 15px !important;
+.user-profile .text-white .user-name {
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-    padding: 6px 12px !important;
-    border: 1px solid #dee2e6 !important;
-    margin: 0 5px !important;
-    border-radius: 4px !important;
-    min-width: 38px !important;
-    background: #fff !important;
-    color: #155f37 !important;
-    cursor: pointer !important;
-    display: inline-block !important;
-    position: relative !important;
+/* 3. Table Customizations */
+.table th.col-status,
+.table td.col-status {
+    width: 100px;
+    max-width: 100px;
 }
 
-.dataTables_wrapper .dataTables_paginate span .paginate_button {
-    margin: 0 8px !important;
+.table th.col-title,
+.table td.col-title {
+    min-width: 250px;
+    width: auto;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: #155f37 !important;
-    color: white !important;
-    border-color: #155f37 !important;
-    font-weight: 500;
+.table th.col-date,
+.table td.col-date,
+.table th.col-time,
+.table td.col-time {
+    width: 80px;
+    max-width: 80px;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
-    background: #e9ecef !important;
-    border-color: #155f37 !important;
-    color: #155f37 !important;
+.table th.col-action,
+.table td.col-action {
+    width: 100px;
+    max-width: 100px;
 }
-
-
-.table {
-    width: 100% !important;
-}
-
 
 .table td {
     vertical-align: middle;
-    text-align: begin; /
 }
-
 
 .table td .btn {
     width: 32px;
@@ -209,22 +129,123 @@ a {
     line-height: 1;
 }
 
-
-.table td:last-child {
-    white-space: nowrap;
-    min-width: 120px;
+/* DataTables Customization */
+.dataTables_wrapper .dataTables_paginate {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
 }
 
-
-.table td .d-flex.gap-1 > * {
-    margin: 0 2px;
+.dataTables_wrapper .paginate_button.previous {
+    margin-right: 15px;
 }
 
-/*----------------------------------------*/
-/*  4. Post Management
-/*----------------------------------------*/
+.dataTables_wrapper .paginate_button.next {
+    margin-left: 15px;
+}
 
-/* 4.1 Post Cards */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 6px 12px;
+    border: 1px solid #dee2e6;
+    margin: 0 5px;
+    border-radius: 4px;
+    min-width: 38px;
+    background: #fff;
+    color: var(--primary-color);
+    cursor: pointer;
+}
+
+.dataTables_wrapper .dataTables_paginate span .paginate_button {
+    margin: 0 8px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    font-weight: 500;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+    background: #e9ecef;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Make DataTables larger and wider */
+.dataTables_wrapper {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.table-responsive {
+    min-height: 450px; /* Increase the minimum height of table container */
+}
+
+table.dataTable {
+    width: 100% !important;
+    margin: 0 0 1rem 0 !important;
+}
+
+/* Increase the table body height to show more rows */
+.dataTables_scrollBody {
+    min-height: 350px;
+}
+
+/* Adjust table margins and padding */
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Make sure the container has enough width */
+.container {
+    max-width: 95%;
+    width: 95%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Remove any width constraints on main content */
+main {
+    width: 100%;
+    max-width: 100%;
+    padding-right: 1rem;
+}
+
+/* Increase table pagination size */
+.dataTables_paginate .paginate_button {
+    font-size: 1rem;
+    padding: 8px 14px !important;
+}
+
+/* Make table header more prominent */
+.table thead th {
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    background-color: #f8f9fa;
+}
+
+/* Adjust the DataTables page length selector */
+.dataTables_length select {
+    min-width: 80px;
+    height: 38px;
+    padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+    font-size: 1rem;
+}
+
+/* Increase size of search box */
+.dataTables_filter input {
+    min-width: 250px;
+    height: 38px;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+}
+
+/* 4. Post Management Styles */
 .post-card {
     border-radius: 10px;
     margin-bottom: 20px;
@@ -233,27 +254,34 @@ a {
     overflow-y: auto;
 }
 
-.avatar-container {
-    transition: transform 0.2s;
-}
-
-.avatar-container:hover {
-    transform: scale(1.1);
-    cursor: pointer;
-}
-
 .post-message {
     font-size: 1.1rem;
     line-height: 1.5;
     color: #333;
+    margin-bottom: 1rem;
 }
 
 .post-header {
+    padding: 15px;
     border-bottom: 1px solid #eee;
+    background-color: #f8f9fa;
+}
+
+.post-content {
+    padding: 15px 0;
+    white-space: pre-wrap;
+    min-height: 120px;
+}
+
+.post-footer {
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #eee;
 }
 
 .replies-section {
     background-color: #f8f9fa;
+    padding: 15px;
     border-top: 1px solid #eee;
 }
 
@@ -265,55 +293,13 @@ a {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.post-header {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-}
-.post-content {
-    padding: 15px 0;
-    white-space: pre-wrap;
-    min-height: 120px; 
-}
-.post-footer {
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-top: 1px solid #eee;
-}
-.post-metadata {
-    padding: 8px 0;
-    color: #666;
-    font-size: 0.85em;
-    margin-bottom: 5px;
-}
-.replies-section {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-top: 1px solid #eee;
-}
-.reply-card {
-    background-color: white;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 10px;
-}
 .reply-input {
     border-radius: 20px;
     padding: 8px 15px;
 }
-.status-pending {
-    color: #ffc107;
-}
-.status-resolved {
-    color: #28a745;
-}
-
-.concern-header {
-    border-bottom: 1px solid #eee;
-    background-color: #f8f9fa;
-}
 
 .concern-type {
-    color: #155f37;
+    color: var(--primary-color);
     font-size: 1.5rem;
     margin-bottom: 0.2rem;
     font-weight: 600;
@@ -325,242 +311,22 @@ a {
     margin-bottom: 0.5rem;
 }
 
-.post-message {
-    font-size: 1.1rem !important;
-    line-height: 1.5;
-    color: #333;
-    margin-bottom: 1rem;
+/* Filter container styling */
+.filter-container {
+    justify-content: flex-start;
+    gap: 30px;
+    width: 98%;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
 }
 
-/*----------------------------------------*/
-/*  5. Modal Styles
-/*----------------------------------------*/
-.modal-content {
-    border-radius: 10px;
-    border: none;
-    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+.filter-container h3 {
+    margin-bottom: 0;
+    min-width: 160px;
 }
 
-/*----------------------------------------*/
-/*  6. Responsive Design
-/*----------------------------------------*/
-
-/* 6.1 Desktop (1200px+) */
-@media (min-width: 1200px) {
-    main {
-        margin-left: var(--offcanvas-width);
-    }
-
-    .sidebar-nav {
-        transform: none !important;
-        visibility: visible !important;
-    }
-
-    .table td .btn {
-        width: 40px;
-        height: 40px;
-    }
-}
-
-/* 6.2 Laptop (992px-1199px) */
-@media (min-width: 992px) and (max-width: 1199px) {
-    main {
-        margin-left: var(--offcanvas-width);
-    }
-
-    .container {
-        max-width: calc(100% - 30px);
-    }
-
-    .table td .btn {
-        width: 35px;
-        height: 35px;
-    }
-}
-
-/* 6.3 Tablet (768px-991px) */
-@media (min-width: 768px) and (max-width: 991px) {
-    :root {
-        --offcanvas-width: 240px;
-    }
-
-    .container {
-        max-width: 100%;
-        padding: 0 15px;
-    }
-
-    .card {
-        margin-bottom: 15px;
-    }
-
-    /* Adjust table for tablets */
-    .table-responsive {
-        overflow-x: auto;
-    }
-
-    .table td .btn {
-        width: 32px;
-        height: 32px;
-        padding: 4px;
-    }
-
-    .table td .btn i {
-        font-size: 12px;
-    }
-}
-
-/* 6.4 Mobile (576px-767px) */
-@media (min-width: 576px) and (max-width: 767px) {
-    :root {
-        --offcanvas-width: 200px;
-    }
-
-    .container {
-        max-width: 100%;
-        padding: 0 10px;
-    }
-
-    .card {
-        margin-bottom: 10px;
-    }
-
-    .fs-3 {
-        font-size: 1.25rem !important;
-    }
-
-    .table td .btn {
-        width: 30px;
-        height: 30px;
-        padding: 3px;
-        margin: 2px;
-    }
-
-    .table td .btn i {
-        font-size: 11px;
-    }
-}
-
-/* 6.5 Small Mobile (<576px) */
-@media (max-width: 575px) {
-    :root {
-        --offcanvas-width: 100%;
-    }
-
-    .container {
-        padding: 0 8px;
-    }
-
-    .navbar-brand {
-        font-size: 1rem;
-    }
-
-    .card {
-        margin-bottom: 10px;
-    }
-
-    .fs-3 {
-        font-size: 1.1rem !important;
-    }
-
-    .breadcrumb-item {
-        font-size: 14px;
-    }
-
-    /* Stack action buttons on mobile */
-    .table td .btn {
-        width: 32px;
-        height: 32px;
-        padding: 2px;
-        margin: 1px;
-    }
-
-    .table td .btn i {
-        font-size: 14px;
-    }
-
-    /* Adjust table for mobile */
-    .table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-
-    .table th,
-    .table td {
-        min-width: 100px;
-    }
-
-    /* DataTables specific mobile adjustments */
-    .dataTables_length,
-    .dataTables_filter {
-        width: 100%;
-        float: none;
-        text-align: left;
-        margin-bottom: 10px;
-    }
-
-    .dataTables_paginate {
-        float: none !important;
-        text-align: center !important;
-        margin-top: 10px !important;
-    }
-}
-
-/* Dashboard Cards Responsive Styles */
-@media (max-width: 991px) {
-    .dashboard .card {
-        margin-bottom: 15px;
-    }
-
-    .dashboard .col-md-4 {
-        margin-bottom: 15px;
-    }
-}
-
-/* Sidebar Responsive Behavior */
-@media (max-width: 991px) {
-    .offcanvas-backdrop::before {
-        display: block;
-    }
-
-    .sidebar-nav {
-        width: var(--offcanvas-width) !important;
-    }
-}
-
-/* Update mobile sidebar behavior */
-@media (max-width: 991px) {
-    :root {
-        --offcanvas-width: 75% !important; /* Reduce width on mobile */
-    }
-
-    .sidebar-nav {
-        width: var(--offcanvas-width) !important;
-        max-height: 100vh !important; /* Make sidebar shorter */
-    }
-
-    .offcanvas-body {
-        max-height: calc(
-            85vh - 60px
-        ) !important; /* Account for header height */
-        overflow-y: auto;
-    }
-
-    /* Make the main content area scrollable independently */
-    main {
-        height: calc(100vh - var(--topNavbarHeight));
-        overflow-y: auto;
-    }
-}
-
-/* Extra small devices adjustments */
-@media (max-width: 575px) {
-    :root {
-        --offcanvas-width: 80% !important; /* Slightly wider on phones */
-    }
-}
-
-/* Add smooth scrolling to sidebar */
+/* 5. Responsive Adjustments */
+/* Sidebar scrolling */
 .offcanvas-body::-webkit-scrollbar {
     width: 5px;
 }
@@ -574,43 +340,381 @@ a {
     border-radius: 3px;
 }
 
-/* Table Responsive Styles */
-.table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
+/* Medium devices and larger */
+@media (min-width: 992px) {
+    body {
+        overflow: auto;
+    }
 
-/* Fix table header and column alignment */
-.table thead th {
-    white-space: nowrap;
-    vertical-align: middle;
-}
+    main {
+        margin-left: var(--offcanvas-width);
+        padding-left: 1rem;
+    }
 
-/* DataTables Responsive Adjustments */
-.dataTables_wrapper {
-    width: 100%;
-    overflow-x: auto;
-}
+    .sidebar-nav {
+        transform: none;
+        visibility: visible;
+    }
 
-/* SweetAlert Responsive Adjustments */
-.swal2-popup {
-    font-size: 0.9rem !important;
-    width: auto !important;
-    max-width: 90% !important;
-}
+    .offcanvas-backdrop::before {
+        display: none;
+    }
 
-@media (max-width: 576px) {
-    .swal2-popup {
-        padding: 0.5em !important;
+    /* Hide hamburger button on desktop */
+    .navbar-toggler {
+        display: none;
+    }
+
+    /* Always show sidebar toggle */
+    .navbar-toggler.sidebar-toggle {
+        display: block;
+        margin-right: 5px;
     }
 }
 
-/* Modal backdrop fix */
-.modal-backdrop {
-    opacity: 0.5;
+/* Mobile and tablets */
+@media (max-width: 991px) {
+    :root {
+        --offcanvas-width: 65%;
+    }
+
+    .offcanvas-backdrop::before {
+        display: block;
+    }
+
+    .sidebar-nav {
+        width: var(--sidebar-sheet-width);
+    }
+
+    .container {
+        max-width: 100%;
+        padding: 0 15px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .navbar-brand {
+        position: static;
+        transform: none;
+        margin-left: 10px;
+    }
 }
 
-body.modal-open {
-    overflow: auto !important;
-    padding-right: 0 !important;
+/* Small devices */
+@media (max-width: 575px) {
+    :root {
+        --offcanvas-width: 75%;
+    }
+
+    .container {
+        padding: 0 8px;
+    }
+
+    .navbar-brand {
+        font-size: 1rem;
+    }
+
+    .table td .btn {
+        width: 30px;
+        height: 30px;
+        padding: 2px;
+        margin: 1px;
+    }
+
+    .table td .btn i {
+        font-size: 14px;
+    }
+
+    .dataTables_length,
+    .dataTables_filter {
+        width: 100%;
+        float: none;
+        text-align: left;
+        margin-bottom: 10px;
+    }
 }
+
+/* Enhanced Mobile Font Sizes */
+@media (max-width: 575px) {
+    /* ...existing mobile styles... */
+
+    .table {
+        font-size: 0.875rem; /* Increased from 0.75rem */
+    }
+
+    .filter-container h3 {
+        font-size: 1.75rem; /* Increased from 1.5rem */
+    }
+
+    .btn-group .btn {
+        font-size: 1rem; /* Increased from 0.875rem */
+    }
+
+    .navbar-brand {
+        font-size: 1.1rem; /* Increased from 0.9rem */
+    }
+
+    /* Post details modal font sizes */
+    #postContainer {
+        .fs-4 {
+            font-size: 1.25rem !important; /* Increased from 1.1rem */
+        }
+        .fs-5 {
+            font-size: 1.15rem !important; /* Increased from 1rem */
+        }
+        .card-text {
+            font-size: 1rem;
+        }
+    }
+
+    /* User modal font sizes */
+    .modal-body p {
+        font-size: 1rem;
+    }
+
+    /* DataTable elements */
+    .dataTables_info,
+    .dataTables_length,
+    .dataTables_filter,
+    .dataTables_paginate {
+        font-size: 0.95rem;
+    }
+
+    /* Table headers */
+    .table thead th {
+        font-size: 1rem;
+    }
+}
+
+/* Enhanced Responsive Design */
+/* Extra Large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 95%;
+    }
+
+    .table td {
+        padding: 1rem;
+    }
+
+    .filter-container {
+        margin-bottom: 2rem;
+    }
+}
+
+/* Large devices (desktops, 992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .container {
+        max-width: 95%;
+    }
+
+    .table {
+        font-size: 0.9rem;
+    }
+
+    .btn-group .btn {
+        padding: 0.375rem 0.75rem;
+    }
+}
+
+/* Medium devices (tablets, 768px to 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .container {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+
+    .filter-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .btn-group {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .table-responsive {
+        margin: 0 -10px;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Small devices (landscape phones, 576px to 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .container {
+        padding: 0 5px;
+    }
+
+    .filter-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .btn-group {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .btn-group::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .table {
+        font-size: 0.85rem;
+    }
+
+    .navbar-brand {
+        font-size: 1rem;
+    }
+
+    .card-body {
+        padding: 0.75rem;
+    }
+}
+
+/* Extra small devices (phones, less than 576px) */
+@media (max-width: 575px) {
+    .container {
+        padding: 0 5px;
+    }
+
+    .filter-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 1rem;
+    }
+
+    .filter-container h3 {
+        font-size: 1.5rem;
+    }
+
+    .btn-group {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+
+    .table {
+        font-size: 0.75rem;
+    }
+
+    .table td .btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .navbar-brand {
+        font-size: 0.9rem;
+        img {
+            width: 25px;
+            height: 25px;
+        }
+    }
+
+    .offcanvas {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}    }        }            margin-top: 10px;            text-align: center;            width: 100%;        .dataTables_paginate {        .dataTables_info,                }            }                margin-left: 0 !important;                width: 100%;            input {            select,                        margin-bottom: 10px;            text-align: left;        .dataTables_filter {        .dataTables_length,    .dataTables_wrapper {@media (max-width: 768px) {/* DataTables Responsive Adjustments */}    }        }            }                padding: 8px;            .card-header {                        margin-bottom: 8px;            padding: 8px;        .reply-card {                padding: 10px;    .replies-section {        }        }            padding: 0.75rem;        .card-body {                }            font-size: 1rem !important;        .fs-5 {                }            font-size: 1.1rem !important;        .fs-4 {                }            padding: 10px;        .post-header {    #postContainer {        }        margin: 10px auto;        max-width: 95%;    .modal-dialog.modal-lg {@media (max-width: 768px) {/* Post Details Modal Responsiveness */}    }        margin-left: 0 !important;        width: 100%;    .dataTables_filter input {        }        margin-bottom: 10px;        text-align: left;        float: none;        width: 100%;    .dataTables_length {    .dataTables_filter,        }        margin: 0;    .post-card {        }        width: 80% !important;
