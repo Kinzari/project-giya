@@ -22,6 +22,9 @@
             <i class="fas fa-user-circle avatar-icon"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
+            <li><a class="dropdown-item" href="#" id="inquiryStatusBtn">
+                    <i class="fas fa-list-check"></i> Inquiry Status</a>
+            </li>
             <li><a class="dropdown-item" href="edit-profile.html"><i class="fas fa-edit"></i> Edit Profile</a></li>
             <li><button class="dropdown-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button></li>
         </ul>
@@ -38,7 +41,90 @@
                 <div class="d-grid gap-3">
                     <button class="btn btn-custom-green concern-btn py-3 fs-5" data-type="inquiry">INQUIRY</button>
                     <button class="btn btn-custom-green concern-btn py-3 fs-5" data-type="feedback">FEEDBACK</button>
-                    <button class="btn btn-custom-green concern-btn py-3 fs-5" data-type="suggestion">SUGGESTION</button>
+                    <button class="btn btn-custom-green concern-btn py-3 fs-5"
+                        data-type="suggestion">SUGGESTION</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inquiry Status Modal -->
+    <div class="modal fade" id="inquiryStatusModal" tabindex="-1" aria-labelledby="inquiryStatusModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #155f37; color: white;">
+                    <h5 class="modal-title" id="inquiryStatusModalLabel">My Submissions</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inquiriesTableBody">
+                                <!-- Submissions will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Detail Modal -->
+    <div class="modal fade" id="submissionDetailModal" tabindex="-1" aria-labelledby="submissionDetailModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #155f37; color: white;">
+                    <h5 class="modal-title" id="submissionDetailModalLabel">Submission Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="submissionDetailContent">
+                        <!-- Submission Details -->
+                        <div class="card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="badge" id="detailStatus"></span>
+                                <div>
+                                    <span id="detailType" class="text-muted"></span> -
+                                    <span id="detailDate" class="text-muted"></span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title" id="detailTitle"></h5>
+                                <p class="card-text" id="detailContent"></p>
+                            </div>
+                        </div>
+
+                        <!-- Replies Section -->
+                        <div id="replies" class="mb-3">
+                            <!-- Replies will be loaded here -->
+                        </div>
+
+                        <!-- Reply Form -->
+                        <div id="replyFormContainer" class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Add Reply</h5>
+                                <textarea id="replyContent" class="form-control mb-3" rows="3"
+                                    placeholder="Type your reply here..."></textarea>
+                                <div class="d-flex justify-content-between">
+                                    <button id="sendReplyBtn" class="btn btn-custom-green">Send Reply</button>
+                                    <button id="markResolvedBtn" class="btn btn-success">Mark as Resolved</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
