@@ -1,4 +1,4 @@
-// Toggle password visibility
+
 document.querySelectorAll('.toggle-password').forEach(icon => {
     icon.addEventListener('click', function() {
         const targetId = this.getAttribute('data-target');
@@ -16,7 +16,7 @@ document.querySelectorAll('.toggle-password').forEach(icon => {
     });
 });
 
-// Add password requirement checker
+
 function updatePasswordRequirements(password) {
     const requirements = {
         length: password.length >= 8,
@@ -25,7 +25,7 @@ function updatePasswordRequirements(password) {
         number: /\d/.test(password)
     };
 
-    // Update requirement list items with check/x marks
+
     document.querySelectorAll('.password-requirement').forEach(item => {
         const requirementType = item.getAttribute('data-requirement');
         const icon = item.querySelector('i');
@@ -44,7 +44,7 @@ function updatePasswordRequirements(password) {
     return Object.values(requirements).every(Boolean);
 }
 
-// Add input event listener for password field
+
 document.getElementById('newPassword').addEventListener('input', function() {
     updatePasswordRequirements(this.value);
 });
@@ -55,7 +55,7 @@ document.getElementById('change-password-form').addEventListener('submit', async
     const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
-    // Password validation
+
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(newPassword)) {
         Swal.fire({
@@ -76,9 +76,8 @@ document.getElementById('change-password-form').addEventListener('submit', async
     }
 
     try {
-        const userId = localStorage.getItem('user_id');
+        const userId = sessionStorage.getItem('user_id');
 
-        // Show loading state
         Swal.fire({
             title: 'Changing Password',
             text: 'Please wait...',
@@ -90,7 +89,7 @@ document.getElementById('change-password-form').addEventListener('submit', async
         });
 
         const response = await axios.post(
-            `${sessionStorage.getItem("baseURL")}?action=change_password`,
+            `${sessionStorage.getItem("baseURL")}giya.php?action=change_password`,
             {
                 user_id: userId,
                 new_password: newPassword
@@ -125,8 +124,8 @@ document.getElementById('change-password-form').addEventListener('submit', async
 
 // Check if user is authorized to access this page
 document.addEventListener('DOMContentLoaded', function() {
-    const userId = localStorage.getItem('user_id');
-    const userTypeId = localStorage.getItem('user_typeId');
+    const userId = sessionStorage.getItem('user_id');
+    const userTypeId = sessionStorage.getItem('user_typeId');
 
     if (!userId || ![1, 2].includes(parseInt(userTypeId))) {
         window.location.href = 'index.html';

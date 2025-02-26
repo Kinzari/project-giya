@@ -1,6 +1,7 @@
 // sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php");
 // Set baseURL in sessionStorage (this must be set before any API calls)
 sessionStorage.setItem("baseURL", "http://localhost/api/");
+// sessionStorage.setItem("baseURL", "http://192.168.137.190/api/");
 
 document
     .getElementById("login-form")
@@ -41,10 +42,10 @@ document
                     password: password,
                 },
                 {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
+                    // headers: {
+                    //     "Content-Type": "application/json",
+                    //     Accept: "application/json",
+                    // },
                     withCredentials: true,
                 }
             );
@@ -52,13 +53,10 @@ document
             const result = response.data;
 
             if (result.success) {
-                // Preserve baseURL before clearing sessionStorage
                 const baseURL = sessionStorage.getItem("baseURL");
-                // Clear sessionStorage and then restore baseURL
                 sessionStorage.clear();
                 sessionStorage.setItem("baseURL", baseURL);
 
-                // Store user data in sessionStorage
                 sessionStorage.setItem("user_id", result.user_id);
                 sessionStorage.setItem("user_schoolId", result.user_schoolId);
                 sessionStorage.setItem("user_firstname", result.user_firstname);
@@ -122,15 +120,15 @@ document
         }
     });
 
-// Initialize Math Verification and other UI functionalities
+
 document.addEventListener("DOMContentLoaded", () => {
-    // Generate random numbers for math verification
+    // gen rng numbers
     const num1 = Math.floor(Math.random() * 50) + 10;
     const num2 = Math.floor(Math.random() * 9) + 1;
     document.getElementById("num1").textContent = num1;
     document.getElementById("num2").textContent = num2;
 
-    // Math answer input handler
+
     const mathAnswerInput = document.getElementById("math-answer");
     mathAnswerInput.addEventListener("input", () => {
         const mathAnswer = parseInt(mathAnswerInput.value.trim());
@@ -143,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Password visibility toggle
+    // password toggle
     const togglePassword = document.getElementById("toggle-password");
     togglePassword.addEventListener("click", function () {
         const passwordField = document.getElementById("password");

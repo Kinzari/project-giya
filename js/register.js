@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
    // sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php"); //KINZARI
    sessionStorage.setItem("baseURL", "http://localhost/api/"); //uncomment lang ni pag mag localhost
-
+// sessionStorage.setItem("baseURL", "http://192.168.137.190/api/");
 
 
    const baseURL = sessionStorage.getItem("baseURL");
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
        return;
    }
 
-   // Password validation function
+
    function validatePassword(password) {
        const validations = {
            length: password.length >= 8,
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
            number: /\d/.test(password)
        };
 
-       // Update validation icons
+
        Object.entries(validations).forEach(([key, valid]) => {
            const item = document.getElementById(`${key}-check`);
            const checkIcon = item.querySelector('.fa-check');
@@ -40,20 +40,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
        return Object.values(validations).every(Boolean);
    }
-
-   // Validate password on input
    passwordInput.addEventListener('input', function() {
        validatePassword(this.value);
    });
 
-   // --- Privacy Policy Checkbox Logic ---
+
    const termsCheckbox = document.getElementById("terms");
-   // Intercept click on the checkbox to show the privacy policy modal
+
    termsCheckbox.addEventListener("click", function (e) {
-       // Prevent the checkbox from toggling automatically
+
        e.preventDefault();
 
-       // Show SweetAlert for Privacy Policy
+
        Swal.fire({
            title: "Privacy Policy",
            html: "Please read the privacy policy carefully.<br><br>" +
@@ -66,22 +64,19 @@ document.addEventListener("DOMContentLoaded", function () {
            cancelButtonText: "Decline"
        }).then((result) => {
            if (result.isConfirmed) {
-               // If accepted, check the checkbox and set privacy flag
                termsCheckbox.checked = true;
                sessionStorage.setItem("privacyPolicyAccepted", "true");
            } else {
-               // If declined, ensure checkbox remains unchecked
                termsCheckbox.checked = false;
                sessionStorage.removeItem("privacyPolicyAccepted");
            }
        });
    });
 
-   // --- Registration Form Submission ---
    registerForm.addEventListener("submit", async function (event) {
-       event.preventDefault(); // Prevent page reload
+       event.preventDefault();
 
-       // Get field values
+
        const firstName = document.getElementById("first_name").value.trim();
        const middleName = document.getElementById("middle_name").value.trim();
        const lastName = document.getElementById("family_name").value.trim();
@@ -92,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
        const confirmPassword = document.getElementById("confirm_password").value.trim();
        const agreeTerms = termsCheckbox.checked;
 
-       // Check if terms checkbox is checked (i.e., privacy policy accepted)
+
        if (!agreeTerms) {
            Swal.fire({
                icon: 'warning',
@@ -134,14 +129,12 @@ document.addEventListener("DOMContentLoaded", function () {
                }
            });
            if (response.data.status === "success") {
-               // First, show a SweetAlert reminder about the email
                Swal.fire({
                    icon: 'info',
                    confirmButtonColor: '#155f37',
                    title: 'Note',
                    text: 'Remember your email address, as it will be required for logging in.'
                }).then(() => {
-                   // Then, show another SweetAlert with the Visitor ID
                    Swal.fire({
                        icon: 'success',
                        confirmButtonColor: '#155f37',
@@ -161,7 +154,6 @@ document.addEventListener("DOMContentLoaded", function () {
        }
    });
 
-   // Toggle password visibility for both password fields
    const togglePassword = document.getElementById("toggle-password");
    const toggleConfirmPassword = document.getElementById("toggle-confirm-password");
 

@@ -1,5 +1,6 @@
 // If not set elsewhere, you can set your baseURL here
 sessionStorage.setItem("baseURL", "http://localhost/api/");
+// sessionStorage.setItem("baseURL", "http://192.168.137.190/api/");
 
 const now = new Date();
 const options = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' };
@@ -7,15 +8,13 @@ const formattedTime = now.toLocaleTimeString('en-US', options);
 
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Retrieve the selected concern type from sessionStorage
+
     const selectedPostType = sessionStorage.getItem('selectedPostType') || 'inquiry';
 
-    // 2. Display the concern type (for user reference)
     document.getElementById('selectedPostType').value = selectedPostType;
     const concernTypeLabel = document.getElementById('concernTypeLabel');
     concernTypeLabel.value = capitalizeFirstLetter(selectedPostType);
 
-    // 3. Fetch inquiry types from the server and populate the dropdown
     const inquirySelect = document.getElementById('inquiryType');
     try {
         const response = await axios.get(
@@ -59,7 +58,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Confirmation prompt
         Swal.fire({
             title: 'Confirm Submission',
             text: 'Are you sure you want to submit your concern?',
