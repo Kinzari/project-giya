@@ -22,6 +22,7 @@
 body {
     font-family: "Poppins", sans-serif;
     background-color: #f6f9ff;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 /* 2. Layout Components */
@@ -182,6 +183,10 @@ body {
 
 .table-responsive {
     min-height: 450px; /* Increase the minimum height of table container */
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    overflow-x: auto;
 }
 
 table.dataTable {
@@ -201,10 +206,12 @@ table.dataTable {
 
 /* Make sure the container has enough width */
 .container {
-    max-width: 95%;
-    width: 95%;
+    max-width: 100%; /* Changed from 95% */
+    width: 100%; /* Changed from 95% */
     padding-left: 1rem;
     padding-right: 1rem;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Remove any width constraints on main content */
@@ -349,6 +356,12 @@ main {
     main {
         margin-left: var(--offcanvas-width);
         padding-left: 1rem;
+        padding-right: 1rem;
+        width: calc(
+            100% - var(--offcanvas-width)
+        ); /* Adjust width accounting for sidebar */
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
     .sidebar-nav {
@@ -633,88 +646,70 @@ main {
     }
 
     .offcanvas {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}    }        }            margin-top: 10px;            text-align: center;            width: 100%;        .dataTables_paginate {        .dataTables_info,                }            }                margin-left: 0 !important;                width: 100%;            input {            select,                        margin-bottom: 10px;            text-align: left;        .dataTables_filter {        .dataTables_length,    .dataTables_wrapper {@media (max-width: 768px) {/* DataTables Responsive Adjustments */}    }        }            }                padding: 8px;            .card-header {                        margin-bottom: 8px;            padding: 8px;        .reply-card {                padding: 10px;    .replies-section {        }        }            padding: 0.75rem;        .card-body {                }            font-size: 1rem !important;        .fs-5 {                }            font-size: 1.1rem !important;        .fs-4 {                }            padding: 10px;        .post-header {    #postContainer {        }        margin: 10px auto;        max-width: 95%;    .modal-dialog.modal-lg {@media (max-width: 768px) {/* Post Details Modal Responsiveness */}    }        margin-left: 0 !important;        width: 100%;    .dataTables_filter input {        }        margin-bottom: 10px;        text-align: left;        float: none;        width: 100%;    .dataTables_length {    .dataTables_filter,        }        margin: 0;    .post-card {        }        width: 80% !important;
+        margin-top: 10px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .dataTables_wrapper {
+        width: 100%;
+        float: none;
+        text-align: left;
+        margin-bottom: 10px;
+    }
+
+    .dataTables_length,
+    .dataTables_filter {
+        width: 100%;
+        float: none;
+        text-align: left;
+        margin-bottom: 10px;
+    }
+
+    .dataTables_filter input {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    .dataTables_length select {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    .dataTables_paginate {
+        text-align: center;
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+/* Table column widths */
+.table th.col-date,
+.table td.col-date {
+    min-width: 150px;
+    width: 150px;
+}
+
+.table th.col-time,
+.table td.col-time {
+    min-width: 120px;
+    width: 120px;
+}
+
+.table th.col-status,
+.table td.col-status {
+    min-width: 90px;
+    width: 90px;
+}
+
+.table th.col-title,
+.table td.col-title {
+    min-width: 200px;
+    width: auto;
+}
+
+.table th.col-action,
+.table td.col-action {
+    min-width: 100px;
+    width: 100px;
+}
