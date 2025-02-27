@@ -1,13 +1,10 @@
-// posts.js
 sessionStorage.setItem("baseURL", "http://localhost/api/"); // For localhost
 // sessionStorage.setItem("baseURL", "http://192.168.137.190/api/posts.php");
-// Expose these functions globally so that event handlers in this file can call them.
+
 window.showPostDetails = showPostDetails;
 window.submitReply = submitReply;
 
-// --------------------------
-// Helper: Render status badge (text only)
-// --------------------------
+
 function renderStatus(data) {
   let statusText = "";
   let badgeClass = "";
@@ -35,23 +32,19 @@ function renderStatus(data) {
   return `<span class="badge bg-${badgeClass}">${statusText}</span>`;
 }
 
-// --------------------------
-// Function: Show Post Details Modal (opens when clicking Full Name)
-// --------------------------
 async function showPostDetails(postId) {
   try {
     const response = await axios.get(`${sessionStorage.getItem('baseURL')}posts.php?action=get_post_details&post_id=${postId}`);
     if (response.data.success && response.data.post) {
       const post = response.data.post;
-      console.log('Post details:', post); // For debugging
+      console.log('Post details:', post);
 
-      // Format the date to MM-DD-YYYY with dashes
       const postDate = new Date(post.post_date);
       const formattedDate = postDate.toLocaleDateString('en-US', {
         month: '2-digit',
         day: '2-digit',
         year: 'numeric'
-      }).replace(/\//g, '-'); // Replace all forward slashes with dashes
+      }).replace(/\//g, '-');
 
       const container = document.getElementById('postContainer');
       const isResolved = post.post_status === 3;
@@ -126,9 +119,7 @@ async function showPostDetails(postId) {
   }
 }
 
-// --------------------------
-// Function: Initialize Posts DataTable
-// --------------------------
+
 function initializePostsTable(tableSelector, action) {
   var table = $(tableSelector).DataTable({
     ajax: {
@@ -149,7 +140,7 @@ function initializePostsTable(tableSelector, action) {
         render: renderStatus
       },
       {
-        // Full Name rendered as a clickable link for post details.
+
         title: "Full Name",
         data: null,
         render: function(data) {
@@ -228,12 +219,10 @@ function initializePostsTable(tableSelector, action) {
     }
   });
 
-  // Handle window resize for table responsiveness
   window.addEventListener('resize', function() {
       table.columns.adjust().responsive.recalc();
   });
 
-  // When clicking the Full Name link, open post details.
   $(tableSelector).on('click', '.view-post', async function(e) {
     e.preventDefault();
     var postId = $(this).data('post-id');
@@ -247,7 +236,6 @@ function initializePostsTable(tableSelector, action) {
     }
   });
 
-  // When clicking the "View" button in the Action column, open user details.
   $(tableSelector).on('click', '.view-user-btn', function(e) {
     e.preventDefault();
     var btn = $(this);
@@ -255,7 +243,7 @@ function initializePostsTable(tableSelector, action) {
     var fullName = btn.data('user-fullname');
     var schoolId = btn.data('user-schoolid');
     var userStatus = btn.data('user-status');
-    // Call the globally available viewUserDetails (must be defined in admin-dashboard.js)
+
     if (typeof window.viewUserDetails === 'function') {
       window.viewUserDetails(userId, fullName, schoolId, userStatus);
     } else {
@@ -266,15 +254,11 @@ function initializePostsTable(tableSelector, action) {
   return table;
 }
 
-// --------------------------
-// Filtering: Use a global filter variable and attach a search function once.
-// --------------------------
 window.currentFilter = 'all';
 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
     if (window.currentFilter === 'all') return true;
 
-    // Get the status text from the first column (status column)
-    const statusCell = data[0]; // Get the HTML content of status cell
+    const statusCell = data[0];
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = statusCell;
     const statusText = tempDiv.textContent.trim().toLowerCase();
@@ -298,18 +282,15 @@ function attachPostFiltering(table, filterButtonSelector) {
         const filterValue = $(this).data('filter').toLowerCase();
         window.currentFilter = filterValue;
 
-        // Update active state of filter buttons
+
         $(filterButtonSelector).removeClass('active');
         $(this).addClass('active');
 
-        // Redraw the table with the new filter
+
         table.draw();
     });
 }
 
-// --------------------------
-// Add filter buttons HTML to the page
-// --------------------------
 function addFilterButtons() {
     const existingFilter = document.querySelector('.filter-buttons-container');
     if (!existingFilter) {
@@ -325,7 +306,6 @@ function addFilterButtons() {
             </div>
         `;
 
-        // Insert before the DataTable
         const table = document.querySelector('table');
         if (table) {
             table.parentNode.insertBefore(container, table);
@@ -333,9 +313,6 @@ function addFilterButtons() {
     }
 }
 
-// --------------------------
-// Initialization based on current page
-// --------------------------
 document.addEventListener("DOMContentLoaded", function() {
     var table;
     var path = window.location.pathname.toLowerCase();
@@ -352,18 +329,17 @@ document.addEventListener("DOMContentLoaded", function() {
         table = initializePostsTable('#postsTable', action);
     }
 
-    // Attach filtering after table initialization
+
     const filterButtons = document.querySelectorAll('.btn-group button');
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
             const filter = this.getAttribute('data-filter');
             window.currentFilter = filter;
 
-            // Update active state
+
             filterButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
 
-            // Redraw the table with the new filter
             if (table) {
                 table.draw();
             }
@@ -371,8 +347,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// --------------------------
-// Function: Submit reply (exposed globally)
 async function submitReply(event, postId) {
   event.preventDefault();
   const form = event.target;

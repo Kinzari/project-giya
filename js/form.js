@@ -1,4 +1,3 @@
-// If not set elsewhere, you can set your baseURL here
 sessionStorage.setItem("baseURL", "http://localhost/api/");
 // sessionStorage.setItem("baseURL", "http://192.168.137.190/api/");
 

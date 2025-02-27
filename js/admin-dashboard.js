@@ -131,7 +131,6 @@ async function updateUserStatus(userId, newStatus) {
         if (response.data.success) {
             await Swal.fire("Success!", "User status updated successfully", "success");
 
-            // Refresh both tables if they exist
             if ($.fn.DataTable.isDataTable("#usersTable")) {
                 await $("#usersTable").DataTable().ajax.reload(null, false);
             }
@@ -142,7 +141,6 @@ async function updateUserStatus(userId, newStatus) {
                 await $("#latestPostsTable").DataTable().ajax.reload(null, false);
             }
 
-            // Update any visible user details modal
             if ($('#userModal').is(':visible')) {
                 const modalUserId = $('#userModal').data('userId');
                 if (modalUserId === userId) {
@@ -208,7 +206,7 @@ async function fetchUsers() {
 }
 
 function initializeSidebar() {
-    // Toggle sidebar collapse
+
     const toggleBtn = document.getElementById('sidebar-toggle');
     const sidebar = document.querySelector('.sidebar-nav');
 
@@ -219,7 +217,6 @@ function initializeSidebar() {
         });
     }
 
-    // Restore sidebar state
     const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
     if (isCollapsed) {
         sidebar.classList.add('collapsed');
@@ -232,18 +229,18 @@ function handleLogout() {
     window.location.href = 'index.html';
 }
 
-// Initialize on DOM load
+
 document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize sidebar
+
     initializeSidebar();
 
-    // Setup logout handlers
+
     const logoutBtn = document.getElementById('logout-button');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
     }
 
-    // Add user info to sidebar
+
     const userString = localStorage.getItem('user');
     if (userString) {
         const user = JSON.parse(userString);
@@ -253,15 +250,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Initialize other dashboard features
     if (document.getElementById("visitor-count")) {
         await fetchUsers();
     }
 });
 
-// Update initialization code
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle active nav links
+
     const currentPath = window.location.pathname;
     document.querySelectorAll('.offcanvas .nav-link').forEach(link => {
         if (link.getAttribute('href') === currentPath.split('/').pop()) {
@@ -269,7 +265,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Update user name in sheet if logged in
     const userString = localStorage.getItem('user');
     if (userString) {
         const user = JSON.parse(userString);
@@ -279,14 +274,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Initialize tooltips if using them
+
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
 
-// Example: define viewUserDetails if not already defined.
+
 async function viewUserDetails(userId, fullName, schoolId, userStatus) {
     try {
         const baseURL = sessionStorage.getItem("baseURL");
@@ -316,7 +311,7 @@ async function viewUserDetails(userId, fullName, schoolId, userStatus) {
     }
 }
 
-// Expose functions to global scope
+
 window.updateUserStatus = updateUserStatus;
 window.resetUserPassword = resetUserPassword;
 window.viewUserDetails = viewUserDetails;
