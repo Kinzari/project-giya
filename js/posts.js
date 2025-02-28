@@ -1,275 +1,302 @@
-sessionStorage.setItem("baseURL", "http://localhost/api/"); // For localhost
-// sessionStorage.setItem("baseURL", "http://192.168.137.190/api/posts.php");
+document.addEventListener('DOMContentLoaded', function() {
+    const baseURL = sessionStorage.getItem("baseURL");
+    if (!baseURL) {
+        window.location.href = 'login.html';
+        return;
+    }
 
-window.showPostDetails = showPostDetails;
-window.submitReply = submitReply;
+    // Initialize tables immediately after checking baseURL
+    let table;
+    const path = window.location.pathname.toLowerCase();
 
+    // Initialize appropriate table based on page
+    if (document.getElementById("latestPostsTable")) {
+        table = initializePostsTable('#latestPostsTable', 'get_posts');
+    } else if (document.getElementById("postsTable")) {
+        let action = "";
+        if (path.includes("students.html")) {
+            action = "get_student_posts";
+        } else if (path.includes("visitors.html")) {
+            action = "get_visitor_posts";
+        }
+        table = initializePostsTable('#postsTable', action);
+    }
+
+    // Set up filter buttons after table is initialized
+    if (table) {
+        attachPostFiltering(table, '.btn-group button');
+    }
+
+    // Expose functions to window
+    window.showPostDetails = showPostDetails;
+    window.submitReply = submitReply;
+});
+
+function initializePostsTable(tableSelector, action) {
+    // Remove any existing DataTable
+    if ($.fn.DataTable.isDataTable(tableSelector)) {
+        $(tableSelector).DataTable().destroy();
+    }
+
+    return $(tableSelector).DataTable({
+        ajax: {
+            url: `${sessionStorage.getItem('baseURL')}posts.php?action=${action}`,
+            type: 'GET',
+            dataSrc: function(json) {
+                // Remove the default filter - let the search function handle it
+                return json.data;
+            },
+            error: function(xhr, error, thrown) {
+                console.error('DataTables error:', error, thrown);
+                toastr.error('Error loading data');
+            }
+        },
+        processing: true,
+        serverSide: false,
+        columns: [
+            {
+                title: "Status",
+                data: "post_status",
+                render: renderStatus
+            },
+            {
+                title: "Full Name",
+                data: "user_fullname" // Simplified to just show name without link
+            },
+            { title: "Type", data: "postType_name" },
+            { title: "Title", data: "post_title" },
+            { title: "Date", data: "post_date" },
+            {
+                title: "Time",
+                data: "post_time",
+                render: function(data, type, row) {
+                    const dt = new Date(row.post_date + " " + data);
+                    const options = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' };
+                    return dt.toLocaleTimeString('en-US', options);
+                }
+            }
+        ],
+        order: [[4, 'desc'], [5, 'desc']], // Sort by date and time in descending order
+        pageLength: 10,
+        responsive: true,
+        scrollX: true,
+        scrollCollapse: true,
+        autoWidth: false,
+        columnDefs: [
+            {
+                responsivePriority: 1,
+                targets: [0, 1] // Status and Full Name columns
+            },
+            {
+                responsivePriority: 2,
+                targets: -1 // Action column
+            },
+            {
+                responsivePriority: 3,
+                targets: [2, 3] // Type and Title columns
+            }
+        ],
+        dom: '<"row mb-4"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+             '<"row"<"col-sm-12"tr>>' +
+             '<"row mt-4"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8 d-flex justify-content-end"p>>',
+        language: {
+            searchPlaceholder: "Search records...",
+            search: "",
+            lengthMenu: "_MENU_ per page",
+            paginate: {
+                previous: "<i class='bi bi-chevron-left'></i>",
+                next: "<i class='bi bi-chevron-right'></i>"
+            }
+        },
+        drawCallback: function() {
+            // Add existing pagination styling
+            $('.dataTables_paginate > .pagination').addClass('pagination-md border-0');
+            $('.dataTables_paginate').addClass('mt-3');
+            $('.page-item .page-link').css({
+                'border': 'none',
+                'padding': '0.5rem 1rem',
+                'margin': '0 0.2rem'
+            });
+
+            // Add row styling and click handler
+            $(tableSelector + ' tbody tr').css('cursor', 'pointer');
+        },
+        initComplete: function(settings, json) {
+            // Add click handler for entire row
+            $(tableSelector + ' tbody').on('click', 'tr', function() {
+                const data = $(tableSelector).DataTable().row(this).data();
+                if (data) {
+                    showPostDetails(data.post_id);
+                }
+            });
+
+            // Adjust columns
+            this.api().columns.adjust().draw();
+        }
+    });
+}
 
 function renderStatus(data) {
-  let statusText = "";
-  let badgeClass = "";
-  switch (Number(data)) {
-    case 0:
-      statusText = "Unread";
-      badgeClass = "secondary";
-      break;
-    case 1:
-      statusText = "Read";
-      badgeClass = "info";
-      break;
-    case 2:
-      statusText = "Pending";
-      badgeClass = "warning";
-      break;
-    case 3:
-      statusText = "Resolved";
-      badgeClass = "success";
-      break;
-    default:
-      statusText = "Unknown";
-      badgeClass = "dark";
-  }
-  return `<span class="badge bg-${badgeClass}">${statusText}</span>`;
+    let statusText = "";
+    let badgeClass = "";
+    switch (Number(data)) {
+        case 0:
+            statusText = "Pending";
+            badgeClass = "danger";
+            break;
+        case 1:
+            statusText = "Ongoing";
+            badgeClass = "warning";
+            break;
+        case 2:
+            statusText = "Resolved";
+            badgeClass = "success";
+            break;
+        default:
+            statusText = "Unknown";
+            badgeClass = "dark";
+    }
+    return `<span class="badge bg-${badgeClass}">${statusText}</span>`;
 }
 
 async function showPostDetails(postId) {
-  try {
-    const response = await axios.get(`${sessionStorage.getItem('baseURL')}posts.php?action=get_post_details&post_id=${postId}`);
-    if (response.data.success && response.data.post) {
-      const post = response.data.post;
-      console.log('Post details:', post);
+    try {
+        const response = await axios.get(`${sessionStorage.getItem('baseURL')}posts.php?action=get_post_details&post_id=${postId}`);
+        if (response.data.success && response.data.post) {
+            const post = response.data.post;
 
-      const postDate = new Date(post.post_date);
-      const formattedDate = postDate.toLocaleDateString('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric'
-      }).replace(/\//g, '-');
+            // Show modal before content update
+            const modal = new bootstrap.Modal(document.getElementById('postDetailsModal'));
+            modal.show();
 
-      const container = document.getElementById('postContainer');
-      const isResolved = post.post_status === 3;
+            // Wait for modal to be visible
+            await new Promise(resolve => setTimeout(resolve, 200));
 
-      container.innerHTML = `
-        <div class="post-card card mb-4">
-          <div class="post-header p-3">
-            <div class="mb-3">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <i class="bi bi-person-circle fs-4"></i>
-                <div>
-                  <div class="fs-4 fw-bold">${post.user_fullname}</div>
-                  <small class="text-muted">${post.user_schoolId}</small>
+            // Update header info
+            document.getElementById('postUserName').textContent = post.user_fullname;
+            document.getElementById('postUserId').textContent = post.user_schoolId;
+
+            // Main post content with inquiry details
+            const mainPost = document.querySelector('.main-post');
+            mainPost.innerHTML = `
+                <div class="d-flex flex-column">
+                    <h5>${post.postType_name}</h5>
+                    <h6>${post.post_title}</h6>
+                    <div class="inquiry-details mb-3">
+                        <strong>Type of Inquiry:</strong> ${post.inquiry_type || 'N/A'}
+                        <p class="text-muted mb-2">${post.inquiry_description || ''}</p>
+                    </div>
+                    <p>${post.post_message}</p>
+                    <small class="text-muted">${new Date(post.post_date + " " + post.post_time).toLocaleString()}</small>
                 </div>
-              </div>
-              <div class="mt-2">
-                <div class="fs-5 text-primary">${post.postType_name}</div>
-                <div class="fs-5 text-secondary">${post.post_title}</div>
-                ${post.inquiry_type ? `
-                  <div class="mt-2">
-                    <div class="fs-6 text-muted">Inquiry Type: ${post.inquiry_type}</div>
-                    <div class="small text-muted">${post.inquiry_description || ''}</div>
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-          <div class="post-content px-3 pb-4 position-relative">
-            <p class="mb-4">${post.post_message}</p>
-            <div class="text-muted small position-absolute bottom-0 end-0 pe-3 pb-2">
-              ${formattedDate} ${new Date(post.post_date + " " + post.post_time)
-                .toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })}
-            </div>
-          </div>
-          <div class="replies-section bg-light p-3">
-            <h6 class="fw-bold mb-3">Replies</h6>
-            <div class="replies-container mb-3">
-              ${post.replies && post.replies.length ? post.replies.map(reply => `
-                <div class="reply-card mb-2 p-2 border-start border-4 border-primary bg-white">
-                  <div class="d-flex justify-content-between">
-                    <strong>${reply.display_name}</strong>
-                    <small class="text-muted">${reply.reply_date}</small>
-                  </div>
-                  <p class="mb-0">${reply.reply_message}</p>
-                </div>
-              `).join('') : '<p>No replies yet.</p>'}
-            </div>
-            ${!isResolved ? `
-              <form class="reply-form" onsubmit="submitReply(event, ${post.post_id})">
-                <div class="input-group">
-                  <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('attachFile${post.post_id}').click()">
-                    <i class="bi bi-paperclip"></i>
-                  </button>
-                  <input type="file" id="attachFile${post.post_id}" style="display: none;">
-                  <input type="text" class="form-control reply-input" placeholder="Write a reply..." required>
-                  <button class="btn btn-primary" type="submit">Reply</button>
-                </div>
-              </form>
-            ` : '<p class="text-muted">This concern is resolved. Replying is disabled.</p>'}
-          </div>
-        </div>
-      `;
+            `;
 
-      const modal = new bootstrap.Modal(document.getElementById('postDetailsModal'));
-      modal.show();
-    } else {
-      toastr.error('Failed to load post details');
+            // Just show replies
+            const repliesContainer = document.querySelector('.replies-container');
+            repliesContainer.innerHTML = post.replies && post.replies.length
+                ? post.replies.map(reply => `
+                    <div class="message-bubble ${reply.user_type === 'admin' ? 'admin-message' : 'user-message'}">
+                        <div class="message-content">
+                            <strong>${reply.display_name}</strong>
+                            <p>${reply.reply_message}</p>
+                            <small>${new Date(reply.reply_date + " " + reply.reply_time).toLocaleString()}</small>
+                        </div>
+                    </div>
+                `).join('')
+                : '<p class="text-center text-muted">No replies yet</p>';
+
+            // Scroll to bottom immediately after modal is shown and content is updated
+            if (repliesContainer) {
+                repliesContainer.scrollTop = repliesContainer.scrollHeight;
+
+                // Double-check scroll position after a short delay
+                setTimeout(() => {
+                    repliesContainer.scrollTop = repliesContainer.scrollHeight;
+                }, 300);
+            }
+
+            // Simple form handler
+            document.getElementById('replyForm').onsubmit = (e) => {
+                e.preventDefault();
+                submitReply(e, postId);
+            };
+
+            // Scroll to bottom after content is loaded
+            setTimeout(() => {
+                repliesContainer.scrollTop = repliesContainer.scrollHeight;
+            }, 100);
+        }
+    } catch (error) {
+        console.error('Error:', error);
     }
-  } catch (error) {
-    console.error('Error fetching post details:', error);
-    toastr.error('Error loading post details');
-  }
 }
 
+async function submitReply(event, postId) {
+    event.preventDefault();
+    const message = document.querySelector('.reply-input').value.trim();
+    if (!message) return;
 
-function initializePostsTable(tableSelector, action) {
-  var table = $(tableSelector).DataTable({
-    ajax: {
-      url: `${sessionStorage.getItem('baseURL')}posts.php?action=${action}`,
-      type: 'GET',
-      dataSrc: 'data',
-      error: function(xhr, error, thrown) {
-        console.error('DataTables error:', error, thrown);
-        toastr.error('Error loading data');
-      }
-    },
-    processing: true,
-    serverSide: false,
-    columns: [
-      {
-        title: "Status",
-        data: "post_status",
-        render: renderStatus
-      },
-      {
-
-        title: "Full Name",
-        data: null,
-        render: function(data) {
-          return `<a href="#" class="view-post text-decoration-none" data-post-id="${data.post_id}">
-                    ${data.user_fullname}
-                  </a>`;
-        }
-      },
-      { title: "Type", data: "postType_name" },
-      { title: "Title", data: "post_title" },
-      { title: "Date", data: "post_date" },
-      {
-        title: "Time",
-        data: "post_time",
-        render: function(data, type, row) {
-          const dt = new Date(row.post_date + " " + data);
-          const options = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' };
-          return dt.toLocaleTimeString('en-US', options);
-        }
-      },
-      {
-        title: "Action",
-        data: null,
-        render: function(data) {
-          return `
-            <div class="d-flex gap-1 align-items-center">
-              <button class="btn btn-sm btn-info view-user-btn"
-                data-user-id="${data.user_id}"
-                data-user-fullname="${data.user_fullname}"
-                data-user-schoolid="${data.user_schoolId}"
-                data-user-status="${data.user_status}"
-                title="View">
-                <i class="bi bi-eye"></i>
-              </button>
-              <button class="btn btn-sm btn-warning" onclick="resetUserPassword(${data.user_id})" title="Reset Password">
-                <i class="bi bi-key"></i>
-              </button>
-              <button class="btn btn-sm ${data.user_status == 1 ? 'btn-success' : 'btn-danger'}"
-                onclick="updateUserStatus(${data.user_id}, ${data.user_status == 1 ? 0 : 1})"
-                title="Status" data-user-id="${data.user_id}">
-                <i class="bi bi-toggle-${data.user_status == 1 ? 'on' : 'off'}"></i>
-              </button>
-            </div>
-          `;
-        }
-      }
-
-    ],
-    order: [[4, 'desc']],
-    pageLength: 10,
-    responsive: true,
-    scrollX: true,
-    scrollCollapse: true,
-    autoWidth: false,
-    columnDefs: [
-        {
-            responsivePriority: 1,
-            targets: [0, 1] // Status and Full Name columns
-        },
-        {
-            responsivePriority: 2,
-            targets: -1 // Action column
-        },
-        {
-            responsivePriority: 3,
-            targets: [2, 3] // Type and Title columns
-        }
-    ],
-    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
-         '<"row"<"col-sm-12"tr>>' +
-         '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
-    language: {
-        searchPlaceholder: "Search records...",
-        search: "",
-        lengthMenu: "_MENU_ per page"
-    }
-  });
-
-  window.addEventListener('resize', function() {
-      table.columns.adjust().responsive.recalc();
-  });
-
-  $(tableSelector).on('click', '.view-post', async function(e) {
-    e.preventDefault();
-    var postId = $(this).data('post-id');
     try {
-      await axios.post(`${sessionStorage.getItem('baseURL')}posts.php?action=mark_post_read`, { post_id: postId });
-      await showPostDetails(postId);
-      table.ajax.reload(null, false);
+        const formData = new FormData();
+        formData.append('post_id', postId);
+        formData.append('reply_message', message);
+        formData.append('admin_id', sessionStorage.getItem('user_id') || '25');
+
+        // Keep the modal open and clear input immediately
+        document.querySelector('.reply-input').value = '';
+
+        const response = await axios.post(
+            `${sessionStorage.getItem('baseURL')}posts.php?action=submit_reply`,
+            formData
+        );
+
+        if (response.data.success) {
+            // Update only the replies section
+            if (response.data.data && response.data.data.post && response.data.data.post.replies) {
+                const repliesContainer = document.querySelector('.replies-container');
+                repliesContainer.innerHTML = response.data.data.post.replies.map(reply => `
+                    <div class="message-bubble ${reply.user_type === 'admin' ? 'admin-message' : 'user-message'}">
+                        <div class="message-content">
+                            <strong>${reply.display_name}</strong>
+                            <p>${reply.reply_message}</p>
+                            <small>${new Date(reply.reply_date + " " + reply.reply_time).toLocaleString()}</small>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Smooth scroll to bottom
+                setTimeout(() => {
+                    repliesContainer.scrollTop = repliesContainer.scrollHeight;
+                }, 100);
+            }
+
+            // Refresh tables in background
+            ['#postsTable', '#latestPostsTable'].forEach(tableId => {
+                if ($.fn.DataTable.isDataTable(tableId)) {
+                    $(tableId).DataTable().ajax.reload(null, false);
+                }
+            });
+        }
     } catch (error) {
-      console.error('Error handling post view:', error);
-      toastr.error('Error viewing post details');
+        console.error('Error:', error);
     }
-  });
-
-  $(tableSelector).on('click', '.view-user-btn', function(e) {
-    e.preventDefault();
-    var btn = $(this);
-    var userId = btn.data('user-id');
-    var fullName = btn.data('user-fullname');
-    var schoolId = btn.data('user-schoolid');
-    var userStatus = btn.data('user-status');
-
-    if (typeof window.viewUserDetails === 'function') {
-      window.viewUserDetails(userId, fullName, schoolId, userStatus);
-    } else {
-      console.error("viewUserDetails is not defined");
-    }
-  });
-
-  return table;
 }
 
 window.currentFilter = 'all';
 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-    if (window.currentFilter === 'all') return true;
-
     const statusCell = data[0];
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = statusCell;
     const statusText = tempDiv.textContent.trim().toLowerCase();
 
     switch(window.currentFilter) {
-        case 'unread':
-            return statusText === 'unread';
-        case 'read':
-            return statusText === 'read';
+        case 'all':
+            // For "All Active", show everything except resolved
+            return statusText !== 'resolved';
         case 'pending':
             return statusText === 'pending';
+        case 'ongoing':
+            return statusText === 'ongoing';
         case 'resolved':
             return statusText === 'resolved';
         default:
@@ -282,10 +309,8 @@ function attachPostFiltering(table, filterButtonSelector) {
         const filterValue = $(this).data('filter').toLowerCase();
         window.currentFilter = filterValue;
 
-
         $(filterButtonSelector).removeClass('active');
         $(this).addClass('active');
-
 
         table.draw();
     });
@@ -298,10 +323,9 @@ function addFilterButtons() {
         container.className = 'filter-buttons-container mb-3';
         container.innerHTML = `
             <div class="btn-group" role="group" aria-label="Filter posts">
-                <button type="button" class="btn btn-outline-primary active" data-filter="all">All</button>
-                <button type="button" class="btn btn-outline-secondary" data-filter="unread">Unread</button>
-                <button type="button" class="btn btn-outline-info" data-filter="read">Read</button>
-                <button type="button" class="btn btn-outline-warning" data-filter="pending">Pending</button>
+                <button type="button" class="btn btn-outline-primary active" data-filter="all">All Active</button>
+                <button type="button" class="btn btn-outline-danger" data-filter="pending">Pending</button>
+                <button type="button" class="btn btn-outline-warning" data-filter="ongoing">Ongoing</button>
                 <button type="button" class="btn btn-outline-success" data-filter="resolved">Resolved</button>
             </div>
         `;
@@ -311,76 +335,4 @@ function addFilterButtons() {
             table.parentNode.insertBefore(container, table);
         }
     }
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    var table;
-    var path = window.location.pathname.toLowerCase();
-
-    if (document.getElementById("latestPostsTable")) {
-        table = initializePostsTable('#latestPostsTable', 'get_posts');
-    } else if (document.getElementById("postsTable")) {
-        var action = "";
-        if (path.includes("students.html")) {
-            action = "get_student_posts";
-        } else if (path.includes("visitors.html")) {
-            action = "get_visitor_posts";
-        }
-        table = initializePostsTable('#postsTable', action);
-    }
-
-
-    const filterButtons = document.querySelectorAll('.btn-group button');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const filter = this.getAttribute('data-filter');
-            window.currentFilter = filter;
-
-
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-
-            if (table) {
-                table.draw();
-            }
-        });
-    });
-});
-
-async function submitReply(event, postId) {
-  event.preventDefault();
-  const form = event.target;
-  const input = form.querySelector('.reply-input');
-  const fileInput = document.getElementById(`attachFile${postId}`);
-  const message = input.value;
-
-  const formData = new FormData();
-  formData.append('post_id', postId);
-  formData.append('reply_message', message);
-  formData.append('admin_id', '25');
-  if (fileInput && fileInput.files[0]) {
-    formData.append('attachedFile', fileInput.files[0]);
-  }
-
-  try {
-    const response = await axios.post(`${sessionStorage.getItem('baseURL')}posts.php?action=submit_reply`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    if (response.data.success) {
-      toastr.success('Reply submitted successfully');
-      form.reset();
-      await showPostDetails(postId);
-      if ($.fn.DataTable.isDataTable("#postsTable")) {
-        $("#postsTable").DataTable().ajax.reload(null, false);
-      }
-      if ($.fn.DataTable.isDataTable("#latestPostsTable")) {
-        $("#latestPostsTable").DataTable().ajax.reload(null, false);
-      }
-    } else {
-      toastr.error('Failed to submit reply');
-    }
-  } catch (error) {
-    console.error('Error submitting reply:', error);
-    toastr.error('Error submitting reply');
-  }
 }
