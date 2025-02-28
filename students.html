@@ -27,8 +27,8 @@
                 <h3>Student Posts</h3>
                 <div class="btn-group">
                     <button class="btn btn-outline-primary active" data-filter="all">All</button>
-                    <button class="btn btn-outline-primary" data-filter="unread">Unread</button>
-                    <button class="btn btn-outline-warning" data-filter="pending">Pending</button>
+                    <button class="btn btn-outline-danger" data-filter="pending">Pending</button>
+                    <button class="btn btn-outline-warning" data-filter="ongoing">Ongoing</button>
                     <button class="btn btn-outline-success" data-filter="resolved">Resolved</button>
                 </div>
             </div>
@@ -45,7 +45,6 @@
                                     <th class="col-title">Title</th>
                                     <th class="col-date">Date</th>
                                     <th class="col-time">Time</th>
-                                    <th class="col-action">Action</th>
                                 </tr>
                             </thead>
                         </table>
@@ -55,48 +54,44 @@
         </div>
     </main>
 
-    <!-- User Details Modal (for Action "View" button) -->
-    <div class="modal fade" id="userModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">User Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Display full user details -->
-                    <p><strong>School ID:</strong> <span id="detail-schoolId"></span></p>
-                    <p><strong>First Name:</strong> <span id="detail-firstName"></span></p>
-                    <p><strong>Middle Name:</strong> <span id="detail-middleName"></span></p>
-                    <p><strong>Last Name:</strong> <span id="detail-lastName"></span></p>
-                    <p><strong>Suffix:</strong> <span id="detail-suffix"></span></p>
-                    <p><strong>Phinmaed Email / User Email:</strong> <span id="detail-email"></span></p>
-                    <p><strong>Contact Number:</strong> <span id="detail-contact"></span></p>
-                    <p><strong>Department:</strong> <span id="detail-department"></span></p>
-                    <p><strong>Course:</strong> <span id="detail-course"></span></p>
-                    <p><strong>User Type:</strong> <span id="detail-userType"></span></p>
-                    <p><strong>User Status:</strong> <span id="detail-status"></span></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Post Details Modal (for clicking on the user's name) -->
+    <!-- Post Details Modal -->
     <div class="modal fade" id="postDetailsModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Post Details</h5>
+                <div class="modal-header border-bottom-0">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-circle fs-3 me-2"></i>
+                        <div>
+                            <h5 class="modal-title mb-0" id="postUserName"></h5>
+                            <small class="text-muted" id="postUserId"></small>
+                        </div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div id="postContainer"></div>
+                <div class="modal-body p-0">
+                    <div class="chat-container">
+                        <!-- Main post content -->
+                        <div class="main-post p-3 border-bottom"></div>
+                        <!-- Replies container -->
+                        <div class="replies-container p-3"></div>
+                        <!-- Reply form -->
+                        <div class="reply-form-container p-3 border-top bg-light">
+                            <form id="replyForm" class="reply-form">
+                                <div class="input-group">
+                                    <input type="text" class="form-control reply-input" placeholder="Write a reply...">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="bi bi-send-fill"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- External Scripts -->
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -111,7 +106,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <!-- External JS Files -->
     <script src="js/admin-dashboard.js"></script>
     <script src="js/posts.js"></script>
     <script src="js/toastr-config.js"></script>
