@@ -1,9 +1,53 @@
 let usersData = [];
 let filteredData = [];
 
-// sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php"); //KINZARI
-sessionStorage.setItem("baseURL", "http://localhost/api/"); // For localhost
-// sessionStorage.setItem("baseURL", "http://192.168.137.190/api/posts.php");
+// Remove baseURL setting - it should only be in login.js
+// Move initialization logic to DOMContentLoaded
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Verify baseURL exists
+    const baseURL = sessionStorage.getItem("baseURL");
+    if (!baseURL) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Initialize sidebar
+    initializeSidebar();
+
+    // Setup logout button
+    const logoutBtn = document.getElementById('logout-button');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // Initialize DataTable if element exists
+    if (document.getElementById("usersTable")) {
+        await fetchUsers();
+    }
+
+    // Initialize tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+
+    // Set active nav link
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.offcanvas .nav-link').forEach(link => {
+        if (link.getAttribute('href') === currentPath.split('/').pop()) {
+            link.classList.add('active');
+        }
+    });
+
+    // Update user profile display
+    const userString = localStorage.getItem('user');
+    if (userString) {
+        const user = JSON.parse(userString);
+        const userProfile = document.querySelector('.user-profile .user-name');
+        if (userProfile) {
+            userProfile.textContent = user.user_firstname;
+        }
+    }
+});
 
 function filterUsersByType() {
   const currentPath = window.location.pathname;
@@ -35,27 +79,8 @@ function initializeDataTable(data) {
         }
         return row.user_email || row.phinmaed_email || "-";
       }
-    },
-    {
-      title: "Action",
-      data: null,
-      render: function (data, type, row) {
-        return `
-          <div class="d-flex gap-1 justify-content-start align-items-center">
-            <button class="btn btn-sm btn-info view-btn" data-bs-toggle="modal" data-bs-target="#userModal" title="View">
-              <i class="bi bi-eye"></i>
-            </button>
-            <a href="#" class="btn btn-sm btn-warning" onclick="resetUserPassword(${row.user_id})" title="Reset Password">
-              <i class="bi bi-key"></i>
-            </a>
-            <button class="btn btn-sm ${row.user_status === 1 ? 'btn-success' : 'btn-danger'} status-btn"
-              onclick="updateUserStatus(${row.user_id}, ${row.user_status === 1 ? 0 : 1})" title="Status">
-              <i class="bi bi-toggle-${row.user_status === 1 ? 'on' : 'off'}"></i>
-            </button>
-          </div>
-        `;
-      }
     }
+    // Action column removed
   ];
 
   if ($.fn.DataTable.isDataTable("#usersTable")) {
@@ -65,7 +90,9 @@ function initializeDataTable(data) {
   const table = $("#usersTable").DataTable({
     data: data,
     columns: columns,
-    dom: "<'row'<'col-sm-6'l><'col-sm-6'Bf>>rtip",
+    dom: '<"row mb-4"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+         '<"row"<"col-sm-12"tr>>' +
+         '<"row mt-4"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8 d-flex justify-content-end"p>>',
     buttons: ['excel', 'pdf', 'print'],
     responsive: true,
     ordering: true,
@@ -73,7 +100,20 @@ function initializeDataTable(data) {
     lengthMenu: [10, 15, 20],
     pageLength: 10,
     language: {
-      emptyTable: "No data available"
+      emptyTable: "No data available",
+      paginate: {
+        previous: "<i class='bi bi-chevron-left'></i>",
+        next: "<i class='bi bi-chevron-right'></i>"
+      }
+    },
+    drawCallback: function() {
+      $('.dataTables_paginate > .pagination').addClass('pagination-md border-0');
+      $('.dataTables_paginate').addClass('mt-3');
+      $('.page-item .page-link').css({
+        'border': 'none',
+        'padding': '0.5rem 1rem',
+        'margin': '0 0.2rem'
+      });
     }
   });
 
@@ -229,59 +269,6 @@ function handleLogout() {
     window.location.href = 'index.html';
 }
 
-
-document.addEventListener('DOMContentLoaded', async () => {
-
-    initializeSidebar();
-
-
-    const logoutBtn = document.getElementById('logout-button');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
-
-
-    const userString = localStorage.getItem('user');
-    if (userString) {
-        const user = JSON.parse(userString);
-        const userProfile = document.querySelector('.user-profile .user-name');
-        if (userProfile) {
-            userProfile.textContent = user.user_firstname;
-        }
-    }
-
-    if (document.getElementById("visitor-count")) {
-        await fetchUsers();
-    }
-});
-
-
-document.addEventListener('DOMContentLoaded', function() {
-
-    const currentPath = window.location.pathname;
-    document.querySelectorAll('.offcanvas .nav-link').forEach(link => {
-        if (link.getAttribute('href') === currentPath.split('/').pop()) {
-            link.classList.add('active');
-        }
-    });
-
-    const userString = localStorage.getItem('user');
-    if (userString) {
-        const user = JSON.parse(userString);
-        const userNameElement = document.querySelector('.user-profile .user-name');
-        if (userNameElement && user.user_firstname) {
-            userNameElement.textContent = user.user_firstname;
-        }
-    }
-
-
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
-
-
 async function viewUserDetails(userId, fullName, schoolId, userStatus) {
     try {
         const baseURL = sessionStorage.getItem("baseURL");
@@ -311,7 +298,7 @@ async function viewUserDetails(userId, fullName, schoolId, userStatus) {
     }
 }
 
-
-window.updateUserStatus = updateUserStatus;
-window.resetUserPassword = resetUserPassword;
-window.viewUserDetails = viewUserDetails;
+// Remove these functions as they're no longer needed
+// window.updateUserStatus = updateUserStatus;
+// window.resetUserPassword = resetUserPassword;
+// window.viewUserDetails = viewUserDetails;

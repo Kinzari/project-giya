@@ -1,8 +1,11 @@
-// Base URL configuration
-sessionStorage.setItem("baseURL", "http://localhost/api/");
-// sessionStorage.setItem("baseURL", "http://192.168.137.190/api/");
-
 document.addEventListener('DOMContentLoaded', () => {
+    // Get baseURL from sessionStorage
+    const baseURL = sessionStorage.getItem("baseURL");
+    if (!baseURL) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     // Auth check
     const auth = AuthHelper.checkAuth();
     if (!auth.isValid) {
@@ -12,11 +15,371 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('userFirstName').textContent = auth.firstName;
 
+    // Fix modal initialization
+    const inquiryStatusModal = new bootstrap.Modal(document.getElementById('inquiryStatusModal'));
+    const submissionDetailModal = new bootstrap.Modal(document.getElementById('submissionDetailModal'), {
+        backdrop: true, // This will use Bootstrap's default backdrop opacity
+        keyboard: true
+    });
+    const privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
+
+    let currentSubmissionId = null;
+
+    // Remove old inquiry status button listener
+    document.getElementById('inquiryStatusBtn').removeEventListener('click', null);
+
+    // Add click handler for both buttons
+    const showInquiryStatus = () => {
+        // Reset filter buttons to default state before loading submissions
+        document.querySelectorAll('.filter-buttons .btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Set 'active' filter as default
+        const activeFilterBtn = document.querySelector('[data-filter="active"]');
+        if (activeFilterBtn) {
+            activeFilterBtn.classList.add('active');
+        }
+
+        loadUserSubmissions();
+        inquiryStatusModal.show();
+    };
+
+    document.getElementById('inquiryStatusBtn').addEventListener('click', showInquiryStatus);
+    document.getElementById('inquiryStatusFloatBtn').addEventListener('click', showInquiryStatus);
+
+    // Enhanced filtering functionality
+    let allSubmissions = []; // Store all submissions for filtering
+
+    // Load user submissions with enhanced display
+    async function loadUserSubmissions() {
+        try {
+            const userId = sessionStorage.getItem('user_id');
+            if (!userId) {
+                toastr.error('User ID not found. Please login again.');
+                return;
+            }
+
+            const response = await axios.get(
+                `${baseURL}inquiry.php?action=get_user_submissions&user_id=${userId}`
+            );
+
+            if (response.data.status === 'success') {
+                allSubmissions = response.data.data || [];
+
+                // Initialize filter buttons once
+                initializeFilterButtons();
+
+                // Apply initial filtering
+                renderSubmissions(filterSubmissions());
+            } else {
+                document.getElementById('inquiriesTableBody').innerHTML =
+                    '<tr><td colspan="5" class="text-center">No submissions found.</td></tr>';
+            }
+        } catch (error) {
+            console.error('Error loading submissions:', error);
+            toastr.error('Failed to load submissions. Please try again.');
+        }
+    }
+
+    // Remove the duplicate DOMContentLoaded event listener
+    // and move filter button initialization here
+    function initializeFilterButtons() {
+        // Remove any existing event listeners first
+        document.querySelectorAll('.filter-buttons .btn').forEach(btn => {
+            btn.replaceWith(btn.cloneNode(true));
+        });
+
+        // Set initial active filter and add new event listeners
+        const defaultFilter = document.querySelector('[data-filter="active"]');
+        if (defaultFilter) {
+            defaultFilter.classList.add('active');
+        }
+
+        // Add click handlers to all filter buttons
+        document.querySelectorAll('.filter-buttons .btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.filter-buttons .btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                // Add active class only to clicked button
+                e.target.classList.add('active');
+                // Apply filter
+                renderSubmissions(filterSubmissions());
+            });
+        });
+    }
+
+    function filterSubmissions() {
+        const activeFilter = document.querySelector('.filter-buttons .btn.active');
+        if (!activeFilter) return allSubmissions;
+
+        const filterValue = activeFilter.dataset.filter;
+        const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+        return allSubmissions.filter(submission => {
+            // Handle search filtering
+            const matchesSearch = !searchFilter ||
+                submission.post_title.toLowerCase().includes(searchFilter) ||
+                submission.type.toLowerCase().includes(searchFilter);
+
+            if (!matchesSearch) return false;
+
+            // Convert status to string for comparison
+            const status = String(submission.post_status);
+
+            // Handle status filtering
+            if (filterValue === 'active') {
+                // Show both pending (0) and ongoing (1) posts
+                return status === '0' || status === '1';
+            }
+
+            // Match exact status (0=pending, 1=ongoing, 2=resolved)
+            return status === filterValue;
+        });
+    }
+
+    // Update search event listener
+    document.getElementById('searchFilter').addEventListener('input', () => {
+        renderSubmissions(filterSubmissions());
+    });
+
+    function renderSubmissions(submissions) {
+        const tableBody = document.getElementById('inquiriesTableBody');
+
+        if (submissions.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No matching submissions found.</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = submissions.map(submission => `
+            <tr class="submission-row" data-id="${submission.post_id}">
+                <td>#${submission.post_id}</td>
+                <td>${submission.type}</td>
+                <td>${submission.post_title}</td>
+                <td>${formatDate(submission.post_date)}</td>
+                <td><span class="badge ${getStatusBadgeClass(submission.post_status)}">
+                    ${getStatusText(submission.post_status)}</span></td>
+            </tr>
+        `).join('');
+
+        // Reattach click handlers
+        document.querySelectorAll('.submission-row').forEach(row => {
+            row.addEventListener('click', () => {
+                loadSubmissionDetails(row.dataset.id);
+            });
+        });
+    }
+
+    // Enhanced submission details loading
+    async function loadSubmissionDetails(submissionId) {
+        try {
+            const response = await axios.get(
+                `${baseURL}inquiry.php?action=get_submission_detail&id=${submissionId}`
+            );
+
+            if (response.data.status === 'success') {
+                currentSubmissionId = submissionId;
+                const submission = response.data.data.submission;
+                const replies = response.data.data.replies;
+
+                // Close inquiry status modal first
+                const inquiryModal = bootstrap.Modal.getInstance(document.getElementById('inquiryStatusModal'));
+                if (inquiryModal) {
+                    inquiryModal.hide();
+                }
+
+                // Show submission detail modal
+                const detailModal = new bootstrap.Modal(document.getElementById('submissionDetailModal'));
+                detailModal.show();
+
+                // Update user info and status
+                document.getElementById('postUserName').textContent = submission.author_name;
+                document.getElementById('postUserId').textContent = `ID: ${submission.user_schoolId || ''}`;
+
+                const statusBadge = document.getElementById('postStatus');
+                statusBadge.className = `badge ${getStatusBadgeClass(submission.post_status)}`;
+                statusBadge.textContent = getStatusText(submission.post_status);
+
+                // Update chat content
+                document.querySelector('.main-post').innerHTML = `
+                    <div class="d-flex flex-column">
+                        <h5>${submission.type}</h5>
+                        <h6>${submission.post_title}</h6>
+                        <div class="inquiry-details mb-3">
+                            <strong>Type of Inquiry:</strong> ${submission.inquiry_type || 'N/A'}
+                            <p class="text-muted mb-2">${submission.inquiry_description || ''}</p>
+                        </div>
+                        <p class="mb-3">${submission.post_message}</p>
+                        <small class="text-muted text-end">${formatDateTime(submission.post_date, submission.post_time)}</small>
+                    </div>
+                `;
+
+                // Update replies
+                document.querySelector('.replies-container').innerHTML = replies.map(reply => `
+                    <div class="message-bubble ${reply.user_type === 'admin' ? 'admin-message' : 'user-message'}">
+                        <div class="message-content">
+                            <strong>${reply.display_name}</strong>
+                            <p>${reply.reply_message}</p>
+                            <small>${new Date(reply.reply_date + " " + reply.reply_time).toLocaleString()}</small>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Update reply form container based on status
+                const replyFormContainer = document.getElementById('replyFormContainer');
+
+                if (submission.post_status === '2') { // Resolved
+                    replyFormContainer.innerHTML = `
+                        <div class="alert alert-success mb-0 text-center">
+                            <i class="fas fa-check-circle me-2"></i>
+                            This post is resolved and the conversation is closed.
+                        </div>`;
+                } else {
+                    replyFormContainer.innerHTML = `
+                        <form id="replyForm" class="reply-form">
+                            <div class="input-group">
+                                <input type="text" class="form-control reply-input" placeholder="Write a reply...">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="bi bi-send-fill"></i>
+                                </button>
+                            </div>
+                        </form>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button class="btn btn-success btn-sm" onclick="markAsResolved(${submissionId})">
+                                <i class="fas fa-check-circle"></i> Mark as Resolved
+                            </button>
+                        </div>`;
+
+                    // Attach reply form listener
+                    attachReplyFormListener();
+                }
+
+                // Scroll to bottom of replies
+                const repliesContainer = document.querySelector('.replies-container');
+                if (repliesContainer) {
+                    setTimeout(() => {
+                        repliesContainer.scrollTop = repliesContainer.scrollHeight;
+                    }, 300);
+                }
+            }
+        } catch (error) {
+            toastr.error('Failed to load submission details');
+        }
+    }
+
+    // Add this new function
+    window.markAsResolved = async function(submissionId) {
+        try {
+            const result = await Swal.fire({
+                title: 'Mark as Resolved?',
+                text: 'This will close the concern and no further replies can be added.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, mark as resolved'
+            });
+
+            if (result.isConfirmed) {
+                const response = await axios.post(
+                    `${baseURL}inquiry.php?action=update_status`,
+                    {
+                        post_id: submissionId,
+                        status: '2' // 2 = resolved
+                    }
+                );
+
+                if (response.data.status === 'success') {
+                    toastr.success('Concern marked as resolved');
+                    await loadSubmissionDetails(submissionId); // Reload the details
+                    await loadUserSubmissions(); // Refresh the list
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toastr.error('Failed to update status');
+        }
+    };
+
+    // Helper function to attach reply form listener
+    function attachReplyFormListener() {
+        const replyForm = document.getElementById('replyForm');
+        if (replyForm) {
+            replyForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const replyInput = e.target.querySelector('.reply-input');
+                if (!replyInput || !replyInput.value.trim()) return;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('post_id', currentSubmissionId);
+                    formData.append('user_id', sessionStorage.getItem('user_id'));
+                    formData.append('content', replyInput.value.trim());
+
+                    replyInput.value = '';
+
+                    const response = await axios.post(
+                        `${baseURL}inquiry.php?action=add_reply`,
+                        formData
+                    );
+
+                    if (response.data.status === 'success') {
+                        // Hide current modal instance
+                        const currentModal = bootstrap.Modal.getInstance(document.getElementById('submissionDetailModal'));
+                        if (currentModal) {
+                            currentModal.hide();
+                            // Wait for modal to fully hide
+                            setTimeout(async () => {
+                                // Remove any lingering backdrops
+                                document.querySelector('.modal-backdrop')?.remove();
+                                document.body.classList.remove('modal-open');
+                                // Now load submission details
+                                await loadSubmissionDetails(currentSubmissionId);
+                            }, 300);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error sending reply:', error);
+                    toastr.error('Failed to send reply');
+                }
+            });
+        }
+    }
+
+    // Helper functions
+    function formatDate(dateStr) {
+        return new Date(dateStr).toLocaleDateString();
+    }
+
+    function formatDateTime(date, time) {
+        return new Date(date + ' ' + time).toLocaleString();
+    }
+
+    function getStatusBadgeClass(status) {
+        const statusMap = {
+            '0': 'bg-danger',    // Pending
+            '1': 'bg-warning',   // Ongoing
+            '2': 'bg-success'    // Resolved
+        };
+        return statusMap[status] || 'bg-secondary';
+    }
+
+    function getStatusText(status) {
+        const statusMap = {
+            '0': 'Pending',
+            '1': 'Ongoing',
+            '2': 'Resolved'
+        };
+        return statusMap[status] || 'Unknown';
+    }
+
     // Check privacy policy status when page loads
     async function checkPrivacyPolicyStatus() {
         try {
             const response = await axios.get(
-                `${sessionStorage.getItem('baseURL')}inquiry.php?action=check_privacy_policy&user_id=${sessionStorage.getItem('user_id')}`
+                `${baseURL}inquiry.php?action=check_privacy_policy&user_id=${sessionStorage.getItem('user_id')}`
             );
             if (response.data.success && response.data.privacy_policy_check === 1) {
                 sessionStorage.setItem('privacyPolicyAccepted', 'true');
@@ -38,7 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Privacy Modal handling
     const privacyModalElement = document.getElementById('privacyModal');
-    const privacyModal = new bootstrap.Modal(privacyModalElement);
     const privacyContent = document.getElementById('privacyContent');
     const acceptBtn = document.getElementById('acceptPrivacyBtn');
 
@@ -63,9 +425,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pendingUrl) {
             try {
                 const userId = sessionStorage.getItem('user_id');
-                console.log("User ID from sessionStorage:", userId);
                 await axios.post(
-                    `${sessionStorage.getItem('baseURL')}inquiry.php?action=update_privacy_policy`,
+                    `${baseURL}inquiry.php?action=update_privacy_policy`,
                     {
                         user_id: userId,
                         privacy_policy_check: 1
@@ -108,202 +469,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Initialize modals for submissions
-    const inquiryStatusModal = new bootstrap.Modal(document.getElementById('inquiryStatusModal'));
-    const submissionDetailModal = new bootstrap.Modal(document.getElementById('submissionDetailModal'));
-    let currentSubmissionId = null;
+    // Remove existing reply event listeners to avoid duplicates
+    const replyForm = document.getElementById('replyForm');
+    if (replyForm) {
+        // Single event listener for form submission
+        replyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const replyInput = e.target.querySelector('.reply-input');
+            if (!replyInput || !replyInput.value.trim()) return;
 
-    // Show inquiry status modal
-    document.getElementById('inquiryStatusBtn').addEventListener('click', () => {
-        loadUserSubmissions();
-        inquiryStatusModal.show();
-    });
+            try {
+                const formData = new FormData();
+                formData.append('post_id', currentSubmissionId);
+                formData.append('user_id', sessionStorage.getItem('user_id'));
+                formData.append('content', replyInput.value.trim());
 
-    // Load all user submissions
-    async function loadUserSubmissions() {
-        try {
-            const userId = sessionStorage.getItem('user_id');
-            const response = await axios.get(
-                `${sessionStorage.getItem('baseURL')}inquiry.php?action=get_user_submissions&user_id=${userId}`
-            );
+                replyInput.value = '';
 
-            const tableBody = document.getElementById('inquiriesTableBody');
+                const response = await axios.post(
+                    `${baseURL}inquiry.php?action=add_reply`,
+                    formData
+                );
 
-            if (response.data.status === 'success' && response.data.data.length > 0) {
-                tableBody.innerHTML = response.data.data.map(submission => `
-                    <tr class="submission-row" data-id="${submission.post_id}" style="cursor: pointer;">
-                        <td>#${submission.post_id}</td>
-                        <td>${submission.type}</td>
-                        <td>${submission.post_title}</td>
-                        <td>${submission.post_date}</td>
-                        <td><span class="badge ${getStatusBadgeClass(submission.post_status)}">
-                            ${getStatusText(submission.post_status)}</span></td>
-                    </tr>
-                `).join('');
-
-                // Add click handlers to rows
-                document.querySelectorAll('.submission-row').forEach(row => {
-                    row.addEventListener('click', () => {
-                        loadSubmissionDetails(row.dataset.id);
-                    });
-                });
-            } else {
-                tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No submissions found.</td></tr>';
-            }
-        } catch (error) {
-            console.error('Error loading submissions:', error);
-            toastr.error('Failed to load submissions. Please try again.');
-        }
-    }
-
-    // Load details for a specific submission
-    async function loadSubmissionDetails(submissionId) {
-        try {
-            const response = await axios.get(
-                `${sessionStorage.getItem('baseURL')}inquiry.php?action=get_submission_detail&id=${submissionId}`
-            );
-
-            if (response.data.status === 'success') {
-                currentSubmissionId = submissionId;
-                const submission = response.data.data.submission;
-                const replies = response.data.data.replies;
-
-                // Update submission details
-                document.getElementById('detailTitle').textContent = submission.post_title;
-                document.getElementById('detailContent').textContent = submission.post_message;
-                document.getElementById('detailType').textContent = submission.type;
-                document.getElementById('detailDate').textContent = `${submission.post_date} ${submission.post_time}`;
-
-                const statusBadge = document.getElementById('detailStatus');
-                statusBadge.className = `badge ${getStatusBadgeClass(submission.post_status)}`;
-                statusBadge.textContent = getStatusText(submission.post_status);
-
-                // Display replies
-                const repliesContainer = document.getElementById('replies');
-                repliesContainer.innerHTML = '';
-
-                replies.forEach(reply => {
-                    const replyElement = document.createElement('div');
-                    replyElement.className = `card mb-2 ${reply.user_type === 'admin' ? 'border-success' : ''}`;
-                    replyElement.innerHTML = `
-                        <div class="card-header ${reply.user_type === 'admin' ? 'bg-light-success' : ''} d-flex justify-content-between">
-                            <span><strong>${reply.display_name}</strong></span>
-                            <small>${reply.reply_date} ${reply.reply_time}</small>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text">${reply.reply_message}</p>
-                        </div>
-                    `;
-                    repliesContainer.appendChild(replyElement);
-                });
-
-                // Show/hide reply form based on status
-                const replyForm = document.getElementById('replyFormContainer');
-                replyForm.style.display = submission.post_status === 'Resolved' ? 'none' : 'block';
-
-                inquiryStatusModal.hide();
-                submissionDetailModal.show();
-            }
-        } catch (error) {
-            console.error('Error loading submission details:', error);
-            toastr.error('Failed to load submission details. Please try again.');
-        }
-    }
-
-    // Send reply
-    document.getElementById('sendReplyBtn').addEventListener('click', async () => {
-        const replyContent = document.getElementById('replyContent').value.trim();
-        if (!replyContent) {
-            toastr.warning('Please enter a reply message.');
-            return;
-        }
-
-        try {
-            const formData = new FormData();
-            formData.append('post_id', currentSubmissionId);
-            formData.append('user_id', sessionStorage.getItem('user_id'));
-            formData.append('content', replyContent);
-
-            const response = await axios.post(
-                `${sessionStorage.getItem('baseURL')}inquiry.php?action=add_reply`,
-                formData
-            );
-
-            if (response.data.status === 'success') {
-                document.getElementById('replyContent').value = '';
-                loadSubmissionDetails(currentSubmissionId);
-                toastr.success('Reply sent successfully');
-            }
-        } catch (error) {
-            console.error('Error sending reply:', error);
-            toastr.error('Failed to send reply. Please try again.');
-        }
-    });
-
-    // Mark as resolved
-    document.getElementById('markResolvedBtn').addEventListener('click', async () => {
-        try {
-            const response = await axios.post(
-                `${sessionStorage.getItem('baseURL')}inquiry.php?action=update_status`,
-                {
-                    post_id: currentSubmissionId,
-                    status: 3 // Use 3 for Resolved
+                if (response.data.status === 'success') {
+                    await loadSubmissionDetails(currentSubmissionId);
                 }
-            );
-
-            if (response.data.status === 'success') {
-                toastr.success('Marked as resolved successfully');
-                loadSubmissionDetails(currentSubmissionId);
-                setTimeout(() => {
-                    submissionDetailModal.hide();
-                    loadUserSubmissions();
-                    inquiryStatusModal.show();
-                }, 1500);
+            } catch (error) {
+                console.error('Error sending reply:', error);
             }
-        } catch (error) {
-            console.error('Error updating status:', error);
-            toastr.error('Failed to update status. Please try again.');
-        }
-    });
-
-    // Helper function for status badge classes
-    function getStatusBadgeClass(status) {
-        if (typeof status === 'number') {
-            switch(status) {
-                case 0: return 'bg-secondary'; // Unread
-                case 1: return 'bg-info'; // Read
-                case 2: return 'bg-warning text-dark'; // Pending
-                case 3: return 'bg-success'; // Resolved
-                default: return 'bg-info';
-            }
-        }
-
-        // Handle string status
-        if (typeof status === 'string') {
-            switch(status.toLowerCase()) {
-                case 'unread': case '0': return 'bg-secondary';
-                case 'read': case '1': return 'bg-info';
-                case 'pending': case '2': return 'bg-warning text-dark';
-                case 'resolved': case '3': return 'bg-success';
-                default: return 'bg-info';
-            }
-        }
-
-        return 'bg-info'; // Default fallback
-    }
-
-    // Helper function to convert status number to text
-    function getStatusText(status) {
-        if (typeof status === 'number') {
-            switch(status) {
-                case 0: return 'Unread';
-                case 1: return 'Read';
-                case 2: return 'Pending';
-                case 3: return 'Resolved';
-                default: return 'Unknown';
-            }
-        }
-        return status || 'Unknown';
+        });
     }
 
     // Logout handler

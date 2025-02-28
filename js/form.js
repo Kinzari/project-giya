@@ -1,18 +1,25 @@
-sessionStorage.setItem("baseURL", "http://localhost/api/");
-// sessionStorage.setItem("baseURL", "http://192.168.137.190/api/");
-
 const now = new Date();
 const options = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' };
 const formattedTime = now.toLocaleTimeString('en-US', options);
 
-
 document.addEventListener('DOMContentLoaded', async () => {
+    // Validate that we have baseURL
+    const baseURL = sessionStorage.getItem("baseURL");
+    if (!baseURL) {
+        window.location.href = 'login.html';
+        return;
+    }
 
     const selectedPostType = sessionStorage.getItem('selectedPostType') || 'inquiry';
 
     document.getElementById('selectedPostType').value = selectedPostType;
     const concernTypeLabel = document.getElementById('concernTypeLabel');
-    concernTypeLabel.value = capitalizeFirstLetter(selectedPostType);
+    const headerFormType = document.getElementById('headerFormType');
+
+    // Capitalize the selected post type and update both the label and header
+    const capitalizedType = capitalizeFirstLetter(selectedPostType);
+    concernTypeLabel.value = capitalizedType;
+    headerFormType.textContent = capitalizedType;
 
     const inquirySelect = document.getElementById('inquiryType');
     try {
@@ -43,6 +50,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Error loading inquiry types:', error);
         Swal.fire('Error', 'Failed to load inquiry options: ' + error.message, 'error');
     }
+
+    // Add back button handler
+    document.getElementById('backBtn').addEventListener('click', () => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Any unsaved changes will be lost!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#155f37',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, go back',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = 'choose-concern.html';
+            }
+        });
+    });
 
     // 4. Handle form submission
     document.getElementById('concernForm').addEventListener('submit', async (e) => {

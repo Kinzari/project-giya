@@ -37,8 +37,6 @@
 }
 
 body {
-    background: url("../img/whitebg.png") no-repeat center center fixed;
-    background-size: cover;
     min-height: 100vh;
 }
 
@@ -48,8 +46,6 @@ body {
 
 /* 2.1 Form Container */
 .form-container {
-    background: url("../img/whitebg.png") no-repeat center center fixed;
-    background-size: cover;
     min-height: 100vh;
     padding: 1.5rem 0;
     backdrop-filter: blur(8px);
@@ -107,6 +103,34 @@ body {
 .form-select:disabled {
     background-color: #f8f9fa;
     cursor: not-allowed;
+}
+
+/* Filter Controls Styles */
+.input-group-text {
+    border-right: 0;
+}
+
+.input-group-text i {
+    width: 1rem;
+    text-align: center;
+}
+
+#searchFilter:focus {
+    border-color: #ddd;
+    box-shadow: none;
+}
+
+#searchFilter {
+    border-left: 0;
+}
+
+#searchFilter:placeholder-shown {
+    text-overflow: ellipsis;
+}
+
+/* Adjust form-select for consistent height */
+.form-select {
+    height: 38px;
 }
 
 /*----------------------------------------*/
@@ -182,6 +206,75 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Filter Button Styles */
+.filter-buttons .btn {
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.filter-buttons .btn.active {
+    transform: scale(1.05);
+}
+
+.search-container {
+    width: 300px;
+}
+
+/* Add hover effects for filter buttons */
+.filter-buttons .btn-outline-primary:hover,
+.filter-buttons .btn-outline-primary.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.filter-buttons .btn-outline-danger:hover,
+.filter-buttons .btn-outline-danger.active {
+    background-color: #dc3545;
+    color: white;
+}
+
+.filter-buttons .btn-outline-warning:hover,
+.filter-buttons .btn-outline-warning.active {
+    background-color: #ffc107;
+    color: black;
+}
+
+.filter-buttons .btn-outline-success:hover,
+.filter-buttons .btn-outline-success.active {
+    background-color: #198754;
+    color: white;
+}
+
+/* Floating Inquiry Status Button */
+.floating-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #155f37;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.floating-btn:hover {
+    transform: scale(1.1);
+    background-color: #0d3e24;
+}
+
+.floating-btn i {
+    font-size: 1.25rem;
+}
+
 /*----------------------------------------*/
 /*  4. User Interface
 /*----------------------------------------*/
@@ -221,11 +314,15 @@ body {
 }
 
 .modal-backdrop.show {
-    opacity: 0.8 !important;
+    opacity: 0.5 !important;
 }
 
 .darker-backdrop.modal-backdrop.show {
-    opacity: 0.8 !important;
+    opacity: 0.5 !important;
+}
+
+.modal.fade .modal-dialog {
+    transition: transform 0.2s ease-out;
 }
 
 .modal .concern-btn {
@@ -363,6 +460,86 @@ body {
 .badge {
     padding: 0.5em 1em;
     font-size: 0.875em;
+}
+
+/* Add Chat Container Styles from admin-dashboard.css */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 250px);
+    max-height: 600px;
+}
+
+.main-post {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.replies-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #fff;
+    max-height: 400px;
+}
+
+.message-bubble {
+    max-width: 75%;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.user-message {
+    background-color: #0d6efd;
+    color: white;
+    margin-left: auto; /* Admin/GIYA messages on left */
+    max-width: 75%;
+}
+
+.admin-message {
+    background-color: #e9ecef;
+    margin-right: auto; /* User messages on right */
+    max-width: 75%;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 0.25rem;
+    text-align: right;
+    color: #6c757d;
+}
+
+.reply-form-container {
+    position: sticky;
+    bottom: 0;
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.reply-form .input-group {
+    background-color: #fff;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.reply-form .form-control {
+    border: none;
+    padding: 0.75rem 1rem;
+}
+
+.reply-form .btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+}
+
+.reply-form .btn-primary {
+    border-radius: 0 1.5rem 1.5rem 0;
+    background-color: #0d6efd !important;
 }
 
 /*----------------------------------------*/

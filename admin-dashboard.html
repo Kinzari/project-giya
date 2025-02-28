@@ -27,9 +27,8 @@
                 <h3>GIYA : Dashboard</h3>
                 <div class="btn-group">
                     <button class="btn btn-outline-primary active" data-filter="all">All</button>
-                    <button class="btn btn-outline-secondary" data-filter="unread">Unread</button>
-                    <button class="btn btn-outline-info" data-filter="read">Read</button>
-                    <button class="btn btn-outline-warning" data-filter="pending">Pending</button>
+                    <button class="btn btn-outline-danger" data-filter="pending">Pending</button>
+                    <button class="btn btn-outline-warning" data-filter="ongoing">Ongoing</button>
                     <button class="btn btn-outline-success" data-filter="resolved">Resolved</button>
                 </div>
             </div>
@@ -53,7 +52,6 @@
                                             <th>Title</th>
                                             <th>Date</th>
                                             <th>Time</th>
-                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                 </table>
@@ -69,36 +67,34 @@
     <div class="modal fade" id="postDetailsModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Post Details</h5>
+                <div class="modal-header border-bottom-0">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-circle fs-3 me-2"></i>
+                        <div>
+                            <h5 class="modal-title mb-0" id="postUserName"></h5>
+                            <small class="text-muted" id="postUserId"></small>
+                        </div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div id="postContainer"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- User Details Modal -->
-    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="userModalLabel">User Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p><strong>School ID:</strong> <span id="detail-schoolId"></span></p>
-                    <p><strong>First Name:</strong> <span id="detail-firstName"></span></p>
-                    <p><strong>Middle Name:</strong> <span id="detail-middleName"></span></p>
-                    <p><strong>Last Name:</strong> <span id="detail-lastName"></span></p>
-                    <p><strong>Suffix:</strong> <span id="detail-suffix"></span></p>
-                    <p><strong>Phinmaed Email / User Email:</strong> <span id="detail-email"></span></p>
-                    <p><strong>Contact Number:</strong> <span id="detail-contact"></span></p>
-                    <p><strong>Department:</strong> <span id="detail-department"></span></p>
-                    <p><strong>Course:</strong> <span id="detail-course"></span></p>
-                    <p><strong>User Type:</strong> <span id="detail-userType"></span></p>
-                    <p><strong>User Status:</strong> <span id="detail-status"></span></p>
+                <div class="modal-body p-0">
+                    <div class="chat-container">
+                        <!-- Main post content -->
+                        <div class="main-post p-3 border-bottom"></div>
+                        <!-- Replies container -->
+                        <div class="replies-container p-3"></div>
+                        <!-- Reply form -->
+                        <div class="reply-form-container p-3 border-top bg-light">
+                            <form id="replyForm" class="reply-form">
+                                <div class="input-group">
+                                    <input type="text" class="form-control reply-input" placeholder="Write a reply...">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="bi bi-send-fill"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
