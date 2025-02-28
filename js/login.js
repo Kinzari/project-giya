@@ -1,7 +1,5 @@
-// sessionStorage.setItem("baseURL", "http://192.168.254.166/api/giya.php");
-// Set baseURL in sessionStorage (this must be set before any API calls)
+// Only keep baseURL initialization at the start
 sessionStorage.setItem("baseURL", "http://localhost/api/");
-// sessionStorage.setItem("baseURL", "http://192.168.137.190/api/");
 
 document
     .getElementById("login-form")
@@ -41,44 +39,37 @@ document
                     loginInput: loginInput,
                     password: password,
                 },
-                {
-                    // headers: {
-                    //     "Content-Type": "application/json",
-                    //     Accept: "application/json",
-                    // },
-                    // withCredentials: true,
-                }
             );
 
             const result = response.data;
 
             if (result.success) {
+                // Clear any existing session data except baseURL
                 const baseURL = sessionStorage.getItem("baseURL");
                 sessionStorage.clear();
                 sessionStorage.setItem("baseURL", baseURL);
 
-                sessionStorage.setItem("user_id", result.user_id);
-                sessionStorage.setItem("user_schoolId", result.user_schoolId);
-                sessionStorage.setItem("user_firstname", result.user_firstname);
-                sessionStorage.setItem(
-                    "user_middlename",
-                    result.user_middlename
-                );
-                sessionStorage.setItem("user_lastname", result.user_lastname);
-                sessionStorage.setItem("user_suffix", result.user_suffix);
-                sessionStorage.setItem(
-                    "department_name",
-                    result.department_name
-                );
-                sessionStorage.setItem("course_name", result.course_name);
-                sessionStorage.setItem(
-                    "user_schoolyearId",
-                    result.user_schoolyearId
-                );
-                sessionStorage.setItem("phinmaed_email", result.phinmaed_email);
-                sessionStorage.setItem("user_contact", result.user_contact);
-                sessionStorage.setItem("user_typeId", result.user_typeId);
-                sessionStorage.setItem("user_email", result.user_email);
+                // Store all user data at once during login
+                const sessionData = {
+                    user_id: result.user_id,
+                    user_schoolId: result.user_schoolId,
+                    user_firstname: result.user_firstname,
+                    user_middlename: result.user_middlename,
+                    user_lastname: result.user_lastname,
+                    user_suffix: result.user_suffix,
+                    department_name: result.department_name,
+                    course_name: result.course_name,
+                    user_schoolyearId: result.user_schoolyearId,
+                    phinmaed_email: result.phinmaed_email,
+                    user_contact: result.user_contact,
+                    user_typeId: result.user_typeId,
+                    user_email: result.user_email
+                };
+
+                // Set all session data at once
+                Object.entries(sessionData).forEach(([key, value]) => {
+                    sessionStorage.setItem(key, value);
+                });
 
                 const userTypeId = parseInt(result.user_typeId);
 
