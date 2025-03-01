@@ -105,7 +105,7 @@ class MasterFileManager {
     }
 
     initializeEventListeners() {
-      
+
         document.querySelectorAll('form').forEach(form => {
             form.addEventListener('submit', (e) => this.handleFormSubmit(e));
         });

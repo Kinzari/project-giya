@@ -89,9 +89,9 @@ function updateUserInfo() {
 
         // Update user title based on user type
         if (userTitle) {
-            if (userTypeId === '3') {
+            if (userTypeId === '6') {
                 userTitle.textContent = 'Administrator';
-            } else if (userTypeId === '4') {
+            } else if (userTypeId === '5') {
                 userTitle.textContent = 'Point of Contact';
             } else {
                 userTitle.textContent = 'GIYA User';
