@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Verify baseURL exists
     const baseURL = sessionStorage.getItem("baseURL");
     if (!baseURL) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return;
     }
 

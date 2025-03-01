@@ -1,12 +1,11 @@
 /*
 -----------------------------------------------------------------------------------
     PROJECT GIYA ADMIN DASHBOARD CSS
+    STREAMLINED VERSION - Uses Bootstrap native classes where possible
     ===================
     1. Core Styles (variables, fonts)
     2. Layout Components (sidebar, navigation)
-    3. Table Customizations
-    4. Post Management Styles
-    5. Responsive Adjustments
+    3. Custom elements that extend Bootstrap
 -----------------------------------------------------------------------------------*/
 
 /* 1. Core Styles */
@@ -14,7 +13,7 @@
 
 :root {
     --offcanvas-width: 40px;
-    --sidebar-sheet-width: 240px;
+    --sidebar-sheet-width: 280px; /* Adjusted from 240px to 280px */
     --topNavbarHeight: 56px;
     --primary-color: #155f37;
 }
@@ -22,7 +21,7 @@
 body {
     font-family: "Poppins", sans-serif;
     background-color: #f6f9ff;
-    overflow-x: hidden; /* Prevent horizontal scrolling */
+    overflow-x: hidden;
 }
 
 /* 2. Layout Components */
@@ -32,45 +31,59 @@ body {
 
 .offcanvas-header {
     background-color: var(--primary-color);
-    padding: 10px 15px;
-}
-
-.offcanvas-title {
-    padding-left: 15px;
-    font-size: 1.2rem;
-    font-weight: 600;
 }
 
 /* Sidebar Navigation */
 .sidebar-toggle {
     position: relative;
     left: 0;
-    margin-right: 10px;
     z-index: 1030;
+    /* Always show the toggle button regardless of screen size */
+    display: block !important;
+    margin-right: 10px;
 }
 
-.offcanvas-body .nav-items a {
-    padding: 12px 15px;
-    font-size: 1.1rem;
-    white-space: nowrap;
-    margin-bottom: 15px;
+/* Make sure the navbar-toggler class doesn't override our styles */
+button.sidebar-toggle {
+    min-width: 38px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .offcanvas-body .nav-items a i {
-    margin-right: 10px;
-    font-size: 1.2rem;
+    width: 1.5rem;
+    text-align: center;
+}
+
+/* Offcanvas sidebar styling */
+.offcanvas.offcanvas-start {
+    width: var(--sidebar-sheet-width) !important;
+}
+
+/* Improved nav item spacing */
+.offcanvas-body .nav-items a.nav-link,
+.offcanvas-body .nav-item.dropdown {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.offcanvas-body .nav-items a.nav-link:hover,
+.offcanvas-body .nav-item.dropdown:hover > a {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Active nav item styling */
+.offcanvas-body .nav-items a.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    font-weight: 500;
 }
 
 /* User Profile in Sidebar */
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-}
-
 .user-profile i {
-    font-size: 20px;
     width: 35px;
     height: 35px;
     display: flex;
@@ -80,726 +93,143 @@ body {
     border-radius: 50%;
 }
 
-.user-profile .text-white .user-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-}
+/* 3. Custom elements that extend Bootstrap */
 
-/* 3. Table Customizations */
+/* Table column sizes - keeping minimal necessary styles */
 .table th.col-status,
 .table td.col-status {
-    width: 100px;
-    max-width: 100px;
-}
-
-.table th.col-title,
-.table td.col-title {
-    min-width: 250px;
-    width: auto;
-}
-
-.table th.col-date,
-.table td.col-date,
-.table th.col-time,
-.table td.col-time {
-    width: 80px;
-    max-width: 80px;
-}
-
-.table th.col-action,
-.table td.col-action {
-    width: 100px;
-    max-width: 100px;
-}
-
-.table td {
-    vertical-align: middle;
-}
-
-.table td .btn {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.table td .btn i {
-    font-size: 18px;
-    line-height: 1;
-}
-
-/* DataTables Customization */
-.dataTables_wrapper .dataTables_paginate {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: center;
-    padding: 10px;
-}
-
-.dataTables_wrapper .paginate_button.previous {
-    margin-right: 15px;
-}
-
-.dataTables_wrapper .paginate_button.next {
-    margin-left: 15px;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-    padding: 6px 12px;
-    border: 1px solid #dee2e6;
-    margin: 0 5px;
-    border-radius: 4px;
-    min-width: 38px;
-    background: #fff;
-    color: var(--primary-color);
-    cursor: pointer;
-}
-
-.dataTables_wrapper .dataTables_paginate span .paginate_button {
-    margin: 0 8px;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-    font-weight: 500;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
-    background: #e9ecef;
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-/* Make DataTables larger and wider */
-.dataTables_wrapper {
-    width: 100%;
-    margin-bottom: 2rem;
-}
-
-.table-responsive {
-    min-height: 450px; /* Increase the minimum height of table container */
-    margin: 0;
-    padding: 0;
-    max-width: 100%;
-    overflow-x: auto;
-}
-
-table.dataTable {
-    width: 100% !important;
-    margin: 0 0 1rem 0 !important;
-}
-
-/* Increase the table body height to show more rows */
-.dataTables_scrollBody {
-    min-height: 350px;
-}
-
-/* Adjust table margins and padding */
-.card-body {
-    padding: 1.5rem;
-}
-
-/* Make sure the container has enough width */
-.container {
-    max-width: 100%; /* Changed from 95% */
-    width: 100%; /* Changed from 95% */
-    padding-left: 1rem;
-    padding-right: 1rem;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-/* Remove any width constraints on main content */
-main {
-    width: 100%;
-    max-width: 100%;
-    padding-right: 1rem;
-}
-
-/* Increase table pagination size */
-.dataTables_paginate .paginate_button {
-    font-size: 1rem;
-    padding: 8px 14px !important;
-}
-
-/* Make table header more prominent */
-.table thead th {
-    font-size: 1.05rem;
-    font-weight: 600;
-    padding-top: 12px;
-    padding-bottom: 12px;
-    background-color: #f8f9fa;
-}
-
-/* Adjust the DataTables page length selector */
-.dataTables_length select {
-    min-width: 80px;
-    height: 38px;
-    padding: 0.375rem 1.75rem 0.375rem 0.75rem;
-    font-size: 1rem;
-}
-
-/* Increase size of search box */
-.dataTables_filter input {
-    min-width: 250px;
-    height: 38px;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-}
-
-/* 4. Post Management Styles */
-.post-card {
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    max-height: 1000px;
-    overflow-y: auto;
-}
-
-.post-message {
-    font-size: 1.1rem;
-    line-height: 1.5;
-    color: #333;
-    margin-bottom: 1rem;
-}
-
-.post-header {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-    background-color: #f8f9fa;
-}
-
-.post-content {
-    padding: 15px 0;
-    white-space: pre-wrap;
-    min-height: 120px;
-}
-
-.post-footer {
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-top: 1px solid #eee;
-}
-
-.replies-section {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-top: 1px solid #eee;
-}
-
-.reply-card {
-    background-color: white;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.reply-input {
-    border-radius: 20px;
-    padding: 8px 15px;
-}
-
-.concern-type {
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    margin-bottom: 0.2rem;
-    font-weight: 600;
-}
-
-.inquiry-category {
-    color: #666;
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-}
-
-/* Filter container styling */
-.filter-container {
-    justify-content: flex-start;
-    gap: 30px;
-    width: 98%;
-    padding: 0;
-    margin: 0 0 1.5rem 0;
-}
-
-.filter-container h3 {
-    margin-bottom: 0;
-    min-width: 160px;
-}
-
-/* 5. Responsive Adjustments */
-/* Sidebar scrolling */
-.offcanvas-body::-webkit-scrollbar {
-    width: 5px;
-}
-
-.offcanvas-body::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.offcanvas-body::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
-}
-
-/* Medium devices and larger */
-@media (min-width: 992px) {
-    body {
-        overflow: auto;
-    }
-
-    main {
-        margin-left: var(--offcanvas-width);
-        padding-left: 1rem;
-        padding-right: 1rem;
-        width: calc(
-            100% - var(--offcanvas-width)
-        ); /* Adjust width accounting for sidebar */
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-
-    .sidebar-nav {
-        transform: none;
-        visibility: visible;
-    }
-
-    .offcanvas-backdrop::before {
-        display: none;
-    }
-
-    /* Hide hamburger button on desktop */
-    .navbar-toggler {
-        display: none;
-    }
-
-    /* Always show sidebar toggle */
-    .navbar-toggler.sidebar-toggle {
-        display: block;
-        margin-right: 5px;
-    }
-}
-
-/* Mobile and tablets */
-@media (max-width: 991px) {
-    :root {
-        --offcanvas-width: 65%;
-    }
-
-    .offcanvas-backdrop::before {
-        display: block;
-    }
-
-    .sidebar-nav {
-        width: var(--sidebar-sheet-width);
-    }
-
-    .container {
-        max-width: 100%;
-        padding: 0 15px;
-    }
-
-    .table-responsive {
-        overflow-x: auto;
-    }
-
-    .navbar-brand {
-        position: static;
-        transform: none;
-        margin-left: 10px;
-    }
-}
-
-/* Small devices */
-@media (max-width: 575px) {
-    :root {
-        --offcanvas-width: 75%;
-    }
-
-    .container {
-        padding: 0 8px;
-    }
-
-    .navbar-brand {
-        font-size: 1rem;
-    }
-
-    .table td .btn {
-        width: 30px;
-        height: 30px;
-        padding: 2px;
-        margin: 1px;
-    }
-
-    .table td .btn i {
-        font-size: 14px;
-    }
-
-    .dataTables_length,
-    .dataTables_filter {
-        width: 100%;
-        float: none;
-        text-align: left;
-        margin-bottom: 10px;
-    }
-}
-
-/* Enhanced Mobile Font Sizes */
-@media (max-width: 575px) {
-    /* ...existing mobile styles... */
-
-    .table {
-        font-size: 0.875rem; /* Increased from 0.75rem */
-    }
-
-    .filter-container h3 {
-        font-size: 1.75rem; /* Increased from 1.5rem */
-    }
-
-    .btn-group .btn {
-        font-size: 1rem; /* Increased from 0.875rem */
-    }
-
-    .navbar-brand {
-        font-size: 1.1rem; /* Increased from 0.9rem */
-    }
-
-    /* Post details modal font sizes */
-    #postContainer {
-        .fs-4 {
-            font-size: 1.25rem !important; /* Increased from 1.1rem */
-        }
-        .fs-5 {
-            font-size: 1.15rem !important; /* Increased from 1rem */
-        }
-        .card-text {
-            font-size: 1rem;
-        }
-    }
-
-    /* User modal font sizes */
-    .modal-body p {
-        font-size: 1rem;
-    }
-
-    /* DataTable elements */
-    .dataTables_info,
-    .dataTables_length,
-    .dataTables_filter,
-    .dataTables_paginate {
-        font-size: 0.95rem;
-    }
-
-    /* Table headers */
-    .table thead th {
-        font-size: 1rem;
-    }
-}
-
-/* Enhanced Responsive Design */
-/* Extra Large devices (large desktops, 1200px and up) */
-@media (min-width: 1200px) {
-    .container {
-        max-width: 95%;
-    }
-
-    .table td {
-        padding: 1rem;
-    }
-
-    .filter-container {
-        margin-bottom: 2rem;
-    }
-}
-
-/* Large devices (desktops, 992px to 1199px) */
-@media (min-width: 992px) and (max-width: 1199px) {
-    .container {
-        max-width: 95%;
-    }
-
-    .table {
-        font-size: 0.9rem;
-    }
-
-    .btn-group .btn {
-        padding: 0.375rem 0.75rem;
-    }
-}
-
-/* Medium devices (tablets, 768px to 991px) */
-@media (min-width: 768px) and (max-width: 991px) {
-    .container {
-        max-width: 100%;
-        padding: 0 10px;
-    }
-
-    .filter-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-
-    .btn-group {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .table-responsive {
-        margin: 0 -10px;
-    }
-
-    .card-body {
-        padding: 1rem;
-    }
-}
-
-/* Small devices (landscape phones, 576px to 767px) */
-@media (min-width: 576px) and (max-width: 767px) {
-    .container {
-        padding: 0 5px;
-    }
-
-    .filter-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .btn-group {
-        width: 100%;
-        overflow-x: auto;
-        flex-wrap: nowrap;
-    }
-
-    .btn-group::-webkit-scrollbar {
-        height: 4px;
-    }
-
-    .table {
-        font-size: 0.85rem;
-    }
-
-    .navbar-brand {
-        font-size: 1rem;
-    }
-
-    .card-body {
-        padding: 0.75rem;
-    }
-}
-
-/* Extra small devices (phones, less than 576px) */
-@media (max-width: 575px) {
-    .container {
-        padding: 0 5px;
-    }
-
-    .filter-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 1rem;
-    }
-
-    .filter-container h3 {
-        font-size: 1.5rem;
-    }
-
-    .btn-group {
-        width: 100%;
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        padding-bottom: 5px;
-    }
-
-    .btn-group .btn {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
-        white-space: nowrap;
-    }
-
-    .table {
-        font-size: 0.75rem;
-    }
-
-    .table td .btn {
-        width: 28px;
-        height: 28px;
-    }
-
-    .modal-dialog {
-        margin: 0.5rem;
-    }
-
-    .navbar-brand {
-        font-size: 0.9rem;
-        img {
-            width: 25px;
-            height: 25px;
-        }
-    }
-
-    .offcanvas {
-        margin-top: 10px;
-        text-align: center;
-        width: 100%;
-    }
-
-    .dataTables_wrapper {
-        width: 100%;
-        float: none;
-        text-align: left;
-        margin-bottom: 10px;
-    }
-
-    .dataTables_length,
-    .dataTables_filter {
-        width: 100%;
-        float: none;
-        text-align: left;
-        margin-bottom: 10px;
-    }
-
-    .dataTables_filter input {
-        width: 100%;
-        margin-left: 0 !important;
-    }
-
-    .dataTables_length select {
-        width: 100%;
-        margin-left: 0 !important;
-    }
-
-    .dataTables_paginate {
-        text-align: center;
-        width: 100%;
-        margin-top: 10px;
-    }
-}
-
-/* Table column widths */
-.table th.col-date,
-.table td.col-date {
-    min-width: 150px;
-    width: 150px;
-}
-
-.table th.col-time,
-.table td.col-time {
-    min-width: 120px;
-    width: 120px;
-}
-
-.table th.col-status,
-.table td.col-status {
-    min-width: 90px;
     width: 90px;
 }
 
 .table th.col-title,
 .table td.col-title {
     min-width: 200px;
-    width: auto;
 }
 
-.table th.col-action,
-.table td.col-action {
-    min-width: 100px;
+.table th.col-date,
+.table td.col-date,
+.table th.col-time,
+.table td.col-time {
     width: 100px;
 }
 
-/* Add to existing styles */
+/* Filter container styling - only keep what's needed */
+.filter-container {
+    justify-content: flex-start;
+    gap: 30px;
+    margin-bottom: 1.5rem;
+}
 
-/* Chat Container Styles */
+/* Chat Container Styles - minimal version */
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 250px);
+    height: calc(100vh - 200px);
     max-height: 600px;
-}
-
-.main-post {
-    background-color: #f8f9fa;
-    padding: 1.5rem;
-    border-bottom: 1px solid #dee2e6;
 }
 
 .replies-container {
     flex-grow: 1;
     overflow-y: auto;
+    max-height: 450px;
     padding: 1rem;
-    background-color: #fff;
-    max-height: 400px;
+    background-color: #f8f9fa;
 }
 
 .message-bubble {
-    max-width: 75%;
+    max-width: 85%;
     margin-bottom: 1rem;
     padding: 1rem;
     border-radius: 0.5rem;
 }
 
 .user-message {
-    background-color: #e9ecef;
+    background-color: #f0f2f5;
     margin-right: auto;
-    max-width: 75%;
 }
 
 .admin-message {
     background-color: #0d6efd;
     color: white;
     margin-left: auto;
-    max-width: 75%;
 }
 
-.message-time {
-    font-size: 0.75rem;
-    opacity: 0.7;
-    margin-top: 0.25rem;
-    text-align: right;
-    color: #6c757d;
+/* Original post styling */
+.admin-bg {
+    background-color: #e2f0ff;
+    border-left: 4px solid var(--primary-color);
+    color: #333;
+    width: 100%;
+    max-width: 100%;
 }
 
+.original-post h5 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.original-post p {
+    margin-bottom: 1rem;
+}
+
+/* Reply form styling */
 .reply-form-container {
-    position: sticky;
-    bottom: 0;
-    background-color: #f8f9fa;
     padding: 1rem;
+    background-color: #f8f9fa;
     border-top: 1px solid #dee2e6;
 }
 
 .reply-form .input-group {
-    background-color: #fff;
-    border-radius: 1.5rem;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: 1.5rem;
     overflow: hidden;
 }
 
 .reply-form .form-control {
-    border: none;
-    padding: 0.75rem 1rem;
     border: 1px solid #dee2e6;
     padding: 0.75rem 1rem;
-}
-
-.reply-form .btn {
-    padding: 0.75rem;
-    border: none;
-    padding: 0.75rem 1.5rem;
 }
 
 .reply-form .btn-primary {
     border-radius: 0 1.5rem 1.5rem 0;
 }
 
-.reply-form .btn-outline-secondary {
-    border-radius: 1.5rem 0 0 1.5rem;
+/* Status action buttons in modal header */
+#postDetailsModal .btn-group {
+    margin-right: 1rem;
+}
+
+#postDetailsModal .modal-header {
+    padding: 1rem 1.5rem;
+}
+
+/* Medium devices and larger - minimal media query */
+@media (min-width: 992px) {
+    /* Ensure the sidebar toggle is visible */
+    .sidebar-toggle {
+        display: block !important;
+    }
+
+    /* Keep existing styles */
+    main {
+        margin-left: var(--offcanvas-width);
+        width: calc(100% - var(--offcanvas-width));
+    }
+
+    .sidebar-nav {
+        transform: none;
+        visibility: visible;
+    }
+}
+
+/* Only minimal mobile styles */
+@media (max-width: 575px) {
+    .filter-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .btn-group {
+        width: 100%;
+    }
 }

@@ -14,39 +14,46 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="css/toastr.css">
-
-
 </head>
 
 <body class="bg-light">
-    <!-- User Avatar Dropdown -->
-    <div class="user-avatar dropdown">
-        <button class="btn dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown"
-            aria-expanded="false">
-            <i class="fas fa-user-circle avatar-icon"></i>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-            <li><a class="dropdown-item" href="#" id="inquiryStatusBtn">
-                    <i class="fas fa-list-check"></i> Inquiry Status</a>
-            </li>
-            <li><a class="dropdown-item" href="edit-profile.html"><i class="fas fa-edit"></i> Edit Profile</a></li>
-            <li><button class="dropdown-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button></li>
-        </ul>
+    <!-- User Avatar Dropdown - Using Bootstrap position utilities -->
+    <div class="position-fixed top-0 end-0 p-3 mt-2 me-2 z-index-dropdown">
+        <div class="dropdown">
+            <button class="btn btn-link p-0 shadow-none dropdown-toggle" type="button" id="userMenuButton"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle fs-1 text-success"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userMenuButton">
+                <li><a class="dropdown-item" href="edit-profile.html"><i class="fas fa-edit me-2"></i> Edit Profile</a>
+                </li>
+                <li><button class="dropdown-item" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i>
+                        Logout</button></li>
+            </ul>
+        </div>
     </div>
 
+    <!-- Main content - Using Bootstrap grid and flex utilities -->
+    <div class="container py-5 h-100 d-flex flex-column justify-content-center">
+        <div class="row justify-content-center">
+            <!-- Change the column width for better centering on different screen sizes -->
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 mx-auto mt-5">
+                <h4 class="mb-4 fw-bold text-center">Welcome, <span id="userFirstName"></span>!</h4>
 
-    <div class="container min-vh-100 d-flex align-items-center justify-content-center flex-column">
-        <h4 class="mb-4 fw-bold text-center">Welcome, <span id="userFirstName"></span>!</h4>
-        <div class="card shadow-sm">
-            <div class="card-header text-center">
-                <h4 class="my-3 fw-bold ">CHOOSE YOUR CONCERN</h4>
-            </div>
-            <div class="card-body p-4">
-                <div class="d-grid gap-3">
-                    <button class="btn btn-custom-green concern-btn py-3 fs-5" data-type="inquiry">INQUIRY</button>
-                    <button class="btn btn-custom-green concern-btn py-3 fs-5" data-type="feedback">FEEDBACK</button>
-                    <button class="btn btn-custom-green concern-btn py-3 fs-5"
-                        data-type="suggestion">SUGGESTION</button>
+                <div class="card shadow form-card">
+                    <div class="card-header text-center py-3">
+                        <h4 class="fw-bold mb-0">CHOOSE YOUR CONCERN</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-grid gap-3">
+                            <button class="btn btn-custom-green concern-btn py-3 fs-5"
+                                data-type="inquiry">INQUIRY</button>
+                            <button class="btn btn-custom-green concern-btn py-3 fs-5"
+                                data-type="feedback">FEEDBACK</button>
+                            <button class="btn btn-custom-green concern-btn py-3 fs-5"
+                                data-type="suggestion">SUGGESTION</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,15 +68,17 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Filter Controls -->
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="btn-group filter-buttons">
-                            <button class="btn btn-outline-primary active" data-filter="active">Active</button>
-                            <button class="btn btn-outline-danger" data-filter="0">Pending</button>
-                            <button class="btn btn-outline-warning" data-filter="1">Ongoing</button>
-                            <button class="btn btn-outline-success" data-filter="2">Resolved</button>
+                    <!-- Filter Controls - Improved responsiveness -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="btn-group filter-buttons w-100">
+                                <button class="btn btn-outline-primary active" data-filter="active">Active</button>
+                                <button class="btn btn-outline-danger" data-filter="0">Pending</button>
+                                <button class="btn btn-outline-warning" data-filter="1">Ongoing</button>
+                                <button class="btn btn-outline-success" data-filter="2">Resolved</button>
+                            </div>
                         </div>
-                        <div class="search-container">
+                        <div class="col-12 col-sm-6">
                             <div class="input-group">
                                 <span class="input-group-text bg-white">
                                     <i class="fas fa-search text-muted"></i>
@@ -79,15 +88,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="table-responsive">
+                    <!-- Update this div to add horizontal scrolling -->
+                    <div class="table-responsive" style="overflow-x: auto; width: 100%;">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>ID</th>
+                                    <th>Status</th> <!-- Moved Status column here -->
                                     <th>Type</th>
                                     <th>Title</th>
                                     <th>Date</th>
-                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody id="inquiriesTableBody">
@@ -119,10 +129,12 @@
                 </div>
                 <div class="modal-body p-0">
                     <div class="chat-container">
-                        <div class="main-post p-3 border-bottom"></div>
-                        <div class="replies-container p-3"></div>
+                        <!-- Combined replies container to include both original post and replies -->
+                        <div class="replies-container p-3" style="max-height: 450px">
+                            <!-- Original post and replies will be inserted here dynamically -->
+                        </div>
                         <div id="replyFormContainer" class="p-3 border-top bg-light">
-                            <!-- Reply form or resolved message will be dynamically inserted here -->
+                            <!-- Reply form will be loaded dynamically -->
                         </div>
                     </div>
                 </div>
@@ -132,12 +144,13 @@
 
     <!-- Privacy Modal -->
     <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered"> <!-- Added modal-dialog-centered -->
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header" style="background-color: #155f37; color: white;">
                     <h5 class="modal-title" id="privacyModalLabel">PHINMA Privacy Policy</h5>
                 </div>
                 <div class="modal-body" style="max-height: 50vh; overflow-y: auto;" id="privacyContent">
+                    <!-- Privacy policy content -->
                     <h6><strong>PHINMA Education Holdings, Inc. (PEHI)</strong></h6>
                     <p>PHINMA Education Holdings, Inc. (PEHI) recognizes its responsibilities under the Republic Act
                         No.
@@ -257,9 +270,10 @@
         </div>
     </div>
 
-    <!-- Inquiry Status Button -->
+    <!-- Inquiry Status Button with notification badge -->
     <button id="inquiryStatusFloatBtn" class="floating-btn">
         <i class="fas fa-list-check"></i>
+        <span id="notificationBadge" class="notification-badge d-none">0</span>
     </button>
 
     <!-- Scripts -->
@@ -273,6 +287,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="js/toastr-config.js"></script>
     <script src="js/auth-helper.js"></script>
+    <script src="js/api-checker.js"></script>
     <script src="js/choose-concern.js"></script>
 </body>
 

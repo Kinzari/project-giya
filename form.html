@@ -11,63 +11,59 @@
 </head>
 
 <body class="bg-light">
-    <!-- Avatar Icon (similar to choose-concern.html) -->
-    <div class="user-avatar dropdown" style="position: absolute; top: 10px; right: 10px;">
-        <button class="btn dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown"
-            aria-expanded="false">
-            <i class="fas fa-user-circle avatar-icon"></i>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-            <li><a class="dropdown-item" href="edit-profile.html"><i class="fas fa-edit"></i> Edit Profile</a></li>
-            <li><button class="dropdown-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button></li>
-        </ul>
-    </div>
 
-    <div class="container form-container d-flex align-items-center justify-content-center">
-        <div class="card form-card shadow-sm w-100" style="max-width: 600px;">
-            <div class="card-header text-center">
-                <h4 class="my-3 text-white">GIYA - <span id="headerFormType"></span> Form</h4>
-            </div>
-            <div class="card-body">
-                <form id="concernForm">
-                    <!-- Hidden input for selected concern type -->
-                    <input type="hidden" id="selectedPostType" name="selectedPostType" />
-
-                    <!-- Read-only Type of Concern -->
-                    <div class="mb-3">
-                        <label for="concernTypeLabel" class="form-label">Type of Concern</label>
-                        <input type="text" class="form-control" id="concernTypeLabel" readonly>
+    <!-- Update the container to add top margin -->
+    <div class="container form-container d-flex align-items-center justify-content-center mt-5">
+        <div class="row w-100 justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+                <div class="card form-card shadow-sm">
+                    <div class="card-header text-center">
+                        <h4 class="my-3 text-white">GIYA - <span id="headerFormType"></span> Form</h4>
                     </div>
+                    <div class="card-body">
+                        <form id="concernForm">
+                            <!-- Hidden input for selected concern type -->
+                            <input type="hidden" id="selectedPostType" name="selectedPostType" />
 
-                    <!-- Type of Inquiry Dropdown -->
-                    <div class="mb-3" id="inquiryDropdown">
-                        <label for="inquiryType" class="form-label">Type of Inquiry</label>
-                        <select class="form-select" id="inquiryType" name="inquiryType">
-                            <option value="">Select Type of Inquiry</option>
-                        </select>
-                    </div>
+                            <!-- Read-only Type of Concern -->
+                            <div class="mb-3">
+                                <label for="concernTypeLabel" class="form-label">Type of Concern</label>
+                                <input type="text" class="form-control" id="concernTypeLabel" readonly>
+                            </div>
 
-                    <div class="mb-3">
-                        <label for="postTitle" class="form-label">Post Title <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="postTitle" name="postTitle" required>
-                    </div>
+                            <!-- Type of Inquiry Dropdown -->
+                            <div class="mb-3" id="inquiryDropdown">
+                                <label for="inquiryType" class="form-label">Type of Inquiry</label>
+                                <select class="form-select" id="inquiryType" name="inquiryType">
+                                    <option value="">Select Type of Inquiry</option>
+                                </select>
+                            </div>
 
-                    <div class="mb-3">
-                        <label for="postMessage" class="form-label">Post Message <span
-                                class="text-danger">*</span></label>
-                        <textarea class="form-control" id="postMessage" name="postMessage" rows="5" required></textarea>
-                    </div>
+                            <div class="mb-3">
+                                <label for="postTitle" class="form-label">Post Title <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="postTitle" name="postTitle" required>
+                            </div>
 
-                    <!-- Buttons in one row -->
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <button type="button" id="backBtn" class="btn btn-danger w-100">Back</button>
-                        </div>
-                        <div class="col-6">
-                            <button type="submit" class="btn btn-custom-green w-100">Submit</button>
-                        </div>
+                            <div class="mb-3">
+                                <label for="postMessage" class="form-label">Post Message <span
+                                        class="text-danger">*</span></label>
+                                <textarea class="form-control" id="postMessage" name="postMessage" rows="5"
+                                    required></textarea>
+                            </div>
+
+                            <!-- Buttons in one row -->
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button type="button" id="backBtn" class="btn btn-danger w-100">Back</button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="submit" class="btn btn-custom-green w-100">Submit</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>

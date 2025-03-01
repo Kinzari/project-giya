@@ -33,18 +33,22 @@
                 </div>
             </div>
             <!-- Posts Table -->
-            <div class="card">
+            <div class="card shadow-sm">
+                <div class="card-header py-3">
+                    <h5 class="card-title mb-0">Latest Posts</h5>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="latestPostsTable" class="table table-striped" style="width:100%">
+                        <table id="latestPostsTable" class="table table-hover table-striped align-middle"
+                            style="width:100%">
                             <thead>
                                 <tr>
-                                    <th class="col-status">Status</th>
+                                    <th>Status</th>
                                     <th>Full Name</th>
                                     <th>Type</th>
-                                    <th class="col-title">Title</th>
-                                    <th class="col-date">Date</th>
-                                    <th class="col-time">Time</th>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
                                 </tr>
                             </thead>
                         </table>
@@ -61,7 +65,10 @@
                     <div class="d-flex align-items-center">
                         <i class="bi bi-person-circle fs-3 me-2"></i>
                         <div>
-                            <h5 class="modal-title mb-0" id="postUserName"></h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="modal-title mb-0" id="postUserName"></h5>
+                                <span class="badge" id="postStatusBadge"></span>
+                            </div>
                             <small class="text-muted" id="postUserId"></small>
                         </div>
                     </div>
@@ -107,6 +114,8 @@
     <script src="js/admin-dashboard.js"></script>
     <script src="js/posts.js"></script>
     <script src="js/toastr-config.js"></script>
+
+
 </body>
 
 </html>

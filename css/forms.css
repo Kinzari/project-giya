@@ -1,66 +1,26 @@
 /*
 -----------------------------------------------------------------------------------
-
-    PROJECT GIYA FORMS CSS INDEX
+    GIYA FORMS CSS - STREAMLINED VERSION
     ===================
-
-    1. Theme Default CSS (fonts, base styles)
-    2. Layout Components
-        2.1 Form Container
-        2.2 Form Cards
-        2.3 Form Controls
-    3. Button Styles
-        3.1 Primary Buttons
-        3.2 Back Button
-        3.3 Rating Buttons
-    4. User Interface
-        4.1 Avatar & Dropdown
-        4.2 Modal Styles
-    5. Accessibility & States
-        5.1 Form Validation
-        5.2 Visual Feedback
-    6. Responsive Design
-        6.1 Desktop (1200px+)
-        6.2 Laptop (992px-1199px)
-        6.3 Tablet (768px-991px)
-        6.4 Mobile (576px-767px)
-        6.5 Small Mobile (<576px)
+    Only includes custom styles that extend Bootstrap
 -----------------------------------------------------------------------------------*/
 
-/*----------------------------------------*/
-/*  1. Theme Default CSS
-/*----------------------------------------*/
+/* Base styles */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
-* {
-    font-family: "Poppins", sans-serif;
-}
-
 body {
+    font-family: "Poppins", sans-serif;
     min-height: 100vh;
+    background-color: #f8f9fa;
 }
 
-/*----------------------------------------*/
-/*  2. Layout Components
-/*----------------------------------------*/
-
-/* 2.1 Form Container */
-.form-container {
-    min-height: 100vh;
-    padding: 1.5rem 0;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    position: relative;
-    z-index: 1;
-}
-
-/* 2.2 Form Cards */
+/* Custom form elements */
 .form-card {
     border: none;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
     transition: transform 0.3s ease;
+    margin-top: 1rem; /* Add additional top margin */
 }
 
 .form-card:hover {
@@ -68,202 +28,43 @@ body {
 }
 
 .form-card .card-header {
-    padding: 0rem;
-    border-bottom: none;
     background-color: #155f37;
+    color: white;
+    border-bottom: none;
+    border-radius: 0.5rem 0.5rem 0 0;
 }
 
-.form-card .card-body {
-    padding: 1.5rem;
-}
-
-/* 2.3 Form Controls */
-.form-label {
-    font-weight: 500;
-    color: #444;
-    margin-bottom: 0.5rem;
-}
-
-.form-control,
-.form-select {
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    padding: 0.75rem 1rem;
-    transition: all 0.3s ease;
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: #155f37;
-    box-shadow: 0 0 0 0.25rem rgba(21, 95, 55, 0.25);
-}
-
-.form-control:disabled,
-.form-control[readonly],
-.form-select:disabled {
-    background-color: #f8f9fa;
-    cursor: not-allowed;
-}
-
-/* Filter Controls Styles */
-.input-group-text {
-    border-right: 0;
-}
-
-.input-group-text i {
-    width: 1rem;
-    text-align: center;
-}
-
-#searchFilter:focus {
-    border-color: #ddd;
-    box-shadow: none;
-}
-
-#searchFilter {
-    border-left: 0;
-}
-
-#searchFilter:placeholder-shown {
-    text-overflow: ellipsis;
-}
-
-/* Adjust form-select for consistent height */
-.form-select {
-    height: 38px;
-}
-
-/*----------------------------------------*/
-/*  3. Button Styles
-/*----------------------------------------*/
-
-/* 3.1 Primary Buttons */
+/* Custom button styles */
 .btn-custom-green {
     background-color: #155f37;
     border-color: #155f37;
     color: white;
 }
+
 .btn-custom-green:hover {
     background-color: #0d3e24;
     border-color: #0d3e24;
     color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-.btn-primary {
-    background-color: #155f37;
-    border-color: #155f37;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
 }
 
-.btn-primary:hover {
-    background-color: #0d3e24;
-    border-color: #0d3e24;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* 3.2 Back Button */
-.back-button {
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    z-index: 1000;
-    padding: 0.5rem 1rem;
-    border-radius: 30px;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
-
-.back-button:hover {
-    transform: translateX(-5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-/* 3.3 Rating Buttons */
-.rating .btn-group {
-    width: 100%;
-    gap: 0.5rem;
-}
-
-.rating .btn-outline-warning {
-    border-radius: 8px;
-    flex: 1;
-    padding: 0.75rem;
-    transition: all 0.3s ease;
-}
-
-.rating .btn-outline-warning:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.btn-check:checked + .btn-outline-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
-    color: #000;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Filter Button Styles */
-.filter-buttons .btn {
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    transition: all 0.3s ease;
-}
-
-.filter-buttons .btn.active {
-    transform: scale(1.05);
-}
-
-.search-container {
-    width: 300px;
-}
-
-/* Add hover effects for filter buttons */
-.filter-buttons .btn-outline-primary:hover,
-.filter-buttons .btn-outline-primary.active {
-    background-color: #0d6efd;
-    color: white;
-}
-
-.filter-buttons .btn-outline-danger:hover,
-.filter-buttons .btn-outline-danger.active {
-    background-color: #dc3545;
-    color: white;
-}
-
-.filter-buttons .btn-outline-warning:hover,
-.filter-buttons .btn-outline-warning.active {
-    background-color: #ffc107;
-    color: black;
-}
-
-.filter-buttons .btn-outline-success:hover,
-.filter-buttons .btn-outline-success.active {
-    background-color: #198754;
-    color: white;
-}
-
-/* Floating Inquiry Status Button */
+/* Floating action button */
 .floating-btn {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 50px;
-    height: 50px;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
     border-radius: 50%;
     background-color: #155f37;
     color: white;
     border: none;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
+    z-index: 1030;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    cursor: pointer;
 }
 
 .floating-btn:hover {
@@ -271,116 +72,150 @@ body {
     background-color: #0d3e24;
 }
 
-.floating-btn i {
-    font-size: 1.25rem;
+/* Notification badge */
+.notification-badge {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    background-color: #ff3b30;
+    color: white;
+    font-size: 0.625rem;
+    font-weight: bold;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    animation: pulse-subtle 2s infinite;
 }
 
-/*----------------------------------------*/
-/*  4. User Interface
-/*----------------------------------------*/
-
-/* 4.1 Avatar & Dropdown */
-.user-avatar {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 1000;
+@keyframes pulse-subtle {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.5);
+    }
+    70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0.3rem 0.2rem rgba(255, 59, 48, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 59, 48, 0);
+    }
 }
 
-.user-avatar .dropdown-toggle::after {
-    display: none;
+/* Replace the existing Chat/message styles with these updated styles */
+
+/* Chat Container Styles */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 200px);
+    max-height: 600px;
 }
 
-.avatar-icon {
-    font-size: 2rem;
-    color: #155f37;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.replies-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: 450px;
+    padding: 1rem;
+    background-color: #f8f9fa;
 }
 
-.avatar-icon:hover {
-    color: #1a7444;
-    transform: scale(1.1);
+.message-bubble {
+    max-width: 85%;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
 }
 
-.welcome-text {
-    margin-bottom: 0;
-    color: #666;
+.user-message {
+    background-color: #0d6efd;
+    color: white;
+    margin-left: auto;
 }
 
-/* 4.2 Modal Styles */
-.modal-sm {
-    max-width: 300px;
+.admin-message {
+    background-color: #f0f2f5;
+    margin-right: auto;
 }
 
-.modal-backdrop.show {
-    opacity: 0.5 !important;
-}
-
-.darker-backdrop.modal-backdrop.show {
-    opacity: 0.5 !important;
-}
-
-.modal.fade .modal-dialog {
-    transition: transform 0.2s ease-out;
-}
-
-.modal .concern-btn {
-    font-size: 1.1rem !important;
-    padding: 0.75rem 1.5rem !important;
-    margin-bottom: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.modal .concern-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.modal-title {
-    font-size: 1.25rem !important;
-    font-weight: 600;
-}
-
-.modal-content {
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 1rem 1.5rem;
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-/*----------------------------------------*/
-/*  5. Accessibility & States
-/*----------------------------------------*/
-
-/* 5.1 Form Validation */
-.form-control.is-invalid,
-.form-select.is-invalid {
-    border-color: #dc3545;
-    padding-right: calc(1.5em + 0.75rem);
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right calc(0.375em + 0.1875rem) center;
-    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-}
-
-.invalid-feedback {
-    display: none;
+/* Original post styling */
+.admin-bg {
+    background-color: #e2f0ff;
+    border-left: 4px solid var(--primary-color);
+    color: #333;
     width: 100%;
-    margin-top: 0.25rem;
-    font-size: 0.875em;
-    color: #dc3545;
+    max-width: 100%;
 }
 
-/* 5.2 Visual Feedback */
+.original-post h5 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.original-post p {
+    margin-bottom: 1rem;
+}
+
+/* Reply form styling */
+.reply-form-container {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.reply-form .input-group {
+    border-radius: 1.5rem;
+    overflow: hidden;
+}
+
+.reply-form .form-control {
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+}
+
+.reply-form .btn-primary {
+    border-radius: 0 1.5rem 1.5rem 0;
+}
+
+/* Privacy policy modal */
+#privacyContent {
+    scroll-behavior: smooth;
+    padding-right: 0.3rem;
+}
+
+#privacyContent::-webkit-scrollbar {
+    width: 0.5rem;
+}
+
+#privacyContent::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 0.25rem;
+}
+
+#privacyContent::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 0.25rem;
+}
+
+/* Form submission table styles */
+.submission-row {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submission-row:hover {
+    background-color: rgba(21, 95, 55, 0.1);
+}
+
+/* Animation for privacy button */
+.btn-pulse {
+    animation: pulse 1s;
+}
+
 @keyframes pulse {
     0% {
         transform: scale(1);
@@ -393,267 +228,160 @@ body {
     }
 }
 
-.btn-pulse {
-    animation: pulse 1s;
-}
+/* Responsive adaptations for smaller screens */
+@media (max-width: 576px) {
+    .chat-container {
+        height: calc(100vh - 10rem);
+    }
 
-#privacyContent {
-    scroll-behavior: smooth;
-    padding-right: 5px;
-}
+    .floating-btn {
+        bottom: 1rem;
+        right: 1rem;
+        width: 3rem;
+        height: 3rem;
+    }
 
-#privacyContent::-webkit-scrollbar {
-    width: 8px;
-}
+    .message-bubble {
+        max-width: 85%;
+    }
 
-#privacyContent::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
+    .filter-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
 
-#privacyContent::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
+    .search-container {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
 
-#privacyContent::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Submission Status Styles */
-.bg-light-success {
-    background-color: rgba(21, 95, 55, 0.1);
-}
-
-.submission-row {
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.submission-row:hover {
-    background-color: rgba(21, 95, 55, 0.1);
-}
-
-#replies .card {
-    margin-bottom: 1rem;
-    border-radius: 8px;
-}
-
-#replies .card.admin-reply {
-    border-color: #155f37;
-}
-
-#replies .card.admin-reply .card-header {
-    background-color: rgba(21, 95, 55, 0.1);
-}
-
-#replyFormContainer {
-    border-radius: 8px;
-    border: 1px solid #dee2e6;
-}
-
-#replyFormContainer textarea {
-    resize: none;
-    border-radius: 6px;
-}
-
-.badge {
-    padding: 0.5em 1em;
-    font-size: 0.875em;
-}
-
-/* Add Chat Container Styles from admin-dashboard.css */
-.chat-container {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 250px);
-    max-height: 600px;
-}
-
-.main-post {
-    background-color: #f8f9fa;
-    padding: 1.5rem;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.replies-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 1rem;
-    background-color: #fff;
-    max-height: 400px;
-}
-
-.message-bubble {
-    max-width: 75%;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    border-radius: 0.5rem;
-}
-
-.user-message {
-    background-color: #0d6efd;
-    color: white;
-    margin-left: auto; /* Admin/GIYA messages on left */
-    max-width: 75%;
-}
-
-.admin-message {
-    background-color: #e9ecef;
-    margin-right: auto; /* User messages on right */
-    max-width: 75%;
-}
-
-.message-time {
-    font-size: 0.75rem;
-    opacity: 0.7;
-    margin-top: 0.25rem;
-    text-align: right;
-    color: #6c757d;
-}
-
-.reply-form-container {
-    position: sticky;
-    bottom: 0;
-    background-color: #f8f9fa;
-    padding: 1rem;
-    border-top: 1px solid #dee2e6;
-}
-
-.reply-form .input-group {
-    background-color: #fff;
-    border-radius: 1.5rem;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.reply-form .form-control {
-    border: none;
-    padding: 0.75rem 1rem;
-}
-
-.reply-form .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-}
-
-.reply-form .btn-primary {
-    border-radius: 0 1.5rem 1.5rem 0;
-    background-color: #0d6efd !important;
-}
-
-/*----------------------------------------*/
-/*  6. Responsive Design
-/*----------------------------------------*/
-
-/* 6.1 Desktop (1200px+) */
-@media (min-width: 1200px) {
-    .form-container {
-        padding: 3rem 0;
+    .container {
+        padding-left: 20px;
+        padding-right: 20px;
     }
 
     .form-card {
-        max-width: 800px;
-        margin: 0 auto;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Fix modal content on small screens */
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    /* Add more top margin on mobile to avoid overlap */
+    .mt-5 {
+        margin-top: 4rem !important;
     }
 }
 
-/* 6.2 Laptop (992px-1199px) */
-@media (min-width: 992px) and (max-width: 1199px) {
-    .form-card {
-        margin: 0 2rem;
-    }
-}
-
-/* 6.3 Tablet (768px-991px) */
-@media (min-width: 768px) and (max-width: 991px) {
-    .form-container {
-        padding: 2rem 1rem;
-    }
-
-    .form-card .card-body {
-        padding: 1.5rem;
-    }
-
-    .back-button {
-        top: 0.5rem;
-        left: 0.5rem;
-    }
-}
-
-/* 6.4 Mobile (576px-767px) */
 @media (min-width: 576px) and (max-width: 767px) {
-    .form-container {
-        padding: 1rem;
+    .search-container {
+        width: 100%;
+        margin-top: 0.5rem;
     }
 
-    .form-card {
-        margin: 0;
-    }
-
-    .form-card .card-body {
-        padding: 1rem;
-    }
-
-    .back-button {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.9rem;
-    }
-
-    .user-avatar {
-        top: 0.5rem;
-        right: 0.5rem;
-    }
-
-    .avatar-icon {
-        font-size: 1.75rem;
+    .filter-buttons {
+        width: 100%;
+        justify-content: space-between;
     }
 }
 
-/* 6.5 Small Mobile (<576px) */
-@media (max-width: 575px) {
-    .form-container {
-        padding: 0.5rem;
+@media (max-width: 768px) {
+    .table th,
+    .table td {
+        white-space: nowrap;
+        min-width: 100px;
     }
 
-    .form-card .card-header {
-        padding: 0.75rem;
+    /* Make status column smaller */
+    .table th:last-child,
+    .table td:last-child {
+        min-width: 80px;
+    }
+}
+
+/* Add these new rules for better centering and responsive tables */
+
+/* Center container with max-width */
+.center-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Improved table responsive styles */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+/* Add shadow to table on scroll for better UX */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure table maintains structure on small screens */
+@media (max-width: 768px) {
+    .table th,
+    .table td {
+        white-space: nowrap;
+        min-width: 100px;
     }
 
-    .form-card .card-header h3 {
-        font-size: 1.25rem;
+    /* Make status column smaller */
+    .table th:last-child,
+    .table td:last-child {
+        min-width: 80px;
+    }
+}
+
+/* Add this CSS rule to ensure the avatar doesn't get covered */
+.position-fixed.top-0.end-0 {
+    z-index: 1050; /* Higher z-index to ensure avatar is always on top */
+}
+
+/* Also fix the form.html page */
+.form-container {
+    margin-top: 5rem; /* Add top margin to the form container */
+    min-height: calc(
+        100vh - 5rem
+    ); /* Adjust height to prevent awkward positioning */
+}
+
+/* Add these styles for better vertical centering on desktop */
+@media (min-width: 992px) {
+    body {
+        display: flex;
+        flex-direction: column;
     }
 
-    .form-card .card-body {
-        padding: 1rem;
+    .container.h-100 {
+        flex: 1;
     }
 
-    .form-label {
-        font-size: 0.9rem;
+    /* Adjust vertical position to account for the header/avatar */
+    .container.h-100.d-flex {
+        padding-bottom: 2rem;
     }
 
-    .form-control,
-    .form-select {
-        font-size: 0.9rem;
-        padding: 0.5rem 0.75rem;
-    }
-
-    .back-button {
-        padding: 0.3rem 0.6rem;
-        font-size: 0.85rem;
-    }
-
-    .user-avatar {
-        top: 0.5rem;
-        right: 0.5rem;
-    }
-
-    .avatar-icon {
-        font-size: 1.5rem;
-    }
-
-    .btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
+    /* Make form container a little higher on desktop */
+    .mt-5 {
+        margin-top: 2rem !important;
     }
 }

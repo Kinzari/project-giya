@@ -21,9 +21,9 @@
     <div id="sidebar-placeholder"></div>
     <!-- Main Content -->
     <main class="py-3 px-2">
-        <div class="container">
+        <div class="container py-4">
             <!-- Filtering Controls with left alignment -->
-            <div class="d-flex align-items-center mb-4 filter-container">
+            <div class="d-flex align-items-center mb-4 gap-3 filter-container">
                 <h3>GIYA : Dashboard</h3>
                 <div class="btn-group">
                     <button class="btn btn-outline-primary active" data-filter="all">All</button>
@@ -37,13 +37,14 @@
             <!-- Latest Added Posts -->
             <div class="row mt-4">
                 <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title">Latest Posts</h5>
+                    <div class="card shadow-sm">
+                        <div class="card-header py-3">
+                            <h5 class="card-title mb-0">Latest Posts</h5>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table id="latestPostsTable" class="table table-striped" style="width:100%">
+                                <table id="latestPostsTable" class="table table-hover table-striped align-middle"
+                                    style="width:100%">
                                     <thead>
                                         <tr>
                                             <th>Status</th>
@@ -71,7 +72,10 @@
                     <div class="d-flex align-items-center">
                         <i class="bi bi-person-circle fs-3 me-2"></i>
                         <div>
-                            <h5 class="modal-title mb-0" id="postUserName"></h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="modal-title mb-0" id="postUserName"></h5>
+                                <span class="badge" id="postStatusBadge"></span>
+                            </div>
                             <small class="text-muted" id="postUserId"></small>
                         </div>
                     </div>
@@ -79,11 +83,12 @@
                 </div>
                 <div class="modal-body p-0">
                     <div class="chat-container">
-                        <!-- Main post content -->
-                        <div class="main-post p-3 border-bottom"></div>
-                        <!-- Replies container -->
-                        <div class="replies-container p-3"></div>
-                        <!-- Reply form -->
+                        <!-- Removed separate post details container -->
+                        <!-- Combined replies container to include both original post and replies -->
+                        <div class="replies-container p-3" style="max-height: 450px">
+                            <!-- Original post will be inserted here as first message -->
+                            <!-- Other replies will follow -->
+                        </div>
                         <div class="reply-form-container p-3 border-top bg-light">
                             <form id="replyForm" class="reply-form">
                                 <div class="input-group">

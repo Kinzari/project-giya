@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get baseURL from sessionStorage
     const baseURL = sessionStorage.getItem("baseURL");
     if (!baseURL) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return;
     }
 
@@ -25,11 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentSubmissionId = null;
 
-    // Remove old inquiry status button listener
-    document.getElementById('inquiryStatusBtn').removeEventListener('click', null);
-
-    // Add click handler for both buttons
+    // Add click handler for inquiry status button
     const showInquiryStatus = () => {
+        // Mark notifications as read
+        clearNotification();
+
         // Reset filter buttons to default state before loading submissions
         document.querySelectorAll('.filter-buttons .btn').forEach(btn => {
             btn.classList.remove('active');
@@ -45,7 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
         inquiryStatusModal.show();
     };
 
-    document.getElementById('inquiryStatusBtn').addEventListener('click', showInquiryStatus);
+    // FIXED: Remove the inquiryStatusBtn event listener as it doesn't exist in the HTML
+    // Only use the floating button for opening the inquiry status modal
     document.getElementById('inquiryStatusFloatBtn').addEventListener('click', showInquiryStatus);
 
     // Enhanced filtering functionality
@@ -60,8 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Update this line to call posts.php instead of inquiry.php
             const response = await axios.get(
-                `${baseURL}inquiry.php?action=get_user_submissions&user_id=${userId}`
+                `${baseURL}posts.php?action=get_user_submissions&user_id=${userId}`
             );
 
             if (response.data.status === 'success') {
@@ -82,8 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Remove the duplicate DOMContentLoaded event listener
-    // and move filter button initialization here
+    // Filter button initialization
     function initializeFilterButtons() {
         // Remove any existing event listeners first
         document.querySelectorAll('.filter-buttons .btn').forEach(btn => {
@@ -145,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSubmissions(filterSubmissions());
     });
 
+    // Update the renderSubmissions function to match the new column order
     function renderSubmissions(submissions) {
         const tableBody = document.getElementById('inquiriesTableBody');
 
@@ -156,11 +158,11 @@ document.addEventListener('DOMContentLoaded', () => {
         tableBody.innerHTML = submissions.map(submission => `
             <tr class="submission-row" data-id="${submission.post_id}">
                 <td>#${submission.post_id}</td>
+                <td><span class="badge ${getStatusBadgeClass(submission.post_status)}">
+                    ${getStatusText(submission.post_status)}</span></td>
                 <td>${submission.type}</td>
                 <td>${submission.post_title}</td>
                 <td>${formatDate(submission.post_date)}</td>
-                <td><span class="badge ${getStatusBadgeClass(submission.post_status)}">
-                    ${getStatusText(submission.post_status)}</span></td>
             </tr>
         `).join('');
 
@@ -172,11 +174,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Enhanced submission details loading
+    // Fix for the Mark as Resolved issue
     async function loadSubmissionDetails(submissionId) {
         try {
+            // Update this line to call posts.php instead of inquiry.php
             const response = await axios.get(
-                `${baseURL}inquiry.php?action=get_submission_detail&id=${submissionId}`
+                `${baseURL}posts.php?action=get_submission_detail&id=${submissionId}`
             );
 
             if (response.data.status === 'success') {
@@ -198,78 +201,134 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('postUserName').textContent = submission.author_name;
                 document.getElementById('postUserId').textContent = `ID: ${submission.user_schoolId || ''}`;
 
+                // IMPORTANT: Store the current status for proper handling
+                const currentStatus = submission.post_status;
+
                 const statusBadge = document.getElementById('postStatus');
-                statusBadge.className = `badge ${getStatusBadgeClass(submission.post_status)}`;
-                statusBadge.textContent = getStatusText(submission.post_status);
+                statusBadge.className = `badge ${getStatusBadgeClass(currentStatus)}`;
+                statusBadge.textContent = getStatusText(currentStatus);
 
-                // Update chat content
-                document.querySelector('.main-post').innerHTML = `
-                    <div class="d-flex flex-column">
-                        <h5>${submission.type}</h5>
-                        <h6>${submission.post_title}</h6>
-                        <div class="inquiry-details mb-3">
-                            <strong>Type of Inquiry:</strong> ${submission.inquiry_type || 'N/A'}
-                            <p class="text-muted mb-2">${submission.inquiry_description || ''}</p>
-                        </div>
-                        <p class="mb-3">${submission.post_message}</p>
-                        <small class="text-muted text-end">${formatDateTime(submission.post_date, submission.post_time)}</small>
-                    </div>
-                `;
-
-                // Update replies
-                document.querySelector('.replies-container').innerHTML = replies.map(reply => `
-                    <div class="message-bubble ${reply.user_type === 'admin' ? 'admin-message' : 'user-message'}">
-                        <div class="message-content">
-                            <strong>${reply.display_name}</strong>
-                            <p>${reply.reply_message}</p>
-                            <small>${new Date(reply.reply_date + " " + reply.reply_time).toLocaleString()}</small>
-                        </div>
-                    </div>
-                `).join('');
-
-                // Update reply form container based on status
-                const replyFormContainer = document.getElementById('replyFormContainer');
-
-                if (submission.post_status === '2') { // Resolved
-                    replyFormContainer.innerHTML = `
-                        <div class="alert alert-success mb-0 text-center">
-                            <i class="fas fa-check-circle me-2"></i>
-                            This post is resolved and the conversation is closed.
-                        </div>`;
-                } else {
-                    replyFormContainer.innerHTML = `
-                        <form id="replyForm" class="reply-form">
-                            <div class="input-group">
-                                <input type="text" class="form-control reply-input" placeholder="Write a reply...">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="bi bi-send-fill"></i>
-                                </button>
-                            </div>
-                        </form>
-                        <div class="d-flex justify-content-end mt-2">
-                            <button class="btn btn-success btn-sm" onclick="markAsResolved(${submissionId})">
-                                <i class="fas fa-check-circle"></i> Mark as Resolved
-                            </button>
-                        </div>`;
-
-                    // Attach reply form listener
-                    attachReplyFormListener();
-                }
-
-                // Scroll to bottom of replies
+                // Clear replies container
                 const repliesContainer = document.querySelector('.replies-container');
                 if (repliesContainer) {
-                    setTimeout(() => {
-                        repliesContainer.scrollTop = repliesContainer.scrollHeight;
-                    }, 300);
+                    repliesContainer.innerHTML = '';
+
+                    // Add the main post as the first message in the replies container
+                    const originalPostElement = document.createElement('div');
+                    originalPostElement.className = 'message-bubble admin-bg';
+                    originalPostElement.innerHTML = `
+                        <div class="message-content original-post">
+                            <div class="mb-2">
+                                <span class="badge bg-secondary">${submission.type}</span>
+                                ${submission.inquiry_type ? `<span class="badge bg-info ms-1">${submission.inquiry_type}</span>` : ''}
+                            </div>
+                            <h5>${submission.post_title}</h5>
+                            <p>${submission.post_message}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">${formatDateTime(submission.post_date, submission.post_time)}</small>
+                                <span class="badge ${getStatusBadgeClass(submission.post_status)}">${getStatusText(submission.post_status)}</span>
+                            </div>
+                        </div>
+                    `;
+                    repliesContainer.appendChild(originalPostElement);
+
+                    // Add replies
+                    if (replies && replies.length > 0) {
+                        replies.forEach(reply => {
+                            const replyElement = document.createElement('div');
+                            replyElement.className = `message-bubble ${reply.user_type === 'admin' ? 'admin-message' : 'user-message'}`;
+                            replyElement.innerHTML = `
+                                <div class="message-content">
+                                    <strong>${reply.display_name}</strong>
+                                    <p>${reply.reply_message}</p>
+                                    <small>${new Date(reply.reply_date + " " + reply.reply_time).toLocaleString()}</small>
+                                </div>
+                            `;
+                            repliesContainer.appendChild(replyElement);
+                        });
+                    }
                 }
+
+                // Update reply form container based on status
+                // IMPORTANT: Always pass the current post status directly from the database
+                updateReplyForm(currentStatus);
+
+                // Scroll to bottom of replies
+                scrollToBottom();
             }
         } catch (error) {
             toastr.error('Failed to load submission details');
         }
     }
 
-    // Add this new function
+    // New function to render replies
+    function renderReplies(replies) {
+        const repliesContainer = document.querySelector('.replies-container');
+
+        repliesContainer.innerHTML = replies.length ?
+            replies.map(reply => `
+                <div class="message-bubble ${reply.user_type === 'admin' ? 'admin-message' : 'user-message'}">
+                    <div class="message-content">
+                        <strong>${reply.display_name}</strong>
+                        <p>${reply.reply_message}</p>
+                        <small>${new Date(reply.reply_date + " " + reply.reply_time).toLocaleString()}</small>
+                    </div>
+                </div>
+            `).join('') :
+            '<p class="text-muted text-center">No replies yet.</p>';
+    }
+
+    // Enhanced updateReplyForm function with better status handling
+    function updateReplyForm(status) {
+        const replyFormContainer = document.getElementById('replyFormContainer');
+        const userType = sessionStorage.getItem('user_typeId');
+        const isStudentOrVisitor = userType === '1' || userType === '2';
+
+        // Convert status to string if it's not already
+        status = String(status);
+
+        if (status === '2') { // Resolved
+            replyFormContainer.innerHTML = `
+                <div class="alert alert-success mb-0 text-center">
+                    <i class="fas fa-check-circle me-2"></i>
+                    This post is resolved and the conversation is closed.
+                </div>`;
+        } else {
+            // Only show "Mark as Resolved" button for students and visitors
+            const resolveButton = isStudentOrVisitor ? `
+                <div class="d-flex justify-content-end mt-2">
+                    <button class="btn btn-success btn-sm" onclick="markAsResolved(${currentSubmissionId})">
+                        <i class="fas fa-check-circle"></i> Mark as Resolved
+                    </button>
+                </div>` : '';
+
+            replyFormContainer.innerHTML = `
+                <form id="replyForm" class="reply-form">
+                    <div class="input-group">
+                        <input type="text" class="form-control reply-input" placeholder="Write a reply...">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </form>
+                ${resolveButton}`;
+
+            // Attach reply form listener
+            attachReplyFormListener();
+        }
+    }
+
+    // New function to scroll chat to bottom
+    function scrollToBottom() {
+        const repliesContainer = document.querySelector('.replies-container');
+        if (repliesContainer) {
+            setTimeout(() => {
+                repliesContainer.scrollTop = repliesContainer.scrollHeight;
+            }, 300);
+        }
+    }
+
+    // Mark as resolved function accessible globally
     window.markAsResolved = async function(submissionId) {
         try {
             const result = await Swal.fire({
@@ -283,8 +342,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (result.isConfirmed) {
+                // Update this line to call posts.php instead of inquiry.php
                 const response = await axios.post(
-                    `${baseURL}inquiry.php?action=update_status`,
+                    `${baseURL}posts.php?action=update_status`,
                     {
                         post_id: submissionId,
                         status: '2' // 2 = resolved
@@ -292,9 +352,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
 
                 if (response.data.status === 'success') {
+                    // Update the status badge
+                    const statusBadge = document.getElementById('postStatus');
+                    statusBadge.className = 'badge bg-success';
+                    statusBadge.textContent = 'Resolved';
+
+                    // Update the reply form to show resolved state
+                    updateReplyForm('2');
+
+                    // IMPORTANT: Also update the submission in the allSubmissions array
+                    const submissionIndex = allSubmissions.findIndex(s => s.post_id == submissionId);
+                    if (submissionIndex !== -1) {
+                        allSubmissions[submissionIndex].post_status = '2';
+                    }
+
+                    // Show success message
                     toastr.success('Concern marked as resolved');
-                    await loadSubmissionDetails(submissionId); // Reload the details
-                    await loadUserSubmissions(); // Refresh the list
+
+                    // Refresh the submissions list in background
+                    loadUserSubmissions();
                 }
             }
         } catch (error) {
@@ -318,34 +394,55 @@ document.addEventListener('DOMContentLoaded', () => {
                     formData.append('user_id', sessionStorage.getItem('user_id'));
                     formData.append('content', replyInput.value.trim());
 
+                    // Clear input before sending to make UX feel faster
+                    const content = replyInput.value.trim();
                     replyInput.value = '';
 
+                    // Optimistically add reply to the UI
+                    const currentUserName = `${sessionStorage.getItem('user_firstname')} ${sessionStorage.getItem('user_lastname')}`;
+                    addReplyToUI(content, currentUserName, 'user-message', new Date());
+
+                    // Scroll to bottom after adding the new message
+                    scrollToBottom();
+
+                    // Actually send the reply
+                    // Update this line to call posts.php instead of inquiry.php
                     const response = await axios.post(
-                        `${baseURL}inquiry.php?action=add_reply`,
+                        `${baseURL}posts.php?action=add_reply`,
                         formData
                     );
 
-                    if (response.data.status === 'success') {
-                        // Hide current modal instance
-                        const currentModal = bootstrap.Modal.getInstance(document.getElementById('submissionDetailModal'));
-                        if (currentModal) {
-                            currentModal.hide();
-                            // Wait for modal to fully hide
-                            setTimeout(async () => {
-                                // Remove any lingering backdrops
-                                document.querySelector('.modal-backdrop')?.remove();
-                                document.body.classList.remove('modal-open');
-                                // Now load submission details
-                                await loadSubmissionDetails(currentSubmissionId);
-                            }, 300);
-                        }
+                    if (response.data.status !== 'success') {
+                        // If API failed, show error
+                        toastr.error('Failed to send reply');
                     }
+
+                    // No modal closing or refreshing
                 } catch (error) {
                     console.error('Error sending reply:', error);
-                    toastr.error('Failed to send reply');
+                    toastr.error('Failed to send reply');create
                 }
             });
         }
+    }
+
+    // New function to add a reply to the UI
+    function addReplyToUI(message, authorName, cssClass, timestamp) {
+        const repliesContainer = document.querySelector('.replies-container');
+
+        // Create a new message element
+        const newReply = document.createElement('div');
+        newReply.className = `message-bubble ${cssClass}`;
+        newReply.innerHTML = `
+            <div class="message-content">
+                <strong>${authorName}</strong>
+                <p>${message}</p>
+                <small>${timestamp.toLocaleString()}</small>
+            </div>
+        `;
+
+        // Append it to the container
+        repliesContainer.appendChild(newReply);
     }
 
     // Helper functions
@@ -375,19 +472,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return statusMap[status] || 'Unknown';
     }
 
-    // Check privacy policy status when page loads
+    // Update the checkPrivacyPolicyStatus function to properly handle the check
     async function checkPrivacyPolicyStatus() {
         try {
+            const userId = sessionStorage.getItem('user_id');
+            if (!userId) {
+                sessionStorage.removeItem('privacyPolicyAccepted');
+                return false;
+            }
+
             const response = await axios.get(
-                `${baseURL}inquiry.php?action=check_privacy_policy&user_id=${sessionStorage.getItem('user_id')}`
+                `${baseURL}inquiry.php?action=check_privacy_policy&user_id=${userId}`
             );
+
             if (response.data.success && response.data.privacy_policy_check === 1) {
                 sessionStorage.setItem('privacyPolicyAccepted', 'true');
+                return true;
             } else {
                 sessionStorage.removeItem('privacyPolicyAccepted');
+                return false;
             }
         } catch (error) {
             console.error('Error checking privacy policy status:', error);
+            sessionStorage.removeItem('privacyPolicyAccepted');
+            return false;
         }
     }
 
@@ -420,19 +528,28 @@ document.addEventListener('DOMContentLoaded', () => {
         privacyContent.scrollTop = 0;
     });
 
+    // Update the acceptPrivacyBtn click handler to properly update the database
     document.getElementById('acceptPrivacyBtn').addEventListener('click', async () => {
-        const pendingUrl = sessionStorage.getItem('pendingRedirect');
-        if (pendingUrl) {
-            try {
-                const userId = sessionStorage.getItem('user_id');
-                await axios.post(
-                    `${baseURL}inquiry.php?action=update_privacy_policy`,
-                    {
-                        user_id: userId,
-                        privacy_policy_check: 1
-                    }
-                );
+        try {
+            const userId = sessionStorage.getItem('user_id');
+            const pendingUrl = sessionStorage.getItem('pendingRedirect');
+
+            if (!userId) {
+                toastr.error('User ID not found. Please login again.');
+                return;
+            }
+
+            const response = await axios.post(
+                `${baseURL}inquiry.php?action=update_privacy_policy`,
+                {
+                    user_id: userId,
+                    privacy_policy_check: 1
+                }
+            );
+
+            if (response.data.success) {
                 sessionStorage.setItem('privacyPolicyAccepted', 'true');
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Privacy Policy Accepted',
@@ -440,65 +557,46 @@ document.addEventListener('DOMContentLoaded', () => {
                     timer: 1500,
                     showConfirmButton: false
                 });
-                sessionStorage.removeItem('pendingRedirect');
-                setTimeout(() => {
-                    window.location.href = pendingUrl;
-                }, 1500);
-            } catch (error) {
-                console.error('Failed to update privacy policy flag:', error);
+
+                if (pendingUrl) {
+                    sessionStorage.removeItem('pendingRedirect');
+                    setTimeout(() => {
+                        window.location.href = pendingUrl;
+                    }, 1500);
+                } else {
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('privacyModal')).hide();
+                    }, 1500);
+                }
+            } else {
+                toastr.error('Failed to update privacy policy status. Please try again.');
             }
+        } catch (error) {
+            console.error('Failed to update privacy policy flag:', error);
+            toastr.error('An error occurred. Please try again.');
         }
     });
 
-    // Concern button click handlers
+    // Update the concern button click handlers to properly check privacy policy
     document.querySelectorAll('.concern-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             const type = btn.dataset.type;
             sessionStorage.setItem('selectedPostType', type);
             const targetUrl = 'form.html';
-            sessionStorage.setItem('pendingRedirect', targetUrl);
 
-            // Recheck privacy policy status before proceeding
-            await checkPrivacyPolicyStatus();
+            // Always check the latest privacy policy status from the server
+            const privacyAccepted = await checkPrivacyPolicyStatus();
 
-            if (sessionStorage.getItem('privacyPolicyAccepted') === 'true') {
+            if (privacyAccepted) {
+                // If accepted, navigate directly
                 window.location.href = targetUrl;
             } else {
+                // If not accepted, store pending redirect and show modal
+                sessionStorage.setItem('pendingRedirect', targetUrl);
                 privacyModal.show();
             }
         });
     });
-
-    // Remove existing reply event listeners to avoid duplicates
-    const replyForm = document.getElementById('replyForm');
-    if (replyForm) {
-        // Single event listener for form submission
-        replyForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const replyInput = e.target.querySelector('.reply-input');
-            if (!replyInput || !replyInput.value.trim()) return;
-
-            try {
-                const formData = new FormData();
-                formData.append('post_id', currentSubmissionId);
-                formData.append('user_id', sessionStorage.getItem('user_id'));
-                formData.append('content', replyInput.value.trim());
-
-                replyInput.value = '';
-
-                const response = await axios.post(
-                    `${baseURL}inquiry.php?action=add_reply`,
-                    formData
-                );
-
-                if (response.data.status === 'success') {
-                    await loadSubmissionDetails(currentSubmissionId);
-                }
-            } catch (error) {
-                console.error('Error sending reply:', error);
-            }
-        });
-    }
 
     // Logout handler
     document.getElementById('logoutBtn').addEventListener('click', function() {
@@ -520,4 +618,58 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Check for unread notifications
+    checkForNewReplies();
+
+    // Set interval to check for new notifications every 2 minutes (more appropriate for production)
+    setInterval(checkForNewReplies, 120000);
+
+    // Check and update notification badge - PRODUCTION VERSION
+    async function checkForNewReplies() {
+        const userId = sessionStorage.getItem('user_id');
+        if (!userId) return;
+
+        try {
+            // Update this line to call posts.php instead of inquiry.php
+            const response = await axios.get(`${baseURL}posts.php?action=check_new_replies&user_id=${userId}`);
+
+            if (response.data.status === 'success') {
+                const newRepliesCount = response.data.unreadCount || 0;
+                updateNotificationBadge(newRepliesCount);
+            }
+        } catch (error) {
+            console.error('Error checking for new replies:', error);
+        }
+    }
+
+    // Update notification badge display - PRODUCTION VERSION
+    function updateNotificationBadge(count) {
+        const badge = document.getElementById('notificationBadge');
+
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.classList.remove('d-none');
+        } else {
+            badge.classList.add('d-none');
+        }
+    }
+
+    // Clear notification when user opens the inquiry status - PRODUCTION VERSION
+    async function clearNotification() {
+        const userId = sessionStorage.getItem('user_id');
+        if (!userId) return;
+
+        try {
+            // Update this line to call posts.php instead of inquiry.php
+            await axios.post(`${baseURL}posts.php?action=mark_replies_read`, { user_id: userId });
+            // Hide the notification badge
+            document.getElementById('notificationBadge').classList.add('d-none');
+        } catch (error) {
+            console.error('Error clearing notifications:', error);
+        }
+    }
+
+    // Call checkForNewReplies once more to make sure it runs
+    setTimeout(checkForNewReplies, 1000);
 });
