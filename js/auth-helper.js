@@ -17,3 +17,10 @@ const AuthHelper = {
         };
     }
 };
+
+// Add this function if it doesn't exist in your auth-helper.js file
+
+function getApiBaseUrl() {
+    // Replace with your actual API base URL
+    return 'https://your-api-endpoint.com/api';
+}
