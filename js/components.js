@@ -76,11 +76,26 @@ function highlightActiveMenuItem() {
 // Helper function to update user information
 function updateUserInfo() {
     const userName = document.querySelector('.user-name');
+    const userTitle = document.querySelector('.user-title'); // Add reference to user title element
+
     if (userName) {
         const firstName = sessionStorage.getItem('user_firstname');
         const lastName = sessionStorage.getItem('user_lastname');
+        const userTypeId = sessionStorage.getItem('user_typeId');
+
         if (firstName && lastName) {
             userName.textContent = `${firstName} ${lastName}`;
+        }
+
+        // Update user title based on user type
+        if (userTitle) {
+            if (userTypeId === '3') {
+                userTitle.textContent = 'Administrator';
+            } else if (userTypeId === '4') {
+                userTitle.textContent = 'Point of Contact';
+            } else {
+                userTitle.textContent = 'GIYA User';
+            }
         }
     }
 }
@@ -176,30 +191,38 @@ function createBasicSidebar(container) {
     highlightActiveMenuItem();
 }
 
-// Update the sidebar toggle handler to properly remove the backdrop
+// Update the setupSidebarToggle function to enable closing by clicking outside
 function setupSidebarToggle() {
-    const sidebarToggle = document.querySelector('.sidebar-toggle');
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function(event) {
-            // Prevent event propagation to stop it from bubbling up
-            event.stopPropagation();
+    // Wait for DOM to be fully loaded
+    setTimeout(() => {
+        const sidebarToggle = document.querySelector('.sidebar-toggle');
+        if (sidebarToggle) {
+            // Remove any existing listeners to avoid duplicates
+            const newSidebarToggle = sidebarToggle.cloneNode(true);
+            sidebarToggle.parentNode.replaceChild(newSidebarToggle, sidebarToggle);
 
-            const sidebar = document.getElementById('sideSheet');
-            if (sidebar) {
-                const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(sidebar);
-                bsOffcanvas.toggle();
+            newSidebarToggle.addEventListener('click', function(e) {
+                // Prevent default behavior and event bubbling
+                e.preventDefault();
+                e.stopPropagation();
 
-                // Make sure to remove backdrop when sidebar is hidden
-                sidebar.addEventListener('hidden.bs.offcanvas', function() {
-                    // Remove any leftover backdrop
-                    const backdrops = document.querySelectorAll('.offcanvas-backdrop');
-                    backdrops.forEach(el => el.remove());
+                const sidebar = document.getElementById('sideSheet');
+                if (sidebar) {
+                    // Remove data-bs-backdrop="static" to allow closing when clicking outside
+                    sidebar.removeAttribute('data-bs-backdrop');
 
-                    // Also make sure body isn't still locked
-                    document.body.classList.remove('overflow-hidden');
-                    document.body.style.paddingRight = '';
-                });
-            }
-        });
-    }
+                    const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(sidebar);
+                    bsOffcanvas.toggle();
+
+                    // Clean up backdrop when sidebar is hidden
+                    sidebar.addEventListener('hidden.bs.offcanvas', function() {
+                        const backdrops = document.querySelectorAll('.offcanvas-backdrop');
+                        backdrops.forEach(el => el.remove());
+                        document.body.classList.remove('overflow-hidden');
+                        document.body.style.paddingRight = '';
+                    }, { once: true });
+                }
+            });
+        }
+    }, 200);
 }

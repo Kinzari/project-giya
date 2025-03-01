@@ -1,4 +1,6 @@
-<div class="offcanvas offcanvas-start bg-purple text-white" style="width: 280px;" tabindex="-1" id="sideSheet">
+<!-- Fix offcanvas attributes to ensure proper functionality -->
+<div class="offcanvas offcanvas-start bg-purple text-white" style="width: 280px;" tabindex="-1" id="sideSheet"
+    data-bs-backdrop="static">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title text-white">PROJECT : GIYA</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
@@ -21,32 +23,32 @@
                 <i class="bi bi-mortarboard me-2"></i>
                 <span>Student Posts</span>
             </a>
-                <a class="nav-link text-white dropdown-toggle" href="#" id="masterFilesDropdown" role="button"
-                    data-bs-toggle="dropdown">
-                    <i class="bi bi-folder me-2"></i>
-                    <span>Master Files</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-dark">
-                    <li><a class="dropdown-item" href="master-students.html">
-                            <i class="bi bi-people me-2"></i>Students</a></li>
-                    <li><a class="dropdown-item" href="master-poc.html">
-                            <i class="bi bi-person-vcard me-2"></i>Point of Contact</a></li>
-                    <li><a class="dropdown-item" href="master-departments.html">
-                            <i class="bi bi-building me-2"></i>Departments</a></li>
-                    <li><a class="dropdown-item" href="master-courses.html">
-                            <i class="bi bi-book me-2"></i>Courses</a></li>
-                    <li><a class="dropdown-item" href="master-inquiry-types.html">
-                            <i class="bi bi-chat-dots me-2"></i>Inquiry Types</a></li>
-                </ul>
+            <a class="nav-link text-white dropdown-toggle" href="#" id="masterFilesDropdown" role="button"
+                data-bs-toggle="dropdown">
+                <i class="bi bi-folder me-2"></i>
+                <span>Master Files</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark">
+                <li><a class="dropdown-item" href="master-students.html">
+                        <i class="bi bi-people me-2"></i>Students</a></li>
+                <li><a class="dropdown-item" href="master-poc.html">
+                        <i class="bi bi-person-vcard me-2"></i>Point of Contact</a></li>
+                <li><a class="dropdown-item" href="master-departments.html">
+                        <i class="bi bi-building me-2"></i>Departments</a></li>
+                <li><a class="dropdown-item" href="master-courses.html">
+                        <i class="bi bi-book me-2"></i>Courses</a></li>
+                <li><a class="dropdown-item" href="master-inquiry-types.html">
+                        <i class="bi bi-chat-dots me-2"></i>Inquiry Types</a></li>
+            </ul>
         </div>
 
         <!-- User Profile -->
         <div class="mt-auto border-top pt-3">
             <div class="d-flex align-items-center mb-3 user-profile">
-                <i class="bi bi-person-circle"></i>
+                <i class="bi bi-person-circle me-3"></i> <!-- Added me-3 class for more right margin -->
                 <div class="text-white">
                     <div class="user-name fw-bold">Admin</div>
-                    <small class="text-white-50">Administrator</small>
+                    <small class="text-white-50 user-title">Administrator</small> <!-- Added user-title class -->
                 </div>
             </div>
             <div class="d-grid gap-2">
