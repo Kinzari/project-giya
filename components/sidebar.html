@@ -7,28 +7,29 @@
     </div>
     <div class="offcanvas-body d-flex flex-column">
         <div class="nav-items flex-grow-1">
-            <a href="admin-dashboard.html" class="nav-link text-white mb-3">
+            <!-- Add clear data attributes to all menu items -->
+            <a href="admin-dashboard.html" class="nav-link text-white mb-3" data-menu="dashboard">
                 <i class="bi bi-speedometer2 me-2"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="latest-post.html" class="nav-link text-white mb-3">
+            <a href="latest-post.html" class="nav-link text-white mb-3" data-menu="latest-posts">
                 <i class="bi bi-clock-history me-2"></i>
                 <span>Latest Posts</span>
             </a>
-            <a href="visitors.html" class="nav-link text-white mb-3">
+            <a href="visitors.html" class="nav-link text-white mb-3" data-menu="visitor-posts">
                 <i class="bi bi-person-badge me-2"></i>
                 <span>Visitor Posts</span>
             </a>
-            <a href="students.html" class="nav-link text-white mb-3">
+            <a href="students.html" class="nav-link text-white mb-3" data-menu="student-posts">
                 <i class="bi bi-mortarboard me-2"></i>
                 <span>Student Posts</span>
             </a>
             <a class="nav-link text-white dropdown-toggle" href="#" id="masterFilesDropdown" role="button"
-                data-bs-toggle="dropdown">
+                data-bs-toggle="dropdown" data-menu="masterfiles">
                 <i class="bi bi-folder me-2"></i>
                 <span>Master Files</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-dark">
+            <ul class="dropdown-menu dropdown-menu-dark" data-menu="masterfiles-dropdown">
                 <li><a class="dropdown-item" href="master-students.html">
                         <i class="bi bi-people me-2"></i>Students</a></li>
                 <li><a class="dropdown-item" href="master-poc.html">
@@ -47,8 +48,8 @@
             <div class="d-flex align-items-center mb-3 user-profile">
                 <i class="bi bi-person-circle me-3"></i> <!-- Added me-3 class for more right margin -->
                 <div class="text-white">
-                    <div class="user-name fw-bold">Admin</div>
-                    <small class="text-white-50 user-title">Administrator</small> <!-- Added user-title class -->
+                    <div class="user-name fw-bold"> </div>
+                    <small class="text-white-50 user-title"> </small> <!-- Added user-title class -->
                 </div>
             </div>
             <div class="d-grid gap-2">
