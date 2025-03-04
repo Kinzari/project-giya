@@ -273,25 +273,23 @@ function initializeDepartmentsTable() {
         }
     });
 
-    // Setup department form submission
+
     $('#departmentForm').on('submit', function(e) {
         e.preventDefault();
         submitDepartmentForm();
     });
 }
 
-/**
- * Initialize Courses Table
- */
+
 function initializeCoursesTable() {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
-    // Check if DataTable is already initialized and destroy it first
+
     if ($.fn.DataTable.isDataTable('#coursesTable')) {
         $('#coursesTable').DataTable().destroy();
     }
 
-    // Initialize DataTable
+
     $('#coursesTable').DataTable({
         ajax: {
             url: `${baseURL}masterfile.php?action=courses`,
@@ -306,7 +304,7 @@ function initializeCoursesTable() {
             {
                 data: null,
                 render: function() {
-                    return '0'; // Replace with actual count when API supports it
+                    return '0';
                 }
             },
             {
@@ -330,7 +328,7 @@ function initializeCoursesTable() {
         },
         order: [[1, 'asc']],
         drawCallback: function() {
-            // Add event listeners to edit and delete buttons
+
             $('.edit-btn').on('click', function() {
                 const courseId = $(this).data('id');
                 editCourse(courseId);
@@ -343,25 +341,23 @@ function initializeCoursesTable() {
         }
     });
 
-    // Setup course form submission
+
     $('#courseForm').on('submit', function(e) {
         e.preventDefault();
         submitCourseForm();
     });
 }
 
-/**
- * Initialize Inquiry Types Table
- */
+
 function initializeInquiryTypesTable() {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
-    // Check if DataTable is already initialized and destroy it first
+
     if ($.fn.DataTable.isDataTable('#inquiryTypesTable')) {
         $('#inquiryTypesTable').DataTable().destroy();
     }
 
-    // Initialize DataTable
+
     $('#inquiryTypesTable').DataTable({
         ajax: {
             url: `${baseURL}masterfile.php?action=inquiry_types`,
@@ -403,7 +399,7 @@ function initializeInquiryTypesTable() {
         },
         order: [[1, 'asc']],
         drawCallback: function() {
-            // Add event listeners to edit and delete buttons
+
             $('.edit-btn').on('click', function() {
                 const typeId = $(this).data('id');
                 editInquiryType(typeId);
@@ -416,16 +412,13 @@ function initializeInquiryTypesTable() {
         }
     });
 
-    // Setup inquiry type form submission
+
     $('#inquiryTypeForm').on('submit', function(e) {
         e.preventDefault();
         submitInquiryTypeForm();
     });
 }
 
-/**
- * Load departments for all dropdowns
- */
 function loadDepartmentsForDropdowns() {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
@@ -434,14 +427,14 @@ function loadDepartmentsForDropdowns() {
         method: 'GET',
         success: function(response) {
             if (response.success && response.data) {
-                // Create options for department dropdowns
+
                 let options = '<option value="">Select Department</option>';
 
                 response.data.forEach(function(dept) {
                     options += `<option value="${dept.department_id}">${dept.department_name}</option>`;
                 });
 
-                // Populate all department dropdowns
+
                 $('select[id="department"]').html(options);
             }
         },
@@ -451,11 +444,11 @@ function loadDepartmentsForDropdowns() {
     });
 }
 
-// Example of a form submission function
+
 function submitPOCForm() {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
-    // Get form data
+
     const formData = {
         employeeId: $('#employeeId').val(),
         firstName: $('#firstName').val(),
@@ -468,7 +461,7 @@ function submitPOCForm() {
         id: isEditMode ? editingId : null
     };
 
-    // Send request
+
     $.ajax({
         url: `${baseURL}masterfile.php?action=submit_poc`,
         method: 'POST',
@@ -488,7 +481,7 @@ function submitPOCForm() {
     });
 }
 
-// Show error message in a consistent way
+
 function showError(message) {
     Swal.fire({
         icon: 'error',
@@ -497,7 +490,7 @@ function showError(message) {
     });
 }
 
-// Show success message in a consistent way
+
 function showSuccess(message) {
     Swal.fire({
         icon: 'success',
@@ -506,16 +499,14 @@ function showSuccess(message) {
     });
 }
 
-// Reset form to add mode
+
 function resetForm(formId) {
     $(`#${formId}`)[0].reset();
     isEditMode = false;
     editingId = null;
 }
 
-// CRUD Operations
 
-// Edit POC
 function editPOC(id) {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
@@ -526,7 +517,7 @@ function editPOC(id) {
             if (response.success && response.data) {
                 const poc = response.data;
 
-                // Fill the form with POC data
+
                 $('#employeeId').val(poc.user_schoolId);
                 $('#firstName').val(poc.user_firstname);
                 $('#lastName').val(poc.user_lastname);
@@ -535,14 +526,14 @@ function editPOC(id) {
                 $('#email').val(poc.phinmaed_email);
                 $('#isActive').prop('checked', poc.user_status == 1);
 
-                // Set edit mode
+
                 isEditMode = true;
                 editingId = poc.user_id;
 
-                // Update modal title
+
                 $('#pocModalLabel').text('Edit Point of Contact');
 
-                // Show modal
+
                 $('#pocModal').modal('show');
             } else {
                 toastr.error('Failed to load POC details');
@@ -554,15 +545,15 @@ function editPOC(id) {
     });
 }
 
-// Delete POC
+
 function deletePOC(id) {
     Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
+        confirmButtonColor: '#155f37',
+        cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
@@ -588,7 +579,7 @@ function deletePOC(id) {
     });
 }
 
-// Edit Department
+
 function editDepartment(id) {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
@@ -599,17 +590,16 @@ function editDepartment(id) {
             if (response.success && response.data) {
                 const dept = response.data;
 
-                // Fill the form with department data
                 $('#departmentName').val(dept.department_name);
 
-                // Set edit mode
+
                 isEditMode = true;
                 editingId = dept.department_id;
 
-                // Update modal title
+
                 $('.modal-title').text('Edit Department');
 
-                // Show modal
+
                 $('#departmentModal').modal('show');
             } else {
                 toastr.error('Failed to load department details');
@@ -621,7 +611,7 @@ function editDepartment(id) {
     });
 }
 
-// Delete Department
+
 function deleteDepartment(id) {
     Swal.fire({
         title: 'Are you sure?',
@@ -655,7 +645,7 @@ function deleteDepartment(id) {
     });
 }
 
-// Edit Course
+
 function editCourse(id) {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
@@ -666,18 +656,17 @@ function editCourse(id) {
             if (response.success && response.data) {
                 const course = response.data;
 
-                // Fill the form with course data
+
                 $('#courseName').val(course.course_name);
                 $('#department').val(course.course_departmentId);
 
-                // Set edit mode
+
                 isEditMode = true;
                 editingId = course.course_id;
 
-                // Update modal title
+
                 $('.modal-title').text('Edit Course');
 
-                // Show modal
                 $('#courseModal').modal('show');
             } else {
                 toastr.error('Failed to load course details');
@@ -689,7 +678,7 @@ function editCourse(id) {
     });
 }
 
-// Delete Course
+
 function deleteCourse(id) {
     Swal.fire({
         title: 'Are you sure?',
@@ -723,7 +712,7 @@ function deleteCourse(id) {
     });
 }
 
-// Edit Inquiry Type
+
 function editInquiryType(id) {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
@@ -734,20 +723,19 @@ function editInquiryType(id) {
             if (response.success && response.data) {
                 const type = response.data;
 
-                // Fill the form with inquiry type data
+
                 $('#inquiryType').val(type.inquiry_type);
                 $('#description').val(type.description);
                 $('#department').val(type.department_id);
                 $('#isActive').prop('checked', type.is_active == 1);
 
-                // Set edit mode
                 isEditMode = true;
                 editingId = type.inquiry_id;
 
-                // Update modal title
+
                 $('.modal-title').text('Edit Inquiry Type');
 
-                // Show modal
+
                 $('#inquiryTypeModal').modal('show');
             } else {
                 toastr.error('Failed to load inquiry type details');
@@ -759,7 +747,7 @@ function editInquiryType(id) {
     });
 }
 
-// Delete Inquiry Type
+
 function deleteInquiryType(id) {
     Swal.fire({
         title: 'Are you sure?',
@@ -793,18 +781,18 @@ function deleteInquiryType(id) {
     });
 }
 
-// Submit Department Form
+
 function submitDepartmentForm() {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
-    // Get form data
+
     const formData = {
         departmentName: $('#departmentName').val(),
         mode: isEditMode ? 'update' : 'add',
         id: isEditMode ? editingId : null
     };
 
-    // Send request
+
     $.ajax({
         url: `${baseURL}masterfile.php?action=submit_department`,
         method: 'POST',
@@ -824,11 +812,11 @@ function submitDepartmentForm() {
     });
 }
 
-// Submit Course Form
+
 function submitCourseForm() {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
-    // Get form data
+
     const formData = {
         courseName: $('#courseName').val(),
         departmentId: $('#department').val(),
@@ -836,7 +824,7 @@ function submitCourseForm() {
         id: isEditMode ? editingId : null
     };
 
-    // Send request
+
     $.ajax({
         url: `${baseURL}masterfile.php?action=submit_course`,
         method: 'POST',
@@ -856,11 +844,11 @@ function submitCourseForm() {
     });
 }
 
-// Submit Inquiry Type Form
+
 function submitInquiryTypeForm() {
     const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
-    // Get form data
+
     const formData = {
         inquiryType: $('#inquiryType').val(),
         description: $('#description').val(),
@@ -870,7 +858,7 @@ function submitInquiryTypeForm() {
         id: isEditMode ? editingId : null
     };
 
-    // Send request
+
     $.ajax({
         url: `${baseURL}masterfile.php?action=submit_inquiry_type`,
         method: 'POST',
@@ -889,3 +877,151 @@ function submitInquiryTypeForm() {
         }
     });
 }
+
+
+function validateEmail(email) {
+    const re = /^[a-zA-Z0-9._%+-]+@phinmaed\.com$/;
+    return re.test(String(email).toLowerCase());
+}
+
+
+function validatePhoneNumber(phone) {
+    const re = /^(09|\+639)\d{9}$/;
+    return re.test(String(phone));
+}
+
+
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-PH', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+
+function validatePocForm() {
+    const employeeId = $('#employeeId').val();
+    if (!employeeId || employeeId.trim() === '') {
+        Swal.fire('Error', 'Employee ID is required', 'error');
+        return false;
+    }
+
+    const firstName = $('#firstName').val();
+    const lastName = $('#lastName').val();
+    if (!firstName || firstName.trim() === '' || !lastName || lastName.trim() === '') {
+        Swal.fire('Error', 'First name and last name are required', 'error');
+        return false;
+    }
+
+    const contact = $('#contact').val();
+    if (!validatePhoneNumber(contact)) {
+        Swal.fire('Error', 'Please enter a valid Philippine phone number', 'error');
+        return false;
+    }
+
+    const email = $('#email').val();
+    if (!validateEmail(email)) {
+        Swal.fire('Error', 'Please enter a valid PHINMA email address (ending with @phinmaed.com)', 'error');
+        return false;
+    }
+
+    return true;
+}
+
+
+function validateStudentForm() {
+
+    return true;
+}
+
+
+function validateDepartmentForm() {
+    const departmentName = $('#departmentName').val();
+    if (!departmentName || departmentName.trim() === '') {
+        Swal.fire('Error', 'Department name is required', 'error');
+        return false;
+    }
+    return true;
+}
+
+
+function validateCourseForm() {
+    const courseName = $('#courseName').val();
+    if (!courseName || courseName.trim() === '') {
+        Swal.fire('Error', 'Course name is required', 'error');
+        return false;
+    }
+
+    const department = $('#department').val();
+    if (!department) {
+        Swal.fire('Error', 'Please select a department', 'error');
+        return false;
+    }
+
+    return true;
+}
+
+
+function validateInquiryTypeForm() {
+    const inquiryType = $('#inquiryType').val();
+    if (!inquiryType || inquiryType.trim() === '') {
+        Swal.fire('Error', 'Inquiry type is required', 'error');
+        return false;
+    }
+
+    const description = $('#description').val();
+    if (!description || description.trim() === '') {
+        Swal.fire('Error', 'Description is required', 'error');
+        return false;
+    }
+
+    const department = $('#department').val();
+    if (!department) {
+        Swal.fire('Error', 'Please select a department', 'error');
+        return false;
+    }
+
+    return true;
+}
+
+
+$(document).ready(function() {
+
+    $('#pocForm').on('submit', function(e) {
+        if (validatePocForm()) {
+
+            e.preventDefault();
+        }
+    });
+
+    $('#studentForm').on('submit', function(e) {
+        if (validateStudentForm()) {
+
+            e.preventDefault();
+        }
+    });
+
+    $('#departmentForm').on('submit', function(e) {
+        if (validateDepartmentForm()) {
+
+            e.preventDefault();
+        }
+    });
+
+    $('#courseForm').on('submit', function(e) {
+        if (validateCourseForm()) {
+
+            e.preventDefault();
+        }
+    });
+
+    $('#inquiryTypeForm').on('submit', function(e) {
+        if (validateInquiryTypeForm()) {
+           
+            e.preventDefault();
+        }
+    });
+});
