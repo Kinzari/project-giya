@@ -241,3 +241,107 @@ button.sidebar-toggle {
         width: 100%;
     }
 }
+
+/*
+   Adding additional styles for dashboard components
+   These complement the existing styles in admin-dashboard.css
+*/
+
+/* Statistics cards styling */
+.stat-icon-bg {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-primary-light {
+    background-color: rgba(13, 110, 253, 0.15);
+}
+
+.bg-info-light {
+    background-color: rgba(13, 202, 240, 0.15);
+}
+
+.card canvas {
+    /* Chart containers */
+    max-height: 300px;
+}
+
+#dashboard-filters .btn-primary {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    height: 42px;
+}
+
+#dashboard-filters .form-control,
+#dashboard-filters .form-select {
+    height: 42px;
+    padding: 0.5rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+
+#dashboard-filters .form-label {
+    /* Custom styling for filters section */
+    color: #495057;
+    font-weight: 500;
+}
+
+.daterangepicker td.active,
+.daterangepicker td.active:hover {
+    background-color: #155f37;
+}
+
+.daterangepicker .ranges li.active {
+    background-color: #155f37;
+}
+
+.daterangepicker {
+    /* Date range picker styling */
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    font-family: "Poppins", sans-serif;
+}
+
+#loading-indicator {
+    /* Loading indicator */
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.7);
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 0;
+    position: fixed;
+}
+
+.poc-lock-icon {
+    z-index: 5;
+    pointer-events: none;
+    transform: translateY(-50%);
+    top: 50%;
+    right: 12px;
+    position: absolute;
+}
+
+.poc-locked {
+    /* Department lock icon for POC users */
+    position: relative;
+}
+
+.bg-success-light {
+    background-color: rgba(25, 135, 84, 0.15);
+}
+
+.bg-danger-light {
+    background-color: rgba(220, 53, 69, 0.15);
+}
+
+.bg-warning-light {
+    background-color: rgba(255, 193, 7, 0.15);
+}
