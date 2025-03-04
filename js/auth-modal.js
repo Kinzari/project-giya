@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     subMenuLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const userTypeId = localStorage.getItem('user_typeId');
+            const userTypeId = sessionStorage.getItem('user_typeId');
             if (!userTypeId) {
                 window.location.href = 'index.html#login-area';
                 toastr.warning('Please login first to access this feature.');

@@ -1,16 +1,23 @@
+/**
+ * Posts Management Module
+ * Handles all post-related functionality for GIYA admin dashboard
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
     const elementsExist = checkRequiredElements();
     if (!elementsExist) {
-        // Keep only this essential warning
         console.warn('Missing required elements - post details may not load correctly');
     }
 
     const baseURL = sessionStorage.getItem("baseURL");
     if (!baseURL) {
-        window.location.href = 'index.html';
-        return;
+        console.error("baseURL not found in sessionStorage");
+        // Add a default baseURL as fallback if not set
+        sessionStorage.setItem('baseURL', 'http://localhost/giya-api/');
+        toastr.warning('API URL not found. Using default URL. You may need to login again.');
     }
 
+    // Initialize tables using standard DataTables
     let table;
     const path = window.location.pathname.toLowerCase();
 
@@ -35,51 +42,80 @@ document.addEventListener('DOMContentLoaded', function() {
     window.changeStatus = changeStatus;
 });
 
+/**
+ * Initialize any posts table with consistent styling and behavior
+ */
 function initializePostsTable(tableSelector, action) {
     if ($.fn.DataTable.isDataTable(tableSelector)) {
         $(tableSelector).DataTable().destroy();
     }
+
+    // Define common columns for all post tables
+    const columns = [
+        {
+            title: "Status",
+            data: "post_status",
+            render: renderStatusBadge,
+            width: "100px"
+        },
+        {
+            title: "Full Name",
+            data: "user_fullname"
+        },
+        {
+            title: "Type",
+            data: "postType_name",
+            width: "120px"
+        },
+        {
+            title: "Title",
+            data: "post_title"
+        },
+        {
+            title: "Date",
+            data: "post_date",
+            width: "100px"
+        },
+        {
+            title: "Time",
+            data: "post_time",
+            width: "80px",
+            render: function(data, type, row) {
+                const dt = new Date(row.post_date + " " + data);
+                const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+                return dt.toLocaleTimeString('en-US', options);
+            }
+        }
+    ];
+
 
     return $(tableSelector).DataTable({
         ajax: {
             url: `${sessionStorage.getItem('baseURL')}posts.php?action=${action}`,
             type: 'GET',
             dataSrc: function(json) {
+
+                // Check if data exists and handle errors
+                if (!json || !json.data) {
+                    console.error('Invalid data structure received from API');
+                    toastr.error('Error loading data: Invalid response structure');
+                    return [];
+                }
+
                 return json.data;
             },
             error: function(xhr, error, thrown) {
-                toastr.error('Error loading data');
+                console.error('AJAX error:', xhr, error, thrown);
+                toastr.error('Error loading data: ' + (thrown || 'Server error'));
             }
         },
         processing: true,
-        serverSide: false,
-        columns: [
-            {
-                title: "Status",
-                data: "post_status",
-                render: renderStatus
-            },
-            {
-                title: "Full Name",
-                data: "user_fullname"
-            },
-            { title: "Type", data: "postType_name" },
-            { title: "Title", data: "post_title" },
-            { title: "Date", data: "post_date" },
-            {
-                title: "Time",
-                data: "post_time",
-                render: function(data, type, row) {
-                    const dt = new Date(row.post_date + " " + data);
-                    const options = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' };
-                    return dt.toLocaleTimeString('en-US', options);
-                }
-            }
-        ],
+        serverSide: false, // Change to true if your backend supports server-side processing
+        columns: columns,
         order: [[4, 'desc'], [5, 'desc']],
         pageLength: 10,
         responsive: true,
-        scrollX: true,
+        scrollX: false,
         scrollCollapse: true,
         autoWidth: false,
         columnDefs: [
@@ -100,13 +136,16 @@ function initializePostsTable(tableSelector, action) {
              '<"row"<"col-sm-12"tr>>' +
              '<"row mt-4"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8 d-flex justify-content-end"p>>',
         language: {
+            emptyTable: "No data available - Please check API connection",
+            zeroRecords: "No matching records found",
             searchPlaceholder: "Search records...",
             search: "",
             lengthMenu: "_MENU_ per page",
             paginate: {
                 previous: "<i class='bi bi-chevron-left'></i>",
                 next: "<i class='bi bi-chevron-right'></i>"
-            }
+            },
+            processing: "<div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading...</span></div>"
         },
         drawCallback: function() {
             $('.dataTables_paginate > .pagination').addClass('pagination-md border-0');
@@ -120,6 +159,7 @@ function initializePostsTable(tableSelector, action) {
             $(tableSelector + ' tbody tr').css('cursor', 'pointer');
         },
         initComplete: function(settings, json) {
+
             $(tableSelector + ' tbody').on('click', 'tr', function() {
                 const data = $(tableSelector).DataTable().row(this).data();
                 if (data) {
@@ -127,38 +167,46 @@ function initializePostsTable(tableSelector, action) {
                 }
             });
 
+            // Adjust columns to improve appearance
             this.api().columns.adjust().draw();
+
+            // Add custom class to make rows appear clickable
+            $(tableSelector + ' tbody').addClass('cursor-pointer');
         }
     });
 }
 
-function renderStatus(data) {
+// Function to render status badges consistently
+function renderStatusBadge(data) {
     let statusText = "";
     let badgeClass = "";
+
     switch (Number(data)) {
         case 0:
             statusText = "Pending";
-            badgeClass = "danger";
+            badgeClass = "btn-solid-danger";
             break;
         case 1:
             statusText = "Ongoing";
-            badgeClass = "warning";
+            badgeClass = "btn-solid-warning";
             break;
         case 2:
         case 3:
             statusText = "Resolved";
-            badgeClass = "success";
+            badgeClass = "btn-solid-primary";
             break;
         default:
             statusText = "Unknown";
-            badgeClass = "dark";
+            badgeClass = "btn-secondary";
     }
-    return `<span class="badge bg-${badgeClass}">${statusText}</span>`;
+
+    return `<span class="badge ${badgeClass}">${statusText}</span>`;
 }
 
-// Add a variable to track current post ID
+// Variable to track current post ID
 let currentPostId = null;
 
+// Show post details in modal
 async function showPostDetails(postId) {
     try {
         currentPostId = postId; // Store current post ID for status change buttons
@@ -181,6 +229,9 @@ async function showPostDetails(postId) {
             const modal = new bootstrap.Modal(document.getElementById('postDetailsModal'));
             modal.show();
 
+            // Update buttons after modal is shown
+            setTimeout(updateModalButtons, 300);
+
             await new Promise(resolve => setTimeout(resolve, 200));
 
             const userNameElement = document.getElementById('postUserName');
@@ -195,7 +246,7 @@ async function showPostDetails(postId) {
 
             const statusBadgeElement = document.getElementById('postStatusBadge');
             if (statusBadgeElement) {
-                statusBadgeElement.innerHTML = getStatusBadgeHtml(post.post_status);
+                statusBadgeElement.innerHTML = renderStatusBadge(post.post_status);
             }
 
             // Clear replies container
@@ -205,18 +256,18 @@ async function showPostDetails(postId) {
 
                 // Add the main post as the first message
                 const originalPostElement = document.createElement('div');
-                originalPostElement.className = 'message-bubble admin-bg';
+                originalPostElement.className = 'message-bubble border-start border-4 border-primary bg-light rounded p-3 w-100';
                 originalPostElement.innerHTML = `
-                    <div class="message-content original-post">
+                    <div class="message-content">
                         <div class="mb-2">
                             <span class="badge bg-secondary">${post.postType_name}</span>
                             ${post.inquiry_type ? `<span class="badge bg-info ms-1">${post.inquiry_type}</span>` : ''}
                         </div>
-                        <h5>${post.post_title}</h5>
+                        <h5 class="text-primary">${post.post_title}</h5>
                         <p>${post.post_message}</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">${new Date(post.post_date + " " + post.post_time).toLocaleString()}</small>
-                            <span class="badge ${getStatusClass(post.post_status)}">${getStatusText(post.post_status)}</span>
+                            ${renderStatusBadge(post.post_status)}
                         </div>
                     </div>
                 `;
@@ -245,11 +296,21 @@ async function showPostDetails(postId) {
             toastr.error(response.data.message || 'Failed to load post details');
         }
     } catch (error) {
+        console.error('Error loading post details:', error);
         toastr.error('Failed to load post details');
     }
 }
 
-// Add this function to get status class
+// Update the action buttons in the postDetailsModal
+function updateModalButtons() {
+    // Update the action buttons in the details modal to use solid colors
+    $('#postDetailsModal .btn-primary').addClass('btn-solid-primary').removeClass('btn-primary');
+    $('#postDetailsModal .btn-warning').addClass('btn-solid-warning').removeClass('btn-warning');
+    $('#postDetailsModal .btn-danger').addClass('btn-solid-danger').removeClass('btn-danger');
+    $('#postDetailsModal .btn-success').addClass('btn-solid-success').removeClass('btn-success');
+}
+
+// Get status class based on status number
 function getStatusClass(status) {
     switch (Number(status)) {
         case 0: return 'bg-danger';
@@ -259,6 +320,7 @@ function getStatusClass(status) {
     }
 }
 
+// Get status text based on status number
 function getStatusText(status) {
     switch (Number(status)) {
         case 0: return 'Pending';
@@ -268,6 +330,7 @@ function getStatusText(status) {
     }
 }
 
+// Render replies in the container
 function renderReplies(replies) {
     const repliesContainer = document.querySelector('.replies-container');
     if (!repliesContainer) return;
@@ -285,6 +348,7 @@ function renderReplies(replies) {
         : '<p class="text-center text-muted">No replies yet</p>';
 }
 
+// Update reply form based on post status
 function updateReplyForm(status, postId) {
     const formContainer = document.querySelector('.reply-form-container');
     if (!formContainer) return;
@@ -295,7 +359,7 @@ function updateReplyForm(status, postId) {
     if (status === '3' || status === '2') {
         formContainer.innerHTML = `
             <div class="alert alert-success mb-0 text-center">
-                <i class="fas fa-check-circle me-2"></i>
+                <i class="bi bi-check-circle me-2"></i>
                 This post is resolved and the conversation is closed.
             </div>`;
     } else {
@@ -305,7 +369,7 @@ function updateReplyForm(status, postId) {
             extraButtons = `
                 <div class="d-flex justify-content-end mt-2">
                     <button class="btn btn-success btn-sm" onclick="markAsResolved(${postId})">
-                        <i class="fas fa-check-circle"></i> Mark as Resolved
+                        <i class="bi bi-check-circle"></i> Mark as Resolved
                     </button>
                 </div>`;
         }
@@ -331,6 +395,7 @@ function updateReplyForm(status, postId) {
     }
 }
 
+// Check if current page is admin dashboard
 function isAdminDashboardPage() {
     const path = window.location.pathname.toLowerCase();
     return path.includes('latest-post.html') ||
@@ -338,6 +403,7 @@ function isAdminDashboardPage() {
            path.includes('students.html');
 }
 
+// Scroll replies container to bottom
 function scrollToBottom() {
     const repliesContainer = document.querySelector('.replies-container');
     if (repliesContainer) {
@@ -345,6 +411,7 @@ function scrollToBottom() {
     }
 }
 
+// Submit reply without refreshing page
 async function submitReplyWithoutRefresh(event, postId) {
     event.preventDefault();
     const messageInput = document.querySelector('.reply-input');
@@ -372,10 +439,12 @@ async function submitReplyWithoutRefresh(event, postId) {
 
         refreshTables();
     } catch (error) {
+        console.error('Error submitting reply:', error);
         toastr.error('Failed to send reply');
     }
 }
 
+// Add reply to UI immediately for better UX
 function addReplyToUI(message, authorName, cssClass, timestamp) {
     const repliesContainer = document.querySelector('.replies-container');
     if (!repliesContainer) return;
@@ -398,6 +467,7 @@ function addReplyToUI(message, authorName, cssClass, timestamp) {
     repliesContainer.appendChild(newReply);
 }
 
+// Change post status
 async function changeStatus(postId, newStatus) {
     try {
         const statusText = newStatus === '3' ? 'resolved' : 'ongoing';
@@ -422,7 +492,7 @@ async function changeStatus(postId, newStatus) {
         if (response.data.success) {
             const statusBadge = document.getElementById('postStatusBadge');
             if (statusBadge) {
-                statusBadge.innerHTML = getStatusBadgeHtml(newStatus);
+                statusBadge.innerHTML = renderStatusBadge(newStatus);
             }
 
             if (newStatus === '3') {
@@ -437,10 +507,12 @@ async function changeStatus(postId, newStatus) {
             toastr.error('Failed to update status');
         }
     } catch (error) {
+        console.error('Error changing status:', error);
         toastr.error('Failed to update status');
     }
 }
 
+// Refresh all post tables
 function refreshTables() {
     ['#postsTable', '#latestPostsTable'].forEach(tableId => {
         if ($.fn.DataTable.isDataTable(tableId)) {
@@ -449,18 +521,13 @@ function refreshTables() {
     });
 }
 
+// Get HTML for status badge
 function getStatusBadgeHtml(status) {
-    const statusMap = {
-        '0': { text: 'Pending', class: 'bg-danger' },
-        '1': { text: 'Ongoing', class: 'bg-warning' },
-        '2': { text: 'Resolved', class: 'bg-success' },
-        '3': { text: 'Resolved', class: 'bg-success' }
-    };
-
-    const statusInfo = statusMap[status] || { text: 'Unknown', class: 'bg-secondary' };
-    return `<span class="badge ${statusInfo.class}">${statusInfo.text}</span>`;
+    // Use the same renderStatusBadge function for consistency
+    return renderStatusBadge(status);
 }
 
+// Filter configuration
 window.currentFilter = 'all';
 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
     const statusCell = data[0];
@@ -482,6 +549,7 @@ $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
     }
 });
 
+// Attach filtering to buttons
 function attachPostFiltering(table, filterButtonSelector) {
     $(filterButtonSelector).on('click', function() {
         const filterValue = $(this).data('filter').toLowerCase();
@@ -494,6 +562,7 @@ function attachPostFiltering(table, filterButtonSelector) {
     });
 }
 
+// Add filter buttons if not present
 function addFilterButtons() {
     const existingFilter = document.querySelector('.filter-buttons-container');
     if (!existingFilter) {
@@ -515,7 +584,7 @@ function addFilterButtons() {
     }
 }
 
-// Fix the checkRequiredElements function at the end of the file
+// Check if required elements exist in the DOM
 function checkRequiredElements() {
     const elements = [
         'postUserName',
@@ -540,5 +609,5 @@ function checkRequiredElements() {
         }
     });
 
-    return allFound; // This was missing the proper closure
+    return allFound;
 }

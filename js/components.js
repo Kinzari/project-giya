@@ -33,7 +33,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.text();
             })
             .then(data => {
-                sidebarPlaceholder.innerHTML = data;
+                // Before inserting HTML into the DOM, check if user is POC and only remove masterfiles menu
+                try {
+                    const userString = sessionStorage.getItem('user');
+                    if (userString) {
+                        const user = JSON.parse(userString);
+                        if (user.user_typeId == 5) {
+                            // Only remove the masterfiles dropdown, not the entire sidebar
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = data;
+
+                            // Find the masterfiles dropdown link specifically
+                            const masterFilesDropdown = tempDiv.querySelector('#masterFilesDropdown');
+                            if (masterFilesDropdown) {
+                                // Only remove the masterfiles dropdown, not its parent container
+                                masterFilesDropdown.remove();
+
+                                // Also find and remove the dropdown menu associated with masterfiles
+                                const dropdownMenus = tempDiv.querySelectorAll('.dropdown-menu');
+                                dropdownMenus.forEach(menu => {
+                                    if (menu.previousElementSibling &&
+                                        menu.previousElementSibling.id === 'masterFilesDropdown') {
+                                        menu.remove();
+                                    }
+                                });
+                            }
+
+                            // Set the modified HTML with masterfiles menu removed but other items intact
+                            sidebarPlaceholder.innerHTML = tempDiv.innerHTML;
+                            console.log("Only masterfiles menu removed for POC");
+                        } else {
+                            // For non-POC users, insert the original HTML
+                            sidebarPlaceholder.innerHTML = data;
+                        }
+                    } else {
+                        sidebarPlaceholder.innerHTML = data;
+                    }
+                } catch (e) {
+                    console.error('Error processing sidebar:', e);
+                    sidebarPlaceholder.innerHTML = data;
+                }
 
                 // Set active menu item based on current page
                 highlightActiveMenuItem();

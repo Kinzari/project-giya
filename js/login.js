@@ -71,6 +71,13 @@ document
                     sessionStorage.setItem(key, value);
                 });
 
+                // Store complete user data object
+                sessionStorage.setItem("user", JSON.stringify(result));
+
+                // Add specific flags for user types to use for permissions
+                sessionStorage.setItem("isPOC", result.user_typeId === 5 ? "true" : "false");
+                sessionStorage.setItem("isAdmin", result.user_typeId === 6 ? "true" : "false");
+
                 const userTypeId = parseInt(result.user_typeId);
 
                 // Check if password is default 'phinma-coc' and user is student/visitor
@@ -88,7 +95,7 @@ document
                     return;
                 }
 
-                // If user is admin (userTypeId 5 or 6)
+                // If user is admin or POC (userTypeId 5 or 6)
                 if (userTypeId === 5 || userTypeId === 6) {
                     toastr.success("Login successful!");
                     setTimeout(() => {
@@ -102,6 +109,7 @@ document
                 setTimeout(() => {
                     window.location.href = "choose-concern.html";
                 }, 2000);
+
             } else {
                 toastr.error(result.message || "Login failed.");
             }
@@ -111,15 +119,14 @@ document
         }
     });
 
-
 document.addEventListener("DOMContentLoaded", () => {
-    // gen rng numbers
+    // Generate random numbers for the math verification
     const num1 = Math.floor(Math.random() * 50) + 10;
     const num2 = Math.floor(Math.random() * 9) + 1;
     document.getElementById("num1").textContent = num1;
     document.getElementById("num2").textContent = num2;
 
-
+    // Add input validation for the math answer
     const mathAnswerInput = document.getElementById("math-answer");
     mathAnswerInput.addEventListener("input", () => {
         const mathAnswer = parseInt(mathAnswerInput.value.trim());
@@ -132,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // password toggle
+    // Password visibility toggle
     const togglePassword = document.getElementById("toggle-password");
     togglePassword.addEventListener("click", function () {
         const passwordField = document.getElementById("password");
@@ -153,3 +160,83 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+// Add this function to ensure baseURL is set correctly
+
+function handleLogin() {
+    // Get form values
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    // Validate inputs
+    if (!username || !password) {
+        showError('Please enter both username and password.');
+        return;
+    }
+
+    // Clear previous errors
+    clearError();
+
+    // Show loading indicator
+    document.getElementById('loginBtn').disabled = true;
+    document.getElementById('loginBtn').innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Logging in...';
+
+    // Set baseURL correctly based on your API location
+    // This is the critical part that was likely missing
+    const baseURL = 'http://localhost/giya-api/'; // Update this to match your actual API location
+    sessionStorage.setItem('baseURL', baseURL);
+
+    // Make POST request to login API
+    $.ajax({
+        url: baseURL + 'login.php',
+        type: 'POST',
+        data: {
+            username: username,
+            password: password,
+            action: 'login'
+        },
+        success: function(response) {
+            try {
+                // Check if response is already an object or needs to be parsed
+                const data = typeof response === 'object' ? response : JSON.parse(response);
+
+                if (data.success) {
+                    // Store user data and token in sessionStorage
+                    sessionStorage.setItem('token', data.token);
+                    sessionStorage.setItem('user', JSON.stringify(data.user));
+
+                    // Important: Confirm baseURL is set
+                    if (!sessionStorage.getItem('baseURL')) {
+                        sessionStorage.setItem('baseURL', baseURL);
+                        console.log("baseURL set to:", baseURL);
+                    }
+
+                    // Redirect based on user type
+                    if (data.user.user_typeId == '6' || data.user.user_typeId == '5') {
+                        // Admin or POC redirect
+                        window.location.href = 'admin-dashboard.html';
+                    } else {
+                        // Regular user redirect
+                        window.location.href = 'dashboard.html';
+                    }
+                } else {
+                    // Display error message
+                    showError(data.message || 'Login failed. Please try again.');
+                }
+            } catch (e) {
+                console.error('Error parsing response:', e);
+                showError('An unexpected error occurred. Please try again.');
+            }
+        },
+        error: function(xhr, status, error) {
+            // Handle network or server errors
+            console.error('AJAX Error:', status, error);
+            showError('Connection error. Please check your internet connection and try again.');
+        },
+        complete: function() {
+            // Reset button
+            document.getElementById('loginBtn').disabled = false;
+            document.getElementById('loginBtn').innerHTML = 'Sign In';
+        }
+    });
+}
