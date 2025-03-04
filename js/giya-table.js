@@ -80,6 +80,14 @@ const GiyaTable = {
                 data: "post_title"
             },
             {
+                title: "Department",
+                data: "department_name",
+                render: function(data) {
+                    return data || 'Not Assigned';
+                },
+                width: "130px"
+            },
+            {
                 title: "Date",
                 data: "post_date",
                 width: "150px"

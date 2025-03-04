@@ -37,6 +37,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     window.location.replace('admin-dashboard.html');
                 }
             }
+
+            // If user is POC (user_typeId = 3), apply department-specific restrictions
+            if (user.user_typeId == 3) {
+                // Add department filter indicator to the UI if needed
+                const deptIndicator = document.getElementById('department-indicator');
+                if (deptIndicator && user.department_name) {
+                    deptIndicator.classList.remove('d-none');
+                    document.getElementById('department-name').textContent = user.department_name;
+                }
+
+                // Show department relevant columns in tables
+                document.querySelectorAll('.department-column').forEach(el => {
+                    el.classList.remove('d-none');
+                });
+            }
         } catch (e) {
             console.error('Error checking user type:', e);
         }
@@ -68,6 +83,107 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (userProfile) {
             userProfile.textContent = user.user_firstname;
         }
+    }
+
+    // Initialize posts table
+    if (document.getElementById("latestPostsTable")) {
+        const baseURL = sessionStorage.getItem("baseURL");
+        const postsTableOptions = {
+            ajax: {
+                url: `${baseURL}posts.php?action=get_posts`,
+                dataSrc: function(json) {
+                    if (json && json.data) {
+                        // Ensure department_name exists in each item
+                        json.data.forEach(item => {
+                            if (!item.department_name) {
+                                item.department_name = "Not Assigned";
+                            }
+                        });
+                        return json.data;
+                    }
+                    return [];
+                }
+            },
+            columns: [
+                {
+                    title: "Status",
+                    data: "post_status",
+                    render: function(data) {
+                        let statusText = "";
+                        let badgeClass = "";
+
+                        switch (Number(data)) {
+                            case 0:
+                                statusText = "Pending";
+                                badgeClass = "btn-solid-danger";
+                                break;
+                            case 1:
+                                statusText = "Ongoing";
+                                badgeClass = "btn-solid-warning";
+                                break;
+                            case 2:
+                            case 3:
+                                statusText = "Resolved";
+                                badgeClass = "btn-solid-primary";
+                                break;
+                            default:
+                                statusText = "Unknown";
+                                badgeClass = "btn-secondary";
+                        }
+
+                        return `<span class="badge ${badgeClass}">${statusText}</span>`;
+                    },
+                    width: "100px"
+                },
+                {
+                    title: "Full Name",
+                    data: "user_fullname"
+                },
+                {
+                    title: "Type",
+                    data: "postType_name",
+                    width: "120px"
+                },
+                {
+                    title: "Title",
+                    data: "post_title"
+                },
+                {
+                    title: "Department",  // Add Department column
+                    data: "department_name",
+                    width: "130px"
+                },
+                {
+                    title: "Date",
+                    data: "post_date",
+                    width: "150px"
+                },
+                {
+                    title: "Time",
+                    data: "post_time",
+                    width: "100px",
+                    render: function(data, type, row) {
+                        const dt = new Date(row.post_date + " " + data);
+                        const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+                        return dt.toLocaleTimeString('en-US', options);
+                    }
+                }
+            ],
+            // ...other table options...
+        };
+
+        const table = $('#latestPostsTable').DataTable(postsTableOptions);
+
+        // Add click handler for rows
+        $('#latestPostsTable tbody').on('click', 'tr', function() {
+            const data = table.row(this).data();
+            if (data) {
+                showPostDetails(data.post_id);
+            }
+        });
+
+        // Attach filtering to table
+        attachPostFiltering(table, '.btn-group button');
     }
 });
 
@@ -300,7 +416,7 @@ function handleLogout() {
     });
 }
 
-async function viewUserDetails(userId, fullName, schoolId, userStatus) {
+async function viewUserDetails(userId) {
     try {
         const baseURL = sessionStorage.getItem("baseURL");
         const response = await axios.get(`${baseURL}giya.php?action=get_user_details&user_id=${userId}`);
@@ -326,5 +442,20 @@ async function viewUserDetails(userId, fullName, schoolId, userStatus) {
     } catch (error) {
         console.error('Error fetching user details:', error);
         toastr.error('Error loading user details');
+    }
+}
+
+/**
+ * Helper function to determine if a user is a POC
+ */
+function isPOCUser() {
+    const userString = sessionStorage.getItem('user');
+    if (!userString) return false;
+
+    try {
+        const user = JSON.parse(userString);
+        return user.user_typeId == 3;
+    } catch (e) {
+        return false;
     }
 }

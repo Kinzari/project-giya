@@ -21,14 +21,37 @@ document.addEventListener('DOMContentLoaded', function() {
     let table;
     const path = window.location.pathname.toLowerCase();
 
+    // Get user data from session storage for department filtering
+    const userInfo = sessionStorage.getItem('user');
+    let departmentId = null;
+    let userTypeId = null;
+
+    if (userInfo) {
+        try {
+            const user = JSON.parse(userInfo);
+            departmentId = user.user_departmentId;
+            userTypeId = user.user_typeId;
+
+            // If user is a POC (userTypeId 5), make sure we have the department ID
+            if (userTypeId == 5 && !departmentId) {
+                toastr.warning('Department ID not found in your profile. Please contact the administrator.');
+                console.warn('POC user without department ID:', user);
+            }
+        } catch (e) {
+            console.error('Error parsing user info:', e);
+        }
+    }
+
     if (document.getElementById("latestPostsTable")) {
-        table = initializePostsTable('#latestPostsTable', 'get_posts');
+        // Use department filtering for POC users (userTypeId 5)
+        const action = (userTypeId == 5 && departmentId) ? `get_posts_by_department&department_id=${departmentId}` : 'get_posts';
+        table = initializePostsTable('#latestPostsTable', action);
     } else if (document.getElementById("postsTable")) {
         let action = "";
         if (path.includes("students.html")) {
-            action = "get_student_posts";
+            action = (userTypeId == 5 && departmentId) ? `get_student_posts_by_department&department_id=${departmentId}` : "get_student_posts";
         } else if (path.includes("visitors.html")) {
-            action = "get_visitor_posts";
+            action = (userTypeId == 5 && departmentId) ? `get_visitor_posts_by_department&department_id=${departmentId}` : "get_visitor_posts";
         }
         table = initializePostsTable('#postsTable', action);
     }
@@ -71,6 +94,21 @@ function initializePostsTable(tableSelector, action) {
             title: "Title",
             data: "post_title"
         },
+        // Department column - always visible
+        {
+            title: "Department",
+            data: null,
+            width: "130px",
+            render: function(data, type) {
+                // For sorting and filtering, use the field if it exists
+                if (type === 'sort' || type === 'filter') {
+                    return data.department_name || 'Not Assigned';
+                }
+                // For display, use the field with fallback
+                return data.department_name || 'Not Assigned';
+            },
+            visible: true  // Always visible
+        },
         {
             title: "Date",
             data: "post_date",
@@ -88,25 +126,53 @@ function initializePostsTable(tableSelector, action) {
         }
     ];
 
-
+    // Create a DataTable with error handling for JSON parse errors
     return $(tableSelector).DataTable({
         ajax: {
             url: `${sessionStorage.getItem('baseURL')}posts.php?action=${action}`,
             type: 'GET',
             dataSrc: function(json) {
+                // Debug what's coming back from the API
+                console.log("API Response:", json);
 
                 // Check if data exists and handle errors
                 if (!json || !json.data) {
-                    console.error('Invalid data structure received from API');
+                    console.error('Invalid data structure received from API:', json);
                     toastr.error('Error loading data: Invalid response structure');
                     return [];
                 }
+
+                // Ensure department_name exists in each item
+                json.data.forEach(item => {
+                    if (!item.department_name) {
+                        item.department_name = "Not Assigned";
+                    }
+                });
 
                 return json.data;
             },
             error: function(xhr, error, thrown) {
                 console.error('AJAX error:', xhr, error, thrown);
-                toastr.error('Error loading data: ' + (thrown || 'Server error'));
+
+                // Try to parse the response to see if it's a valid JSON with an error message
+                let errorMessage = 'Server error';
+                try {
+                    if (xhr.responseText) {
+                        const errorResponse = JSON.parse(xhr.responseText);
+                        if (errorResponse.message) {
+                            errorMessage = errorResponse.message;
+                        } else if (errorResponse.error) {
+                            errorMessage = errorResponse.error;
+                        }
+                    }
+                } catch (e) {
+                    // If there's a parsing error, use the raw text (truncated)
+                    if (xhr.responseText) {
+                        errorMessage = xhr.responseText.substring(0, 100) + '...';
+                    }
+                }
+
+                toastr.error('Error loading data: ' + errorMessage);
             }
         },
         processing: true,
@@ -610,4 +676,28 @@ function checkRequiredElements() {
     });
 
     return allFound;
+}
+
+/**
+ * Check if current user is a POC user
+ * @returns {boolean} True if user is POC
+ */
+function isPOCUser() {
+    const userInfo = sessionStorage.getItem('user');
+    if (!userInfo) return false;
+
+    const user = JSON.parse(userInfo);
+    return user.user_typeId == 5;
+}
+
+/**
+ * Get department name for displaying in UI
+ * @returns {string} Department name or empty string
+ */
+function getCurrentUserDepartment() {
+    const userInfo = sessionStorage.getItem('user');
+    if (!userInfo) return '';
+
+    const user = JSON.parse(userInfo);
+    return user.department_name || '';
 }

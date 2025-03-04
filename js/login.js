@@ -58,6 +58,7 @@ document
                     user_lastname: result.user_lastname,
                     user_suffix: result.user_suffix,
                     department_name: result.department_name,
+                    user_departmentId: result.user_departmentId, // Make sure department ID is stored
                     course_name: result.course_name,
                     user_schoolyearId: result.user_schoolyearId,
                     phinmaed_email: result.phinmaed_email,

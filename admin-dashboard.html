@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css" />
     <script src="js/components.js"></script>
 
+
     <!-- Add this script to apply POC restrictions immediately -->
     <script>
         (function () {
@@ -75,6 +76,7 @@
                                             <th>Full Name</th>
                                             <th>Type</th>
                                             <th>Title</th>
+                                            <th>Department</th> <!-- Added Department column -->
                                             <th>Date</th>
                                             <th>Time</th>
                                         </tr>
@@ -147,6 +149,36 @@
     <script src="js/admin-dashboard.js"></script>
     <script src="js/posts.js"></script>
     <script src="js/toastr-config.js"></script>
+
+    <!-- Add script to check if departmentId is missing -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+
+            // Check if user is POC but department ID is missing
+            if (user.user_typeId == 5 && user.department_name && !user.user_departmentId) {
+                // Display a warning message
+                toastr.warning(`Your account is missing a department ID. Using "${user.department_name}" name only.`, 'Department ID Missing', {
+                    timeOut: 10000,
+                    closeButton: true
+                });
+
+                // Add manual department ID mapping for CITE
+                if (user.department_name === 'CITE') {
+                    const updatedUser = { ...user, user_departmentId: 4 };
+                    sessionStorage.setItem('user', JSON.stringify(updatedUser));
+                    sessionStorage.setItem('user_departmentId', '4');
+
+                    toastr.info('Department ID for CITE (4) has been automatically assigned.', 'Department ID Fixed', {
+                        timeOut: 5000
+                    });
+
+                    // Refresh the page after a short delay
+                    setTimeout(() => window.location.reload(), 2000);
+                }
+            }
+        });
+    </script>
 
 </body>
 
