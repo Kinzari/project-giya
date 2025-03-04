@@ -74,12 +74,12 @@ function initializePostsTable(tableSelector, action) {
         {
             title: "Date",
             data: "post_date",
-            width: "100px"
+            width: "150px"
         },
         {
             title: "Time",
             data: "post_time",
-            width: "80px",
+            width: "100px",
             render: function(data, type, row) {
                 const dt = new Date(row.post_date + " " + data);
                 const options = { hour: 'numeric', minute: '2-digit', hour12: true };

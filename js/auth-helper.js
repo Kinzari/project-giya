@@ -62,7 +62,6 @@ function applyRoleBasedUI() {
         if (!userString) return;
 
         const user = JSON.parse(userString);
-        console.log("AuthHelper - User type ID:", user.user_typeId); // Debug log
 
         // Hide masterfiles for non-admin users (POC is type 5)
         if (user.user_typeId != 6) {
@@ -80,17 +79,14 @@ function applyRoleBasedUI() {
             }
 
             if (masterfilesMenu) {
-                console.log("AuthHelper - Found and hiding masterfiles menu");
                 masterfilesMenu.style.display = 'none';
             } else {
-                console.log("AuthHelper - Masterfiles menu not found yet, will retry");
                 // Retry after a delay to ensure the sidebar is loaded
                 setTimeout(() => {
                     for (const selector of selectors) {
                         const retryMenu = document.querySelector(selector);
                         if (retryMenu) {
                             retryMenu.style.display = 'none';
-                            console.log("AuthHelper - Masterfiles menu hidden on retry");
                             break;
                         }
                     }

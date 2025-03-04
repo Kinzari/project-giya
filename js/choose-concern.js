@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Only show "Mark as Resolved" button for students and visitors
             const resolveButton = isStudentOrVisitor ? `
                 <div class="d-flex justify-content-end mt-2">
-                    <button class="btn btn-success btn-sm" onclick="markAsResolved(${currentSubmissionId})">
+                    <button class="btn btn-success btn-sm" id="resolveButton">
                         <i class="fas fa-check-circle"></i> Mark as Resolved
                     </button>
                 </div>` : '';
@@ -315,6 +315,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Attach reply form listener
             attachReplyFormListener();
+
+            // Add direct click handler for the resolve button
+            const resolveBtn = document.getElementById('resolveButton');
+            if (resolveBtn) {
+                resolveBtn.addEventListener('click', function() {
+                    markAsResolved(currentSubmissionId);
+                });
+            }
         }
     }
 
@@ -329,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Mark as resolved function accessible globally
-    window.markAsResolved = async function(submissionId) {
+    async function markAsResolved(submissionId) {
         try {
             const result = await Swal.fire({
                 title: 'Mark as Resolved?',
@@ -342,16 +350,22 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (result.isConfirmed) {
-                // Update this line to call posts.php instead of inquiry.php
+                console.log(`Marking submission ${submissionId} as resolved...`);
+
+                // Fix: Use the correct endpoint name as defined in the PHP file
+                // The endpoint in posts.php is "update_post_status" not "update_status"
                 const response = await axios.post(
-                    `${baseURL}posts.php?action=update_status`,
+                    `${baseURL}posts.php?action=update_post_status`,
                     {
                         post_id: submissionId,
                         status: '2' // 2 = resolved
                     }
                 );
 
-                if (response.data.status === 'success') {
+                console.log('API response:', response.data);
+
+                // Check both "success" and "status" properties in case the API uses either
+                if (response.data.success || response.data.status === 'success') {
                     // Update the status badge
                     const statusBadge = document.getElementById('postStatus');
                     statusBadge.className = 'badge bg-success';
@@ -371,13 +385,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Refresh the submissions list in background
                     loadUserSubmissions();
+                } else {
+                    // Log the error and show a message to the user
+                    console.error('Failed to mark as resolved:', response.data.message);
+                    toastr.error(response.data.message || 'Failed to mark as resolved');
                 }
             }
         } catch (error) {
-            console.error('Error:', error);
-            toastr.error('Failed to update status');
+            console.error('Error in markAsResolved:', error);
+            toastr.error('Failed to update status. Please try again.');
         }
-    };
+    }
+
+    // Also make it available globally for any legacy code that might need it
+    window.markAsResolved = markAsResolved;
 
     // Helper function to attach reply form listener
     function attachReplyFormListener() {

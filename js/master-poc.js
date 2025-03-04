@@ -438,7 +438,7 @@ function renderPocForm(poc = null) {
                 </select>
             </div>
             <div class="col-md-6">
-                <label for="contact" class="form-label">Contact Number</label>
+                <label for="contact" class="form-label">Contact Number (Optional)</label>
                 <input type="tel" class="form-control" id="contact" value="${isEdit ? poc.user_contact || '' : ''}" placeholder="09xxxxxxxxx">
             </div>
         </div>
@@ -597,13 +597,8 @@ function validatePocForm() {
     }
 
     const contact = $('#contact').val();
-    if (!contact || contact.trim() === '') {
-        Swal.fire('Error', 'Contact number is required', 'error');
-        return false;
-    }
-
-    // Validate contact number format (Philippines)
-    if (contact && !validatePhoneNumber(contact)) {
+    // Contact is now optional, but validate its format if provided
+    if (contact && contact.trim() !== '' && !validatePhoneNumber(contact)) {
         Swal.fire('Error', 'Please enter a valid Philippine mobile number (e.g., 09xxxxxxxxx)', 'error');
         return false;
     }
