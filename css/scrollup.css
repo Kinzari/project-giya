@@ -4,7 +4,7 @@
 #scrollUpBtn {
     display: none;
     position: fixed;
-    bottom: 20px;
+    bottom: 18px;
     right: 20px;
     z-index: 1000;
     background-color: #155f37;

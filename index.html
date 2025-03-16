@@ -92,7 +92,7 @@
         <!-- Login Area Start -->
         <div class="login-container">
             <div class="login-left">
-                <img src="img/logo/giyalogo2.png" alt="GIYA Logo" class="logo-image" />
+                <img src="img/logo/giya.png" alt="GIYA Logo" class="logo-image" />
             </div>
             <div class="login-right">
                 <div class="login-form">
@@ -494,7 +494,7 @@
 
         <!-- Quick View Button -->
         <button id="quickViewBtn" class="quick-view-btn">
-            <i class="fas fa-search"></i>
+            <i class="fas fa-eye"></i>
         </button>
 
         <!-- Quick View Modal -->
@@ -509,12 +509,22 @@
                         <form id="quickViewForm" class="mb-3">
                             <div class="input-group">
                                 <input type="text" class="form-control" id="quickViewId"
-                                    placeholder="Enter Student ID/Email or Visitor ID/Email" required>
+                                    placeholder="Enter Student ID, Email or Name" required>
                                 <button type="submit" class="btn btn-custom-green">
                                     <i class="fas fa-search"></i>
                                 </button>
                             </div>
+                            <small class="form-text text-muted">Enter your School ID, Email, or Name to see your
+                                inquiries.</small>
                         </form>
+                        <div id="noResultsMessage" class="alert alert-info mt-3" style="display: none;">
+                            No inquiries found. Please try searching with your:
+                            <ul class="mb-0 mt-2">
+                                <li>Complete School ID</li>
+                                <li>Complete Email Address</li>
+                                <li>Full Name</li>
+                            </ul>
+                        </div>
                         <div id="quickViewResults" style="display: none;">
                             <table class="table table-hover">
                                 <thead>
@@ -529,6 +539,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div id="debugInfo" class="alert alert-secondary mt-3 small" style="display: none;"></div>
                     </div>
                 </div>
             </div>
@@ -549,7 +560,11 @@
         <script src="js/login.js"></script>
         <script src="js/toastr-config.js"></script>
         <script src="js/scrollup.js"></script>
-        <script src="js/quick-view.js"></script>
-</body>
+
+
+
+
 
 </html>
+</body>
+<script src="js/quick-view.js"></script>

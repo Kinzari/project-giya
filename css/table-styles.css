@@ -38,14 +38,14 @@
 .table.table-hover.border-0 thead.table-light th,
 table.dataTable thead th,
 .dataTable thead th {
-    background-color: #f8f9fa !important;
+    background-color: #155f37 !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     font-weight: 500;
     text-transform: uppercase;
     font-size: 0.8rem;
     letter-spacing: 0.5px;
     padding: 0.75rem 1rem;
-    color: #6c757d;
+    color: white !important;
 }
 
 .table.table-hover.border-0 tbody td,
@@ -408,4 +408,275 @@ table.dataTable thead th,
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 6px 10px;
+}
+
+/* Page Number Input Styling */
+.page-number-input-container {
+    display: flex;
+    align-items: center;
+    margin: 0 5px;
+}
+
+.page-number-input {
+    width: 50px;
+    height: 32px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    text-align: center;
+    padding: 0.25rem;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+.page-number-input:focus {
+    outline: none;
+    border-color: #155f37;
+    box-shadow: 0 0 0 0.2rem rgba(21, 95, 55, 0.25);
+}
+
+/* Discord-style pagination - add input styling */
+.discord-pagination .page-number-input-container {
+    display: flex;
+    align-items: center;
+    margin: 0 4px;
+}
+
+.discord-pagination .page-number-input {
+    background-color: #fff;
+    border: none;
+    border-radius: 4px;
+    height: 32px;
+    width: 48px;
+    text-align: center;
+    font-size: 14px;
+    color: #4e5058;
+    font-weight: 500;
+}
+
+.discord-pagination .page-number-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(21, 95, 55, 0.25);
+}
+
+/* Page Number Input Styling - Enhanced */
+.page-number-input-container {
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 5px !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.page-number-input {
+    width: 50px !important;
+    height: 32px !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+    text-align: center !important;
+    padding: 0.25rem !important;
+    font-size: 14px !important;
+    background-color: #fff !important;
+    display: block !important;
+}
+
+.page-number-input:focus {
+    outline: none !important;
+    border-color: #155f37 !important;
+    box-shadow: 0 0 0 0.2rem rgba(21, 95, 55, 0.25) !important;
+}
+
+/* Discord-style pagination - improved input styling */
+.discord-pagination .page-number-input-container {
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 4px !important;
+}
+
+.discord-pagination .page-number-input {
+    background-color: #fff !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+    height: 32px !important;
+    width: 48px !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    color: #4e5058 !important;
+    font-weight: 500 !important;
+    appearance: textfield !important;
+}
+
+.discord-pagination .page-number-input::-webkit-inner-spin-button,
+.discord-pagination .page-number-input::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+.discord-pagination .page-number-input:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(21, 95, 55, 0.25) !important;
+    border-color: #155f37 !important;
+}
+
+/* Critical page number input styles - high specificity to ensure they take effect */
+div.page-number-input-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 4px !important;
+    min-width: 50px !important;
+    min-height: 32px !important;
+    position: relative !important;
+    z-index: 100 !important;
+}
+
+input.page-number-input {
+    width: 50px !important;
+    height: 32px !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+    text-align: center !important;
+    padding: 4px !important;
+    margin: 0 !important;
+    font-size: 14px !important;
+    display: block !important;
+    appearance: textfield !important;
+    -moz-appearance: textfield !important;
+    -webkit-appearance: textfield !important;
+}
+
+input.page-number-input::-webkit-inner-spin-button,
+input.page-number-input::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+.dataTables_paginate .pagination {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Make sure the pagination container has sufficient height for the input */
+.dataTables_paginate {
+    min-height: 40px !important;
+}
+
+/* Page Number Input - Completely Revised for Better Visibility */
+.dataTables_paginate {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    min-height: 38px !important;
+}
+
+.dataTables_paginate .pagination {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+}
+
+/* Override specificity issues */
+.page-number-input-container,
+div.page-number-input-container,
+span.page-number-input-container {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 8px !important;
+    padding: 0 !important;
+    border: none !important;
+    position: relative !important;
+    z-index: 5 !important;
+    min-width: 60px !important;
+    height: 32px !important;
+    background: transparent !important;
+}
+
+.page-number-input-container::before {
+    content: "Page" !important;
+    display: inline-block !important;
+    margin-right: 4px !important;
+    font-size: 13px !important;
+    color: #444 !important;
+}
+
+.page-number-input,
+input.page-number-input {
+    width: 50px !important;
+    height: 32px !important;
+    padding: 4px 8px !important;
+    text-align: center !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    color: #212529 !important;
+    appearance: textfield !important;
+    -moz-appearance: textfield !important;
+    -webkit-appearance: textfield !important;
+    display: inline-block !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075) !important;
+    background-color: white !important;
+    margin: 0 !important;
+}
+
+.page-number-input::-webkit-inner-spin-button,
+.page-number-input::-webkit-outer-spin-button,
+input.page-number-input::-webkit-inner-spin-button,
+input.page-number-input::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+.page-number-input:focus {
+    border-color: #155f37 !important;
+    box-shadow: 0 0 0 0.2rem rgba(21, 95, 55, 0.25) !important;
+    outline: none !important;
+}
+
+/* Enhanced Page Number Input Styling - Fixed Position and Visibility */
+.dataTables_paginate {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+}
+
+.page-number-input-container {
+    display: flex !important;
+    align-items: center !important;
+    margin-right: 10px !important; /* Space between input and pagination */
+    min-width: 150px !important;
+}
+
+.page-number-input-container .input-group-text {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #495057 !important;
+    font-size: 0.85rem !important;
+}
+
+.page-number-input {
+    width: 60px !important;
+    text-align: center !important;
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+}
+
+/* Make sure pagination itself doesn't get hidden */
+.dataTables_wrapper .dataTables_paginate {
+    float: none !important;
+    display: flex !important;
+    width: 100% !important;
+    overflow: visible !important;
+}
+
+/* Fixes for potential overflow issues */
+.row:has(.dataTables_paginate) {
+    overflow: visible !important;
+}
+
+/* Make sure our row containing pagination doesn't get hidden */
+.dataTables_wrapper > .row:last-child {
+    overflow: visible !important;
+    position: relative !important;
+    z-index: 5 !important;
 }

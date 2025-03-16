@@ -47,7 +47,7 @@ function checkAccess(allowedTypes) {
  * @param {Array} allowedTypes - Array of user_typeId values that can access this page
  * @param {string} redirectUrl - URL to redirect if access denied
  */
-function restrictAccess(allowedTypes, redirectUrl = 'index.html') {
+function restrictAccess(allowedTypes, redirectUrl = '/index.html') {
     if (!checkAccess(allowedTypes)) {
         window.location.href = redirectUrl;
     }
@@ -132,7 +132,7 @@ function setupAxiosInterceptors() {
                 Swal.fire('Authentication Required', 'Please log in to continue', 'warning')
                 .then(() => {
                     sessionStorage.clear();
-                    window.location.href = 'index.html';
+                    window.location.href = '/index.html';
                 });
             }
         }
@@ -158,7 +158,7 @@ function handleLogout() {
     }).then((result) => {
         if (result.isConfirmed) {
             sessionStorage.clear();
-            window.location.href = 'index.html';
+            window.location.href = '/index.html';
         }
     });
 }

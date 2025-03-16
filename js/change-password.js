@@ -104,7 +104,7 @@ document.getElementById('change-password-form').addEventListener('submit', async
                 timer: 2000,
                 showConfirmButton: false
             });
-            window.location.href = 'index.html';
+            window.location.href = '/index.html';
         } else {
             Swal.fire({
                 icon: 'error',
@@ -128,6 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const userTypeId = sessionStorage.getItem('user_typeId');
 
     if (!userId || ![1, 2].includes(parseInt(userTypeId))) {
-        window.location.href = 'index.html';
+        window.location.href = '/index.html';
     }
 });

@@ -17,10 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fix modal initialization
     const inquiryStatusModal = new bootstrap.Modal(document.getElementById('inquiryStatusModal'));
-    const submissionDetailModal = new bootstrap.Modal(document.getElementById('submissionDetailModal'), {
-        backdrop: true, // This will use Bootstrap's default backdrop opacity
-        keyboard: true
-    });
+    const submissionDetailModal = new bootstrap.Modal(document.getElementById('submissionDetailModal'));
     const privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
 
     let currentSubmissionId = null;
@@ -41,11 +38,13 @@ document.addEventListener('DOMContentLoaded', () => {
             activeFilterBtn.classList.add('active');
         }
 
-        loadUserSubmissions();
+        // Show the inquiry status modal
         inquiryStatusModal.show();
+
+        // Load user submissions after showing the modal to ensure the table is visible
+        loadUserSubmissions();
     };
 
-    // FIXED: Remove the inquiryStatusBtn event listener as it doesn't exist in the HTML
     // Only use the floating button for opening the inquiry status modal
     document.getElementById('inquiryStatusFloatBtn').addEventListener('click', showInquiryStatus);
 
@@ -61,25 +60,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Update this line to call posts.php instead of inquiry.php
+            // Show loading indicator in the table
+            document.getElementById('inquiriesTableBody').innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>';
+
+            // Call the endpoint to get user submissions
             const response = await axios.get(
                 `${baseURL}posts.php?action=get_user_submissions&user_id=${userId}`
             );
 
+            console.log('User submissions response:', response.data);
+
             if (response.data.status === 'success') {
                 allSubmissions = response.data.data || [];
 
-                // Initialize filter buttons once
+                if (allSubmissions.length === 0) {
+                    document.getElementById('inquiriesTableBody').innerHTML = '<tr><td colspan="5" class="text-center">No submissions found.</td></tr>';
+                    return;
+                }
+
+                // Initialize filter buttons
                 initializeFilterButtons();
 
-                // Apply initial filtering
+                // Apply initial filtering and render
                 renderSubmissions(filterSubmissions());
             } else {
-                document.getElementById('inquiriesTableBody').innerHTML =
-                    '<tr><td colspan="5" class="text-center">No submissions found.</td></tr>';
+                document.getElementById('inquiriesTableBody').innerHTML = '<tr><td colspan="5" class="text-center">Error loading submissions: ' + (response.data.message || 'Unknown error') + '</td></tr>';
+                console.error('Error loading submissions:', response.data.message);
             }
         } catch (error) {
             console.error('Error loading submissions:', error);
+            document.getElementById('inquiriesTableBody').innerHTML = '<tr><td colspan="5" class="text-center">Failed to load submissions. Please try again.</td></tr>';
             toastr.error('Failed to load submissions. Please try again.');
         }
     }
@@ -122,8 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return allSubmissions.filter(submission => {
             // Handle search filtering
             const matchesSearch = !searchFilter ||
-                submission.post_title.toLowerCase().includes(searchFilter) ||
-                submission.type.toLowerCase().includes(searchFilter);
+                (submission.post_title && submission.post_title.toLowerCase().includes(searchFilter)) ||
+                (submission.type && submission.type.toLowerCase().includes(searchFilter));
 
             if (!matchesSearch) return false;
 
@@ -155,32 +165,47 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        tableBody.innerHTML = submissions.map(submission => `
-            <tr class="submission-row" data-id="${submission.post_id}">
+        tableBody.innerHTML = '';
+
+        submissions.forEach(submission => {
+            const row = document.createElement('tr');
+            row.className = 'submission-row';
+            row.dataset.id = submission.post_id;
+
+            // Format the table row with all required columns
+            row.innerHTML = `
                 <td>#${submission.post_id}</td>
                 <td><span class="badge ${getStatusBadgeClass(submission.post_status)}">
                     ${getStatusText(submission.post_status)}</span></td>
-                <td>${submission.type}</td>
-                <td>${submission.post_title}</td>
+                <td>${submission.type || ''}</td>
+                <td>${submission.post_title || ''}</td>
                 <td>${formatDate(submission.post_date)}</td>
-            </tr>
-        `).join('');
+            `;
 
-        // Reattach click handlers
-        document.querySelectorAll('.submission-row').forEach(row => {
+            // Add click event listener
             row.addEventListener('click', () => {
-                loadSubmissionDetails(row.dataset.id);
+                loadSubmissionDetails(submission.post_id);
             });
+
+            tableBody.appendChild(row); 
         });
     }
 
-    // Fix for the Mark as Resolved issue
     async function loadSubmissionDetails(submissionId) {
         try {
-            // Update this line to call posts.php instead of inquiry.php
+            // Show loading indicator
+            const detailModal = document.getElementById('submissionDetailModal');
+            if (detailModal.querySelector('.replies-container')) {
+                detailModal.querySelector('.replies-container').innerHTML =
+                    '<div class="d-flex justify-content-center p-5"><div class="spinner-border text-primary" role="status"></div></div>';
+            }
+
+            // Call the endpoint to get submission details
             const response = await axios.get(
                 `${baseURL}posts.php?action=get_submission_detail&id=${submissionId}`
             );
+
+            console.log('Submission detail response:', response.data);
 
             if (response.data.status === 'success') {
                 currentSubmissionId = submissionId;
@@ -188,20 +213,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const replies = response.data.data.replies;
 
                 // Close inquiry status modal first
-                const inquiryModal = bootstrap.Modal.getInstance(document.getElementById('inquiryStatusModal'));
-                if (inquiryModal) {
-                    inquiryModal.hide();
+                if (bootstrap.Modal.getInstance(document.getElementById('inquiryStatusModal'))) {
+                    bootstrap.Modal.getInstance(document.getElementById('inquiryStatusModal')).hide();
                 }
 
                 // Show submission detail modal
-                const detailModal = new bootstrap.Modal(document.getElementById('submissionDetailModal'));
-                detailModal.show();
+                submissionDetailModal.show();
 
                 // Update user info and status
-                document.getElementById('postUserName').textContent = submission.author_name;
+                document.getElementById('postUserName').textContent = submission.author_name || '';
                 document.getElementById('postUserId').textContent = `ID: ${submission.user_schoolId || ''}`;
 
-                // IMPORTANT: Store the current status for proper handling
+                // Store the current status for proper handling
                 const currentStatus = submission.post_status;
 
                 const statusBadge = document.getElementById('postStatus');
@@ -219,11 +242,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     originalPostElement.innerHTML = `
                         <div class="message-content original-post">
                             <div class="mb-2">
-                                <span class="badge bg-secondary">${submission.type}</span>
+                                <span class="badge bg-secondary">${submission.type || ''}</span>
                                 ${submission.inquiry_type ? `<span class="badge bg-info ms-1">${submission.inquiry_type}</span>` : ''}
                             </div>
-                            <h5>${submission.post_title}</h5>
-                            <p>${submission.post_message}</p>
+                            <h5>${submission.post_title || ''}</h5>
+                            <p>${submission.post_message || ''}</p>
                             <div class="d-flex justify-content-between align-items-center">
                                 <small class="text-muted">${formatDateTime(submission.post_date, submission.post_time)}</small>
                                 <span class="badge ${getStatusBadgeClass(submission.post_status)}">${getStatusText(submission.post_status)}</span>
@@ -239,8 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             replyElement.className = `message-bubble ${reply.user_type === 'admin' ? 'admin-message' : 'user-message'}`;
                             replyElement.innerHTML = `
                                 <div class="message-content">
-                                    <strong>${reply.display_name}</strong>
-                                    <p>${reply.reply_message}</p>
+                                    <strong>${reply.display_name || ''}</strong>
+                                    <p>${reply.reply_message || ''}</p>
                                     <small>${new Date(reply.reply_date + " " + reply.reply_time).toLocaleString()}</small>
                                 </div>
                             `;
@@ -250,14 +273,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Update reply form container based on status
-                // IMPORTANT: Always pass the current post status directly from the database
                 updateReplyForm(currentStatus);
 
                 // Scroll to bottom of replies
                 scrollToBottom();
+            } else {
+                toastr.error(response.data.message || 'Failed to load submission details');
             }
         } catch (error) {
-            toastr.error('Failed to load submission details');
+            console.error('Error loading submission details:', error);
+            toastr.error('Failed to load submission details. Please try again.');
         }
     }
 
@@ -269,8 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
             replies.map(reply => `
                 <div class="message-bubble ${reply.user_type === 'admin' ? 'admin-message' : 'user-message'}">
                     <div class="message-content">
-                        <strong>${reply.display_name}</strong>
-                        <p>${reply.reply_message}</p>
+                        <strong>${reply.display_name || ''}</strong>
+                        <p>${reply.reply_message || ''}</p>
                         <small>${new Date(reply.reply_date + " " + reply.reply_time).toLocaleString()}</small>
                     </div>
                 </div>
@@ -326,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // New function to scroll chat to bottom
+    // Function to scroll chat to bottom
     function scrollToBottom() {
         const repliesContainer = document.querySelector('.replies-container');
         if (repliesContainer) {
@@ -352,8 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.isConfirmed) {
                 console.log(`Marking submission ${submissionId} as resolved...`);
 
-                // Fix: Use the correct endpoint name as defined in the PHP file
-                // The endpoint in posts.php is "update_post_status" not "update_status"
+                // Use the correct endpoint for status update
                 const response = await axios.post(
                     `${baseURL}posts.php?action=update_post_status`,
                     {
@@ -364,8 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 console.log('API response:', response.data);
 
-                // Check both "success" and "status" properties in case the API uses either
-                if (response.data.success || response.data.status === 'success') {
+                if (response.data.success) {
                     // Update the status badge
                     const statusBadge = document.getElementById('postStatus');
                     statusBadge.className = 'badge bg-success';
@@ -374,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update the reply form to show resolved state
                     updateReplyForm('2');
 
-                    // IMPORTANT: Also update the submission in the allSubmissions array
+                    // Update the submission in the allSubmissions array
                     const submissionIndex = allSubmissions.findIndex(s => s.post_id == submissionId);
                     if (submissionIndex !== -1) {
                         allSubmissions[submissionIndex].post_status = '2';
@@ -386,7 +409,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Refresh the submissions list in background
                     loadUserSubmissions();
                 } else {
-                    // Log the error and show a message to the user
                     console.error('Failed to mark as resolved:', response.data.message);
                     toastr.error(response.data.message || 'Failed to mark as resolved');
                 }
@@ -397,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Also make it available globally for any legacy code that might need it
+    // Make markAsResolved available globally for compatibility
     window.markAsResolved = markAsResolved;
 
     // Helper function to attach reply form listener
@@ -420,34 +442,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     replyInput.value = '';
 
                     // Optimistically add reply to the UI
-                    const currentUserName = `${sessionStorage.getItem('user_firstname')} ${sessionStorage.getItem('user_lastname')}`;
+                    const currentUserName = `${sessionStorage.getItem('user_firstname') || ''} ${sessionStorage.getItem('user_lastname') || ''}`;
                     addReplyToUI(content, currentUserName, 'user-message', new Date());
 
                     // Scroll to bottom after adding the new message
                     scrollToBottom();
 
-                    // Actually send the reply
-                    // Update this line to call posts.php instead of inquiry.php
+                    // Send the reply to backend
                     const response = await axios.post(
                         `${baseURL}posts.php?action=add_reply`,
                         formData
                     );
 
                     if (response.data.status !== 'success') {
-                        // If API failed, show error
                         toastr.error('Failed to send reply');
                     }
-
-                    // No modal closing or refreshing
                 } catch (error) {
                     console.error('Error sending reply:', error);
-                    toastr.error('Failed to send reply');create
+                    toastr.error('Failed to send reply');
                 }
             });
         }
     }
 
-    // New function to add a reply to the UI
+    // Function to add a reply to the UI
     function addReplyToUI(message, authorName, cssClass, timestamp) {
         const repliesContainer = document.querySelector('.replies-container');
 
@@ -468,10 +486,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper functions
     function formatDate(dateStr) {
+        if (!dateStr) return '';
         return new Date(dateStr).toLocaleDateString();
     }
 
     function formatDateTime(date, time) {
+        if (!date || !time) return '';
         return new Date(date + ' ' + time).toLocaleString();
     }
 
@@ -492,36 +512,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         return statusMap[status] || 'Unknown';
     }
-
-    // Update the checkPrivacyPolicyStatus function to properly handle the check
-    async function checkPrivacyPolicyStatus() {
-        try {
-            const userId = sessionStorage.getItem('user_id');
-            if (!userId) {
-                sessionStorage.removeItem('privacyPolicyAccepted');
-                return false;
-            }
-
-            const response = await axios.get(
-                `${baseURL}inquiry.php?action=check_privacy_policy&user_id=${userId}`
-            );
-
-            if (response.data.success && response.data.privacy_policy_check === 1) {
-                sessionStorage.setItem('privacyPolicyAccepted', 'true');
-                return true;
-            } else {
-                sessionStorage.removeItem('privacyPolicyAccepted');
-                return false;
-            }
-        } catch (error) {
-            console.error('Error checking privacy policy status:', error);
-            sessionStorage.removeItem('privacyPolicyAccepted');
-            return false;
-        }
-    }
-
-    // Call the check on page load
-    checkPrivacyPolicyStatus();
 
     // Initialize dropdowns
     document.querySelectorAll('.dropdown-toggle').forEach(dropdown => {
@@ -549,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
         privacyContent.scrollTop = 0;
     });
 
-    // Update the acceptPrivacyBtn click handler to properly update the database
+    // Update the acceptPrivacyBtn click handler
     document.getElementById('acceptPrivacyBtn').addEventListener('click', async () => {
         try {
             const userId = sessionStorage.getItem('user_id');
@@ -598,24 +588,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Update the concern button click handlers to properly check privacy policy
+    // Update concern button click handlers
     document.querySelectorAll('.concern-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             const type = btn.dataset.type;
             sessionStorage.setItem('selectedPostType', type);
-            const targetUrl = 'form.html';
-
-            // Always check the latest privacy policy status from the server
-            const privacyAccepted = await checkPrivacyPolicyStatus();
-
-            if (privacyAccepted) {
-                // If accepted, navigate directly
-                window.location.href = targetUrl;
-            } else {
-                // If not accepted, store pending redirect and show modal
-                sessionStorage.setItem('pendingRedirect', targetUrl);
-                privacyModal.show();
-            }
+            window.location.href = 'form.html';
         });
     });
 
@@ -643,16 +621,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check for unread notifications
     checkForNewReplies();
 
-    // Set interval to check for new notifications every 2 minutes (more appropriate for production)
+    // Set interval to check for new notifications every 2 minutes
     setInterval(checkForNewReplies, 120000);
 
-    // Check and update notification badge - PRODUCTION VERSION
+    // Check and update notification badge
     async function checkForNewReplies() {
         const userId = sessionStorage.getItem('user_id');
         if (!userId) return;
 
         try {
-            // Update this line to call posts.php instead of inquiry.php
             const response = await axios.get(`${baseURL}posts.php?action=check_new_replies&user_id=${userId}`);
 
             if (response.data.status === 'success') {
@@ -664,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Update notification badge display - PRODUCTION VERSION
+    // Update notification badge display
     function updateNotificationBadge(count) {
         const badge = document.getElementById('notificationBadge');
 
@@ -676,15 +653,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Clear notification when user opens the inquiry status - PRODUCTION VERSION
+    // Clear notification when user opens the inquiry status
     async function clearNotification() {
         const userId = sessionStorage.getItem('user_id');
         if (!userId) return;
 
         try {
-            // Update this line to call posts.php instead of inquiry.php
             await axios.post(`${baseURL}posts.php?action=mark_replies_read`, { user_id: userId });
-            // Hide the notification badge
             document.getElementById('notificationBadge').classList.add('d-none');
         } catch (error) {
             console.error('Error clearing notifications:', error);

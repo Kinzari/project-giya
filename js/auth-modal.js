@@ -46,11 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const userTypeId = sessionStorage.getItem('user_typeId');
             if (!userTypeId) {
-                window.location.href = 'index.html#login-area';
+                window.location.href = '/index.html#login-area';
                 toastr.warning('Please login first to access this feature.');
                 return;
             }
-            window.location.href = 'choose-concern.html';
+            window.location.href = '/choose-concern.html';
         });
     });
 });
