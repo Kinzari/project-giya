@@ -73,8 +73,15 @@
                             <small class="text-muted" id="postUserId"></small>
                         </div>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-primary me-2" id="forwardPostBtn"
+                            style="display:none;">
+                            <i class="bi bi-send"></i> Forward
+                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
                 </div>
+                <div id="forwardInfo" class="px-3" style="display:none;"></div>
                 <div class="modal-body p-0">
                     <div class="chat-container">
                         <!-- Main post content -->
@@ -108,6 +115,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/dashboard/giya-table.js"></script>
     <script src="/js/dashboard/posts.js"></script>
+    <script src="/js/dashboard/forward-post.js"></script>
     <script src="/js/toastr-config.js"></script>
     <script src="/js/dashboard/poc-restrictions.js"></script>
 </body>

@@ -3,12 +3,15 @@ const options = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'A
 const formattedTime = now.toLocaleTimeString('en-US', options);
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Validate that we have baseURL
+    // Get baseURL from sessionStorage
     const baseURL = sessionStorage.getItem("baseURL");
     if (!baseURL) {
         window.location.href = 'index.html';
         return;
     }
+
+    // Make baseURL available globally for other functions
+    window.baseURL = baseURL;
 
     const selectedPostType = sessionStorage.getItem('selectedPostType') || 'inquiry';
 
@@ -118,6 +121,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Add after existing initialization code
+    await loadCampuses();
+
     // Add back button handler
     document.getElementById('backBtn').addEventListener('click', () => {
         Swal.fire({
@@ -137,68 +143,102 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // 4. Handle form submission
-    document.getElementById('concernForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const postTitle = document.getElementById('postTitle').value.trim();
-        const postMessage = document.getElementById('postMessage').value.trim();
-        const chosenPostType = document.getElementById('inquiryType').value || '';
-
-        // Get the post type ID from the selected post type in the form
-        // This matches with the value in tbl_giya_posttype
-        let postTypeId = 1; // Default to 1 (Inquiry)
-        const selectedPostType = sessionStorage.getItem('selectedPostType') || 'inquiry';
-
-        // Map the post type to ID
-        if (selectedPostType === 'feedback') {
-            postTypeId = 2;
-        } else if (selectedPostType === 'suggestion') {
-            postTypeId = 3;
-        }
-
-        if (!postTitle || !postMessage) {
-            Swal.fire('Error!', 'Please fill in all required fields.', 'error');
-            return;
-        }
-
-        Swal.fire({
-            title: 'Confirm Submission',
-            text: 'Are you sure you want to submit your concern?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, submit it',
-            confirmButtonColor: '#155f37',
-            cancelButtonColor: '#d33',
-            cancelButtonText: 'Cancel'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                const formData = {
-                    user_id: sessionStorage.getItem('user_id'),
-                    post_type: chosenPostType,
-                    post_type_id: postTypeId,  // Add the post type ID
-                    post_title: postTitle,
-                    post_message: postMessage,
-                    submit_time: formattedTime
-                };
-
-                try {
-                    const response = await axios.post(
-                        `${sessionStorage.getItem('baseURL')}inquiry.php?action=submit_inquiry`,
-                        formData
-                    );
-                    if (response.data.success) {
-                        await Swal.fire('Success!', 'Your concern has been submitted.', 'success');
-                        window.location.href = 'choose-concern.html';
-                    } else {
-                        throw new Error(response.data.message || 'Submission failed');
-                    }
-                } catch (error) {
-                    Swal.fire('Error!', error.message || 'Submission error. Please try again.', 'error');
-                }
-            }
-        });
-    });
+    document.getElementById('concernForm').addEventListener('submit', submitForm);
 });
+
+async function loadCampuses() {
+    try {
+        const response = await axios.get(`${window.baseURL}giya.php?action=get_campuses`);
+
+        if (response.data.success) {
+            const campusSelect = document.getElementById('campus');
+            response.data.campuses.forEach(campus => {
+                const option = document.createElement('option');
+                option.value = campus.campus_id;
+                option.textContent = campus.campus_name;
+                campusSelect.appendChild(option);
+            });
+
+            // Set default campus if user has one
+            const userCampusId = sessionStorage.getItem('user_campusId');
+            if (userCampusId) {
+                campusSelect.value = userCampusId;
+            }
+        } else {
+            throw new Error(response.data.message || 'Failed to load campuses');
+        }
+    } catch (error) {
+        console.error('Error loading campuses:', error);
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Failed to load campuses. Please try again.');
+        } else {
+            alert('Failed to load campuses. Please try again.');
+        }
+    }
+}
+
+async function submitForm(event) {
+    event.preventDefault();
+
+    const postTitle = document.getElementById('postTitle').value.trim();
+    const postMessage = document.getElementById('postMessage').value.trim();
+    const chosenPostType = document.getElementById('inquiryType').value || '';
+
+    // Get the post type ID from the selected post type in the form
+    // This matches with the value in tbl_giya_posttype
+    let postTypeId = 1; // Default to 1 (Inquiry)
+    const selectedPostType = sessionStorage.getItem('selectedPostType') || 'inquiry';
+
+    // Map the post type to ID
+    if (selectedPostType === 'feedback') {
+        postTypeId = 2;
+    } else if (selectedPostType === 'suggestion') {
+        postTypeId = 3;
+    }
+
+    if (!postTitle || !postMessage) {
+        Swal.fire('Error!', 'Please fill in all required fields.', 'error');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Confirm Submission',
+        text: 'Are you sure you want to submit your concern?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, submit it',
+        confirmButtonColor: '#155f37',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancel'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const formData = {
+                user_id: sessionStorage.getItem('user_id'),
+                post_type: chosenPostType,
+                post_type_id: postTypeId,  // Add the post type ID
+                post_title: postTitle,
+                post_message: postMessage,
+                submit_time: formattedTime,
+                campus_id: document.getElementById('campus').value
+            };
+
+            try {
+                const response = await axios.post(
+                    `${sessionStorage.getItem('baseURL')}inquiry.php?action=submit_inquiry`,
+                    formData
+                );
+                if (response.data.success) {
+                    await Swal.fire('Success!', 'Your concern has been submitted.', 'success');
+                    window.location.href = 'choose-concern.html';
+                } else {
+                    throw new Error(response.data.message || 'Submission failed');
+                }
+            } catch (error) {
+                Swal.fire('Error!', error.message || 'Submission error. Please try again.', 'error');
+            }
+        }
+    });
+}
 
 function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);

@@ -3,27 +3,35 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!elementsExist) {
         console.warn('Missing required elements - post details may not load correctly');
     }
+
+    // Add this near the top of the file
+    const path = window.location.pathname.toLowerCase();
+
     const baseURL = sessionStorage.getItem("baseURL");
     if (!baseURL) {
         console.error("baseURL not found in sessionStorage");
         sessionStorage.setItem('baseURL', 'http://localhost/giya-api/');
-
         toastr.warning('API URL not found. Using default URL. You may need to login again.');
     }
+
     let table;
-    const path = window.location.pathname.toLowerCase();
     const userInfo = sessionStorage.getItem('user');
-    let departmentId = null;
-    let userTypeId = null;
+    // Declare these variables in global scope to fix the reference error
+    window.userTypeId = null;
+    window.departmentId = null;
     if (userInfo) {
         try {
             const user = JSON.parse(userInfo);
-            departmentId = user.user_departmentId;
-            userTypeId = user.user_typeId;
-            if (userTypeId == 5 && !departmentId) {
+            window.departmentId = user.user_departmentId;
+            window.userTypeId = user.user_typeId;
+            if (window.userTypeId == 5 && !window.departmentId) {
                 toastr.warning('Department ID not found in your profile. Please contact the administrator.');
                 console.warn('POC user without department ID:', user);
             }
+
+            // Store these in sessionStorage for easier access
+            sessionStorage.setItem('user_typeId', window.userTypeId);
+            sessionStorage.setItem('user_departmentId', window.departmentId);
         } catch (e) {
             console.error('Error parsing user info:', e);
         }
@@ -31,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Use GiyaTable for initializing tables instead of custom implementation
     if (document.getElementById("latestPostsTable")) {
-        const action = (userTypeId == 5 && departmentId) ? `get_posts_by_department&department_id=${departmentId}` : 'get_posts';
+        const action = (window.userTypeId == 5 && window.departmentId) ? `get_posts_by_department&department_id=${window.departmentId}` : 'get_posts';
 
         // Ensure discord-pagination class is added before initializing the table
         $('.student-table-container').addClass('discord-pagination');
@@ -43,11 +51,12 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (document.getElementById("postsTable")) {
         let action = "";
         if (path.includes("students.html")) {
-            action = (userTypeId == 5 && departmentId) ? `get_student_posts_by_department&department_id=${departmentId}` : "get_student_posts";
+            action = (window.userTypeId == 5 && window.departmentId) ? `get_student_posts_by_department&department_id=${window.departmentId}` : "get_student_posts";
         } else if (path.includes("visitors.html")) {
-            action = (userTypeId == 5 && departmentId) ? `get_visitor_posts_by_department&department_id=${departmentId}` : "get_visitor_posts";
+            action = (window.userTypeId == 5 && window.departmentId) ? `get_visitor_posts_by_department&department_id=${window.departmentId}` : "get_visitor_posts";
         } else if (path.includes("employees.html")) {
-            action = (userTypeId == 5 && departmentId) ? `get_employee_posts_by_department&department_id=${departmentId}` : "get_employee_posts";
+            // Fix: Change to an endpoint that exists in the API
+            action = (window.userTypeId == 5 && window.departmentId) ? `get_employee_posts_by_department&department_id=${window.departmentId}` : "get_latest_posts";
         }
 
         // Ensure discord-pagination class is added before initializing the table
@@ -93,6 +102,33 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         document.head.appendChild(style);
     }, 500);
+
+    // Add attachment handlers
+    const attachButton = document.getElementById('attachButton');
+    const attachFile = document.getElementById('attachFile');
+    const attachmentPreview = document.getElementById('attachmentPreview');
+    const fileName = document.getElementById('fileName');
+    const removeAttachment = document.getElementById('removeAttachment');
+
+    if (attachButton && attachFile) {
+        attachButton.addEventListener('click', () => {
+            attachFile.click();
+        });
+
+        attachFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                attachmentPreview.style.display = 'block';
+            }
+        });
+
+        removeAttachment.addEventListener('click', () => {
+            attachFile.value = '';
+            attachmentPreview.style.display = 'none';
+            fileName.textContent = '';
+        });
+    }
 });
 
 // Remove the redundant initializePostsTable function and use GiyaTable instead
@@ -123,6 +159,36 @@ function renderStatusBadge(data) {
 }
 
 let currentPostId = null;
+
+// Add this utility function for API calls with better error handling
+async function safeApiCall(endpoint, options = {}) {
+    try {
+        const baseURL = sessionStorage.getItem('baseURL') || '';
+        const response = await axios.get(`${baseURL}${endpoint}`, options);
+        return response.data;
+    } catch (error) {
+        console.error(`API call error (${endpoint}):`, error);
+
+        let errorMessage = 'Failed to load data from server';
+
+        // Extract more detailed error message if available
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            errorMessage = `Server error: ${error.response.status}`;
+            console.error('Error response:', error.response.data);
+        } else if (error.request) {
+            // The request was made but no response was received
+            errorMessage = 'No response from server';
+        } else {
+            // Something happened in setting up the request that triggered an Error
+            errorMessage = error.message || 'Unknown error';
+        }
+
+        toastr.error(errorMessage);
+        throw error;
+    }
+}
 
 async function showPostDetails(postId) {
     try {
@@ -190,6 +256,45 @@ async function showPostDetails(postId) {
             }
             updateReplyForm(post.post_status, postId);
             setTimeout(scrollToBottom, 300);
+
+            // Add check for forwarded status and update the UI accordingly
+            const forwardBtn = document.getElementById('forwardPostBtn');
+            if (forwardBtn) {
+                // Only show forward button for admins (user_typeId = 6), not POCs (user_typeId = 5)
+                const userType = sessionStorage.getItem('user_typeId');
+                if (userType === '6') {
+                    forwardBtn.style.display = 'inline-block';
+
+                    // Disable forward button if already forwarded
+                    if (post.is_forwarded == 1) {
+                        forwardBtn.classList.add('disabled');
+                        forwardBtn.setAttribute('data-bs-toggle', 'tooltip');
+                        forwardBtn.setAttribute('data-bs-placement', 'top');
+                        forwardBtn.setAttribute('title', 'This post has already been forwarded');
+                    } else {
+                        forwardBtn.classList.remove('disabled');
+                        forwardBtn.removeAttribute('data-bs-toggle');
+                        forwardBtn.removeAttribute('title');
+                    }
+                } else {
+                    forwardBtn.style.display = 'none';
+                }
+
+                // If post is forwarded, show who forwarded it for POC users
+                if (post.is_forwarded == 1 && userType === '5' && post.forwarded_by_name) {
+                    const forwardInfoEl = document.getElementById('forwardInfo');
+                    if (forwardInfoEl) {
+                        forwardInfoEl.innerHTML = `
+                            <div class="alert alert-info">
+                                <i class="bi bi-send me-2"></i>
+                                Forwarded by ${post.forwarded_by_name} on ${new Date(post.forwarded_at).toLocaleString()}
+                                ${post.forwarded_notes ? `<div class="mt-2 small">${post.forwarded_notes}</div>` : ''}
+                            </div>
+                        `;
+                        forwardInfoEl.style.display = 'block';
+                    }
+                }
+            }
         } else {
             toastr.error(response.data.message || 'Failed to load post details');
         }
@@ -269,6 +374,18 @@ function updateReplyForm(status, postId) {
                         <i class="bi bi-send-fill"></i>
                     </button>
                 </div>
+                <div class="attachment-container mt-2">
+                    <button type="button" class="btn btn-outline-secondary" id="attachButton">
+                        <i class="bi bi-paperclip"></i> Attach File
+                    </button>
+                    <input type="file" id="attachFile" style="display: none;">
+                    <div id="attachmentPreview" style="display: none;">
+                        <span id="fileName"></span>
+                        <button type="button" class="btn btn-sm btn-danger" id="removeAttachment">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
             </form>
             ${extraButtons}`;
         const replyForm = document.getElementById('replyForm');
@@ -298,23 +415,48 @@ function scrollToBottom() {
 async function submitReplyWithoutRefresh(event, postId) {
     event.preventDefault();
     const messageInput = document.querySelector('.reply-input');
+    const attachFile = document.getElementById('attachFile');
+
     if (!messageInput) return;
     const message = messageInput.value.trim();
-    if (!message) return;
+    if (!message && !attachFile.files[0]) return;
+
     try {
         messageInput.value = '';
         const adminName = "GIYA Representative";
-        addReplyToUI(message, adminName, 'admin-message', new Date());
-        scrollToBottom();
+
+        // Create FormData object for file upload
         const formData = new FormData();
         formData.append('post_id', postId);
         formData.append('reply_message', message);
         formData.append('admin_id', sessionStorage.getItem('user_id') || '25');
         formData.append('auto_update_status', true);
+
+        // Add file if one is selected
+        if (attachFile.files[0]) {
+            formData.append('attachment', attachFile.files[0]);
+        }
+
+        // Add reply to UI immediately
+        addReplyToUI(message, adminName, 'admin-message', new Date(), attachFile.files[0]?.name);
+
+        // Reset attachment UI
+        document.getElementById('attachmentPreview').style.display = 'none';
+        document.getElementById('fileName').textContent = '';
+        attachFile.value = '';
+
+        scrollToBottom();
+
         await axios.post(
             `${sessionStorage.getItem('baseURL')}posts.php?action=submit_reply`,
-            formData
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
         );
+
         refreshTables();
     } catch (error) {
         console.error('Error submitting reply:', error);
@@ -322,18 +464,32 @@ async function submitReplyWithoutRefresh(event, postId) {
     }
 }
 
-function addReplyToUI(message, authorName, cssClass, timestamp) {
+function addReplyToUI(message, authorName, cssClass, timestamp, attachment = null) {
     const repliesContainer = document.querySelector('.replies-container');
     if (!repliesContainer) return;
+
     const newReply = document.createElement('div');
     newReply.className = `message-bubble ${cssClass}`;
+
+    let attachmentHtml = '';
+    if (attachment) {
+        attachmentHtml = `
+            <div class="attachment-preview mt-2">
+                <i class="bi bi-paperclip"></i>
+                <span>${attachment}</span>
+            </div>
+        `;
+    }
+
     newReply.innerHTML = `
         <div class="message-content">
             <strong>${authorName}</strong>
             <p>${message}</p>
+            ${attachmentHtml}
             <small>${timestamp.toLocaleString()}</small>
         </div>
     `;
+
     const noRepliesMsg = repliesContainer.querySelector('p.text-muted');
     if (noRepliesMsg) {
         repliesContainer.innerHTML = '';
@@ -490,4 +646,77 @@ function getCurrentUserDepartment() {
     if (!userInfo) return '';
     const user = JSON.parse(userInfo);
     return user.department_name || '';
+}
+
+// Add headers to axios requests to include user type and department
+axios.interceptors.request.use(function (config) {
+    // Add user type and department headers to all requests
+    const userInfo = sessionStorage.getItem('user');
+    let userTypeId = sessionStorage.getItem('user_typeId');
+    let userDepartmentId = sessionStorage.getItem('user_departmentId');
+
+    // If user info exists but type/department aren't in session storage directly, extract them
+    if (userInfo && (!userTypeId || !userDepartmentId)) {
+        try {
+            const user = JSON.parse(userInfo);
+            userTypeId = userTypeId || user.user_typeId;
+            userDepartmentId = userDepartmentId || user.user_departmentId;
+
+            // Store these values in session storage for future use
+            if (user.user_typeId) sessionStorage.setItem('user_typeId', user.user_typeId);
+            if (user.user_departmentId) sessionStorage.setItem('user_departmentId', user.user_departmentId);
+        } catch (e) {
+            console.error('Error parsing user info:', e);
+        }
+    }
+
+    config.headers['X-User-Type'] = userTypeId || '';
+    config.headers['X-User-Department'] = userDepartmentId || '';
+
+    return config;
+}, function (error) {
+    return Promise.reject(error);
+});
+
+// Update GiyaTable initialization to pass user info
+if (document.getElementById("postsTable")) {
+    // Define path locally if it doesn't exist in this scope
+    const path = window.location.pathname.toLowerCase();
+    let action = "";
+    // Fix here - Use window.userTypeId and window.departmentId instead
+    if (path.includes("students.html")) {
+        action = (window.userTypeId == 5 && window.departmentId) ? `get_student_posts_by_department&department_id=${window.departmentId}` : "get_student_posts";
+    } else if (path.includes("visitors.html")) {
+        action = (window.userTypeId == 5 && window.departmentId) ? `get_visitor_posts_by_department&department_id=${window.departmentId}` : "get_visitor_posts";
+    } else if (path.includes("employees.html")) {
+        // Fix: Change to an endpoint that exists in the API
+        action = (window.userTypeId == 5 && window.departmentId) ? `get_employee_posts_by_department&department_id=${window.departmentId}` : "get_latest_posts";
+    }
+
+    // Ensure discord-pagination class is added before initializing the table
+    $('.student-table-container').addClass('discord-pagination');
+
+    table = GiyaTable.initPostsTable('#postsTable', action);
+}
+
+function initializeTable(tableId) {
+    // ...existing code...
+
+    // Initialize the table with settings that prioritize recent posts
+    const table = $(tableId).DataTable({
+        // ...existing code...
+        order: [[6, 'desc'], [7, 'desc']], // Default order by date desc, then time desc
+        // ...existing code...
+    });
+
+    // ...existing code...
+}
+
+function refreshTable(tableId) {
+    const table = $(tableId).DataTable();
+
+    table.ajax.reload(function() {
+        // After reload, ensure we're still sorting by date and time descending
+        table.order([6, 'desc'], [7, 'desc']).draw();
+    }, false); // false keeps current page
 }

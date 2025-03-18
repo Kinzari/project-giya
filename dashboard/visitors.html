@@ -101,33 +101,43 @@
                             <small class="text-muted" id="postUserId"></small>
                         </div>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-primary me-2" id="forwardPostBtn"
+                            style="display:none;">
+                            <i class="bi bi-send"></i> Forward
+                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
                 </div>
+                <div id="forwardInfo" class="px-3" style="display:none;"></div>
                 <div class="modal-body p-0">
                     <div class="chat-container">
-
                         <div class="main-post p-3 border-bottom"></div>
-
-
-                        <div class="replies-container p-3" style="height: 300px; overflow-y: auto;">
-
-                        </div>
-
-                        <div class="reply-form-container p-3 border-top bg-light">
-                            <form id="replyForm" class="reply-form">
-                                <div class="input-group">
-                                    <button class="btn btn-outline-secondary" type="button" id="attachButton">
-                                        <i class="bi bi-paperclip"></i>
-                                    </button>
-                                    <input type="file" id="attachFile" style="display: none;">
-                                    <input type="text" class="form-control reply-input" placeholder="Write a reply...">
-                                    <button class="btn btn-primary" type="submit">
-                                        <i class="bi bi-send-fill"></i>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                        <div class="replies-container p-3" style="height: 300px; overflow-y: auto;"></div>
                     </div>
+                </div>
+                <div class="reply-form-container p-3 border-top bg-light">
+                    <form id="replyForm" class="reply-form">
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" id="attachButton">
+                                <i class="bi bi-paperclip"></i>
+                            </button>
+                            <input type="file" id="attachFile" style="display: none;">
+                            <input type="text" class="form-control reply-input" placeholder="Write a reply...">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </div>
+                        <div id="attachmentPreview" class="mt-2" style="display: none;">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark me-2"></i>
+                                <span id="fileName"></span>
+                                <button type="button" class="btn btn-link text-danger p-0 ms-2" id="removeAttachment">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -143,6 +153,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/dashboard/giya-table.js"></script>
     <script src="/js/dashboard/posts.js"></script>
+    <script src="/js/dashboard/forward-post.js"></script>
     <script src="/js/toastr-config.js"></script>
     <script src="/js/dashboard/poc-restrictions.js"></script>
 </body>

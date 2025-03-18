@@ -7,6 +7,7 @@
     <title>GIYA - Concern Form </title>
     <link rel="shortcut icon" href="img/favicon.ico" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="css/forms.css">
 </head>
 
@@ -36,6 +37,14 @@
                                 <label for="inquiryType" class="form-label">Type of Inquiry</label>
                                 <select class="form-select" id="inquiryType" name="inquiryType">
                                     <option value="">Select Type of Inquiry</option>
+                                </select>
+                            </div>
+
+                            <!-- Add new campus dropdown here -->
+                            <div class="mb-3">
+                                <label for="campus" class="form-label">Campus</label>
+                                <select class="form-select" id="campus" required>
+                                    <option value="">Select Campus</option>
                                 </select>
                             </div>
 
@@ -69,9 +78,12 @@
     </div>
 
     <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/toastr-config.js"></script>
     <script src="js/auth-helper.js"></script>
     <script src="js/form.js"></script>
 </body>

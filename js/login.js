@@ -156,3 +156,71 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const loginInput = document.getElementById('loginInput').value;
+            const password = document.getElementById('password').value;
+
+            if (!loginInput || !password) {
+                showAlert('error', 'Please fill in all fields');
+                return;
+            }
+
+            try {
+                const baseURL = 'http://localhost/giya-api/'; // Adjust this to your API URL
+                sessionStorage.setItem('baseURL', baseURL);
+
+                const response = await axios.post(`${baseURL}giya.php?action=login`, {
+                    loginInput: loginInput,
+                    password: password
+                });
+
+                if (response.data.success) {
+                    // Store user data in sessionStorage
+                    sessionStorage.setItem('user_id', response.data.user_id);
+                    sessionStorage.setItem('user_schoolId', response.data.user_schoolId);
+                    sessionStorage.setItem('user_firstname', response.data.user_firstname);
+                    sessionStorage.setItem('user_lastname', response.data.user_lastname);
+                    sessionStorage.setItem('user_typeId', response.data.user_typeId);
+                    sessionStorage.setItem('user', JSON.stringify(response.data));
+
+                    // Redirect based on user type
+                    if (response.data.user_typeId == 5 || response.data.user_typeId == 6) {
+                        // Admin or POC redirect
+                        window.location.href = '/dashboard/';
+                    } else {
+                        // Regular user redirect
+                        window.location.href = '/user/';
+                    }
+                } else {
+                    showAlert('error', response.data.message || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('error', 'Server error. Please try again later.');
+            }
+        });
+    }
+
+    function showAlert(type, message) {
+        if (type === 'error') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: message
+            });
+        } else {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: message
+            });
+        }
+    }
+});

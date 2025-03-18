@@ -282,8 +282,8 @@ function initCharts() {
             labels: ['Inquiry', 'Feedback', 'Suggestion'],
             datasets: [{
                 data: [0, 0, 0],
-                backgroundColor: ['#0dcaf0', '#ffc107', '#20c997'],
-                hoverBackgroundColor: ['#0aa5c5', '#e5ac00', '#18a87d']
+                backgroundColor: ['#0dcaf0', '#a9a9a9', '#20c997'],
+                hoverBackgroundColor: ['#0aa5c5', '#928e85', '#18a87d']
             }]
         },
         options: {
@@ -341,6 +341,37 @@ function initCharts() {
             }
         }
     });
+
+    // Feedback Chart with default Bootstrap colors
+    const feedbackCtx = document.getElementById('feedback-chart')?.getContext('2d');
+    if (feedbackCtx) {
+        const feedbackChart = new Chart(feedbackCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Positive', 'Neutral', 'Negative'],
+                datasets: [{
+                    data: [0, 0, 0],
+                    backgroundColor: [
+                        'rgba(108, 117, 125, 0.8)',  // Bootstrap secondary
+                        'rgba(108, 117, 125, 0.5)',  // Lighter secondary
+                        'rgba(108, 117, 125, 0.3)'   // Lightest secondary
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        dashboardState.charts.feedback = feedbackChart;
+    }
 }
 
 /**

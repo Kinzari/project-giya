@@ -62,7 +62,6 @@ const MasterTable = {
             ajax: ajaxOptions,
             columns: columns
         };
-
         const mergedOptions = $.extend(true, {}, this.defaults, tableOptions, options);
 
         const table = $(tableSelector).DataTable(mergedOptions);

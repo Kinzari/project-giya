@@ -63,14 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show loading indicator in the table
             document.getElementById('inquiriesTableBody').innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>';
 
-            // Call the endpoint to get user submissions
+            // Update the API endpoint to use the correct action and user_id parameter
             const response = await axios.get(
-                `${baseURL}posts.php?action=get_user_submissions&user_id=${userId}`
+                `${baseURL}posts.php?action=get_user_posts&user_id=${userId}`
             );
 
-            console.log('User submissions response:', response.data);
-
-            if (response.data.status === 'success') {
+            if (response.data && response.data.success) {
                 allSubmissions = response.data.data || [];
 
                 if (allSubmissions.length === 0) {
@@ -187,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadSubmissionDetails(submission.post_id);
             });
 
-            tableBody.appendChild(row); 
+            tableBody.appendChild(row);
         });
     }
 

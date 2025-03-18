@@ -76,8 +76,15 @@
                             <small class="text-muted" id="postUserId"></small>
                         </div>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-primary me-2" id="forwardPostBtn"
+                            style="display:none;">
+                            <i class="bi bi-send"></i> Forward
+                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
                 </div>
+                <div id="forwardInfo" class="px-3" style="display:none;"></div>
                 <div class="modal-body p-0">
                     <div class="chat-container">
                         <!-- Main post content -->
@@ -110,8 +117,59 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/dashboard/giya-table.js"></script>
     <script src="/js/dashboard/posts.js"></script>
+    <script src="/js/dashboard/forward-post.js"></script>
     <script src="/js/toastr-config.js"></script>
     <script src="/js/dashboard/poc-restrictions.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize the latest posts table with specific settings
+            const latestPostsTable = GiyaTable.initPostsTable('#latestPostsTable', 'get_latest_posts', null, {
+                order: [[6, 'desc'], [7, 'desc']], // Order by date and time columns (most recent first)
+                pageLength: 10,
+                columns: [
+                    {
+                        data: "post_status",
+                        render: GiyaTable.renderStatusBadge
+                    },
+                    {
+                        data: "user_fullname"
+                    },
+                    {
+                        data: "postType_name"
+                    },
+                    {
+                        data: "post_title"
+                    },
+                    {
+                        data: "department_name",
+                        render: function (data) {
+                            return data || 'Not Assigned';
+                        }
+                    },
+                    {
+                        data: "campus_name",
+                        render: function (data) {
+                            return data || 'Carmen';
+                        }
+                    },
+                    {
+                        data: "post_date"
+                    },
+                    {
+                        data: "post_time",
+                        render: function (data, type, row) {
+                            const dt = new Date(row.post_date + " " + data);
+                            const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+                            return dt.toLocaleTimeString('en-US', options);
+                        }
+                    }
+                ]
+            });
+
+            // Make sure the filtering works for this table
+            GiyaTable.attachFiltering(latestPostsTable, '.btn-group button');
+        });
+    </script>
 </body>
 
 </html>

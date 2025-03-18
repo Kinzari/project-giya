@@ -21,10 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Initialize the resolved posts table with appropriate data source
-    if (document.getElementById("resolvedPostsTable")) {
-        $('.student-table-container').addClass('discord-pagination');
-
+    // Improved getEndpoint function to better handle specific resolved post types
+    function getEndpoint() {
         let apiAction = "";
 
         // Determine which API endpoint to use based on current page
@@ -39,37 +37,61 @@ document.addEventListener('DOMContentLoaded', function() {
             apiAction = "get_resolved_posts";
         }
 
-        // Add department filtering for POC users
+        // For POC users, we might need to filter by department
+        // But we still want to see resolved posts, not all posts
         if (userTypeId == 5 && departmentId) {
-            if (path.includes("visitors-resolved.html")) {
-                apiAction = `get_visitor_posts_by_department&department_id=${departmentId}`;
-            } else if (path.includes("students-resolved.html")) {
-                apiAction = `get_student_posts_by_department&department_id=${departmentId}`;
-            } else if (path.includes("employees-resolved.html")) {
-                apiAction = `get_employee_posts_by_department&department_id=${departmentId}`;
-            } else {
-                apiAction = `get_posts_by_department&department_id=${departmentId}`;
-            }
+            // We'll use the same endpoints but filter on the client side
+            console.log(`POC user (${userTypeId}) with department ${departmentId} accessing resolved posts`);
         }
+
+        return apiAction;
+    }
+
+    // Initialize the resolved posts table with appropriate data source
+    if (document.getElementById("resolvedPostsTable")) {
+        $('.student-table-container').addClass('discord-pagination');
 
         // Initialize the resolved posts table - Use a different approach to avoid conflicts
         if ($.fn.DataTable.isDataTable('#resolvedPostsTable')) {
             $('#resolvedPostsTable').DataTable().destroy();
         }
 
-        $('#resolvedPostsTable').DataTable({
+        // Get the correct API endpoint based on the current page
+        const endpoint = getEndpoint();
+        console.log(`Using API endpoint: ${endpoint} for resolved posts`);
+
+        // Use the getEndpoint function to get the appropriate API endpoint
+        const resolvedTable = $('#resolvedPostsTable').DataTable({
+            order: [[6, 'desc'], [7, 'desc']], // Most recent posts first by date and time
             ajax: {
-                url: `${baseURL}posts.php?action=${apiAction}`,
+                url: `${baseURL}posts.php?action=${endpoint}`,
                 type: 'GET',
                 dataSrc: function(json) {
                     if (!json || !json.data) {
+                        console.error('Invalid data format returned from server:', json);
                         return [];
                     }
 
+                    console.log(`Received ${json.data.length} posts, filtering for resolved only`);
+
                     // Filter to only show resolved posts (status 2 or 3)
-                    return json.data.filter(item =>
+                    const resolvedPosts = json.data.filter(item =>
                         Number(item.post_status) === 2 || Number(item.post_status) === 3
                     );
+
+                    // For POC users, additionally filter by department if needed
+                    if (userTypeId == 5 && departmentId) {
+                        return resolvedPosts.filter(item =>
+                            item.post_departmentId == departmentId ||
+                            item.department_id == departmentId
+                        );
+                    }
+
+                    return resolvedPosts;
+                },
+                error: function(xhr, error, thrown) {
+                    console.error('DataTables Ajax error:', error, thrown);
+                    toastr.error('Error loading resolved posts data. Please try refreshing the page.');
                 }
             },
             columns: [
@@ -125,7 +147,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             ],
-            order: [[6, 'desc'], [7, 'desc']],
             dom: '<"row mb-4"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
                  '<"row"<"col-sm-12"tr>>' +
                  '<"row mt-4"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8 d-flex justify-content-end"p>>',
@@ -150,6 +171,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 $('table.dataTable tbody tr').css('cursor', 'pointer');
+
+                // Apply styling to table headers
+                applyTableHeaderStyling();
+            },
+            initComplete: function() {
+                // Log that table initialization is complete
+                console.log(`Resolved posts table for ${path} initialized successfully`);
+            }
+        }).on('xhr.dt', function(e, settings, json) {
+            // Log any XHR information that could help debug issues
+            if (!json || !json.data) {
+                console.warn('Invalid data format in XHR response:', json);
+            } else {
+                console.log(`XHR complete: received ${json.data.length} records`);
             }
         }).on('click', 'tbody tr', function() {
             const data = $('#resolvedPostsTable').DataTable().row(this).data();
@@ -158,6 +193,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Define currentPostId in this scope to make it accessible
+    let currentPostId = null;
 
     // Define a separate function for showing resolved posts details
     window.showResolvedPostDetails = function(postId) {

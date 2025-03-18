@@ -109,20 +109,65 @@ const GiyaTable = {
             ajax: {
                 url: `${baseURL}posts.php?action=${action}`,
                 type: 'GET',
+                dataType: 'json',
                 dataSrc: function(json) {
                     if (!json || !json.data) {
+                        console.error('Invalid JSON response:', json);
+                        toastr.error('Server returned invalid data format');
                         return [];
                     }
-
                     return json.data;
                 },
                 error: function(xhr, error, thrown) {
-                    toastr.error('Error loading data: ' + (thrown || 'Server error'));
+                    console.error('DataTables AJAX error:', xhr, error, thrown);
+
+                    // Handle empty response
+                    if (!xhr.responseText) {
+                        toastr.error('Server returned empty response');
+                        return [];
+                    }
+
+                    // Handle JSON parsing errors
+                    try {
+                        // Try parsing it to see if it's valid JSON
+                        JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        console.error('Invalid JSON response:', xhr.responseText);
+                        toastr.error(`Invalid server response: ${e.message}`);
+
+                        // Make a diagnostic request to check response headers
+                        fetch(`${baseURL}posts.php?action=${action}`)
+                            .then(response => {
+                                console.log('Diagnostic response headers:',
+                                    Array.from(response.headers.entries()));
+                                return response.text();
+                            })
+                            .then(text => {
+                                console.log('Diagnostic response text (first 500 chars):',
+                                    text.substring(0, 500));
+                            })
+                            .catch(error => {
+                                console.error('Diagnostic fetch failed:', error);
+                            });
+                    }
+
+                    toastr.error(`Failed to load data: ${thrown || 'Server error'}`);
                     return [];
+                },
+                // Add cache busting and user type/department info
+                data: function() {
+                    const userTypeId = sessionStorage.getItem('user_typeId');
+                    const userDepartmentId = sessionStorage.getItem('user_departmentId');
+
+                    return {
+                        _: new Date().getTime(),  // Add timestamp to prevent caching
+                        userType: userTypeId || '',
+                        userDepartment: userDepartmentId || ''
+                    };
                 }
             },
             columns: columns,
-            order: [[4, 'desc'], [5, 'desc']],
+            order: [[6, 'desc'], [7, 'desc']], // Order by date and time columns in descending order
             columnDefs: [
                 {
                     responsivePriority: 1,

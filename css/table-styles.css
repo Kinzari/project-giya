@@ -680,3 +680,20 @@ input.page-number-input::-webkit-outer-spin-button {
     position: relative !important;
     z-index: 5 !important;
 }
+
+/* Forward button styling */
+#forwardPostBtn {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+}
+
+#forwardPostBtn .bi {
+    margin-right: 0.25rem;
+}
+
+#forwardPostBtn.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}

@@ -1,0 +1,37 @@
+<div class="modal fade" id="forwardPostModal" tabindex="-1" aria-labelledby="forwardPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="forwardPostModalLabel">Forward Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="forwardPostForm">
+                    <div class="mb-3">
+                        <label for="forwardDepartment" class="form-label">Department</label>
+                        <select class="form-select" id="forwardDepartment" required>
+                            <option value="">Select department</option>
+                            <!-- Options will be filled dynamically -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="forwardCampus" class="form-label">Campus</label>
+                        <select class="form-select" id="forwardCampus" required>
+                            <option value="">Select campus</option>
+                            <!-- Options will be filled dynamically -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="forwardNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="forwardNotes" rows="3"
+                            placeholder="Add notes for the receiving department..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmForwardBtn">Forward</button>
+            </div>
+        </div>
+    </div>
+</div>
