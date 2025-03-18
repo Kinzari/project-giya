@@ -231,7 +231,7 @@ async function fetchDashboardData() {
             toastr.error(response.data?.message || 'Failed to load dashboard data');
         }
     } catch (error) {
-        console.error('Error fetching dashboard data');
+        console.error('Error fetching dashboard data', error);
         toastr.error('Failed to load dashboard statistics. Server might be unavailable.');
     } finally {
         setLoadingState(false);
@@ -252,6 +252,24 @@ function updateDashboardStats(data) {
     document.getElementById('pending-count').textContent = data.status?.pending || 0;
     document.getElementById('ongoing-count').textContent = data.status?.ongoing || 0;
     document.getElementById('resolved-count').textContent = data.status?.resolved || 0;
+
+    // Update detailed status breakdown
+    if (data.detailed_status) {
+        // Pending breakdown
+        document.getElementById('pending-inquiry-count').textContent = data.detailed_status.pending?.inquiry || 0;
+        document.getElementById('pending-feedback-count').textContent = data.detailed_status.pending?.feedback || 0;
+        document.getElementById('pending-suggestion-count').textContent = data.detailed_status.pending?.suggestion || 0;
+
+        // Ongoing breakdown
+        document.getElementById('ongoing-inquiry-count').textContent = data.detailed_status.ongoing?.inquiry || 0;
+        document.getElementById('ongoing-feedback-count').textContent = data.detailed_status.ongoing?.feedback || 0;
+        document.getElementById('ongoing-suggestion-count').textContent = data.detailed_status.ongoing?.suggestion || 0;
+
+        // Resolved breakdown
+        document.getElementById('resolved-inquiry-count').textContent = data.detailed_status.resolved?.inquiry || 0;
+        document.getElementById('resolved-feedback-count').textContent = data.detailed_status.resolved?.feedback || 0;
+        document.getElementById('resolved-suggestion-count').textContent = data.detailed_status.resolved?.suggestion || 0;
+    }
 
     // If department is selected, update the department indicator
     if (data.department) {
@@ -292,7 +310,8 @@ function initCharts() {
             cutout: '65%',
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    display: false // Hide default legend, we'll use our custom one
                 },
                 tooltip: {
                     callbacks: {
@@ -326,7 +345,8 @@ function initCharts() {
             cutout: '65%',
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    display: false // Hide default legend, we'll use our custom one
                 },
                 tooltip: {
                     callbacks: {
@@ -380,58 +400,106 @@ function initCharts() {
 function updateCharts(data) {
     // Update post types chart
     if (dashboardState.charts.postTypes) {
-        dashboardState.charts.postTypes.data.datasets[0].data = [
+        const postTypeValues = [
             data.post_types?.inquiry || 0,
             data.post_types?.feedback || 0,
             data.post_types?.suggestion || 0
         ];
+
+        dashboardState.charts.postTypes.data.datasets[0].data = postTypeValues;
         dashboardState.charts.postTypes.update();
+
+        // Update legend manually after chart is updated
+        updateChartLegend('post-types-chart',
+            ['Inquiry', 'Feedback', 'Suggestion'],
+            postTypeValues);
     }
 
     // Update status chart
     if (dashboardState.charts.status) {
-        dashboardState.charts.status.data.datasets[0].data = [
+        const statusValues = [
             data.status?.pending || 0,
             data.status?.ongoing || 0,
             data.status?.resolved || 0
         ];
+
+        dashboardState.charts.status.data.datasets[0].data = statusValues;
         dashboardState.charts.status.update();
+
+        // Update legend manually after chart is updated
+        updateChartLegend('status-chart',
+            ['Pending', 'Ongoing', 'Resolved'],
+            statusValues);
     }
+}
+
+/**
+ * Helper function to update chart legends with values and percentages
+ * @param {string} chartId - The ID of the chart canvas element
+ * @param {Array} labels - Array of labels
+ * @param {Array} values - Array of corresponding values
+ */
+function updateChartLegend(chartId, labels, values) {
+    const chartContainer = document.getElementById(chartId).parentNode;
+    let legendContainer = chartContainer.querySelector('.chartjs-legend');
+
+    // If legend container doesn't exist, create it
+    if (!legendContainer) {
+        const newLegendContainer = document.createElement('div');
+        newLegendContainer.className = 'chartjs-legend mt-3 pt-2 border-top';
+        chartContainer.appendChild(newLegendContainer);
+        legendContainer = newLegendContainer;
+    }
+
+    // Create legend items
+    const total = values.reduce((a, b) => a + b, 0);
+    let legendHTML = '<ul class="d-flex flex-wrap justify-content-center list-unstyled mb-0">';
+
+    labels.forEach((label, i) => {
+        const percentage = total > 0 ? Math.round((values[i] / total) * 100) : 0;
+        const chart = Chart.getChart(chartId);
+        const bgColor = chart.data.datasets[0].backgroundColor[i];
+
+        legendHTML += `
+            <li class="mx-3 mb-1 text-center">
+                <span class="d-inline-block me-2" style="width:12px;height:12px;background-color:${bgColor};border-radius:50%"></span>
+                <span>${label}: <strong>${values[i]}</strong> (${percentage}%)</span>
+            </li>
+        `;
+    });
+
+    legendHTML += '</ul>';
+    legendContainer.innerHTML = legendHTML;
 }
 
 /**
  * Set up event listeners for filter controls
  */
 function setupFilterHandlers() {
-    // Form submission for all filters
-    $('#dashboard-filters').on('submit', function(e) {
-        e.preventDefault();
+    // Remove form submission handler, since we're going to update in real-time
+    $('#dashboard-filters').off('submit');
 
-        // Gather filter values from the new date inputs
-        dashboardState.startDate = $('#start-date').val();
-        dashboardState.endDate = $('#end-date').val();
-        dashboardState.departmentId = $('#department-filter').val();
-        dashboardState.campusId = $('#campus-filter').val();  // Changed from courseId to campusId
-        dashboardState.postType = $('#post-type-filter').val();
-        dashboardState.status = $('#status-filter').val();
-
-        // Re-fetch data and update dashboard
-        fetchDashboardData();
+    // Add debounce to avoid too many API calls when changing date inputs
+    let dateUpdateTimeout;
+    $('#start-date, #end-date').on('change', function() {
+        clearTimeout(dateUpdateTimeout);
+        dateUpdateTimeout = setTimeout(function() {
+            dashboardState.startDate = $('#start-date').val();
+            dashboardState.endDate = $('#end-date').val();
+            fetchDashboardData(); // Update dashboard immediately when dates change
+        }, 300); // 300ms debounce
     });
 
-    // Individual filter change handlers
+    // Real-time update for dropdown filters
     $('#department-filter, #campus-filter, #post-type-filter, #status-filter').on('change', function() {
         // Update state
         dashboardState.departmentId = $('#department-filter').val();
-        dashboardState.campusId = $('#campus-filter').val();  // Changed from courseId to campusId
+        dashboardState.campusId = $('#campus-filter').val();
         dashboardState.postType = $('#post-type-filter').val();
         dashboardState.status = $('#status-filter').val();
-    });
 
-    // Date field change handlers
-    $('#start-date, #end-date').on('change', function() {
-        dashboardState.startDate = $('#start-date').val();
-        dashboardState.endDate = $('#end-date').val();
+        // Update dashboard immediately
+        fetchDashboardData();
     });
 }
 
@@ -457,8 +525,23 @@ function checkPOCStatus() {
  * Set loading state for the dashboard
  */
 function setLoadingState(isLoading) {
-    // You might want to add a loading indicator to the UI
+    // Set cursor state
     document.body.style.cursor = isLoading ? 'wait' : 'default';
 
-    // Optional: Add a loading overlay if needed
+    // Set filters to disabled state during loading
+    const filterElements = $('#dashboard-filters select, #dashboard-filters input');
+    if (isLoading) {
+        filterElements.prop('disabled', true);
+    } else {
+        filterElements.prop('disabled', false);
+
+        // Re-disable department filter for POC users if needed
+        const userInfo = sessionStorage.getItem('user');
+        if (userInfo) {
+            const user = JSON.parse(userInfo);
+            if (user.user_typeId == 5 && user.user_departmentId) {
+                $('#department-filter').prop('disabled', true);
+            }
+        }
+    }
 }

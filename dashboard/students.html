@@ -14,6 +14,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     <link rel="stylesheet" href="/css/table-styles.css" />
     <script src="/js/dashboard/components.js"></script>
+    <style>
+        /* Left align text in table cells */
+        #postsTable tbody td {
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        /* Left align column headers */
+        #postsTable thead th {
+            text-align: left;
+        }
+    </style>
 </head>
 
 <body>
@@ -42,9 +54,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Status</th>
+                                    <th>Classification</th>
                                     <th>Full Name</th>
                                     <th>Type</th>
-                                    <th>Title</th>
+                                    <th>Message</th>
                                     <th>Department</th>
                                     <th>Campus</th>
                                     <th>Date</th>

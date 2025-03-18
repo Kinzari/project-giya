@@ -33,10 +33,17 @@ const GiyaTable = {
 
             $('table.dataTable tbody tr').css('cursor', 'pointer');
 
+            // Left align text in table cells - updated from center to left
+            $('table.dataTable tbody td').css({
+                'text-align': 'left',
+                'vertical-align': 'middle'
+            });
+
             // Style table headers - keep this part
             $('table.dataTable thead th').css({
                 'background-color': '#155f37',
-                'color': 'white'
+                'color': 'white',
+                'text-align': 'left' // Add left alignment to headers too
             });
 
             // Add page number input
@@ -57,6 +64,32 @@ const GiyaTable = {
                 width: "100px"
             },
             {
+                title: "Classification",
+                data: "user_typeId",
+                render: function(data) {
+                    // Improved handling of null/undefined/NaN values
+                    // Use isNaN to properly check if the parsed value is NaN
+                    let typeId = parseInt(data, 10);
+
+                    // If data is null, undefined, empty string, or NaN after parsing
+                    if (data === null || data === undefined || data === '' || isNaN(typeId)) {
+                        return 'Unknown';
+                    }
+
+                    // Map user_typeId to the correct classification
+                    switch(typeId) {
+                        case 1: return 'Visitor';
+                        case 2: return 'Student';
+                        case 3: return 'Faculty';
+                        case 4: return 'Employee';
+                        case 5: return 'POC';
+                        case 6: return 'Administrator / SSG';
+                        default: return 'Unknown (Type ' + typeId + ')';
+                    }
+                },
+                width: "120px"
+            },
+            {
                 title: "Full Name",
                 data: "user_fullname"
             },
@@ -66,8 +99,14 @@ const GiyaTable = {
                 width: "120px"
             },
             {
-                title: "Title",
-                data: "post_title"
+                title: "Message",
+                data: "post_message",
+                render: function(data) {
+                    if (data && data.length > 15) {
+                        return data.substring(0, 15) + '...';
+                    }
+                    return data || '';
+                }
             },
             {
                 title: "Department",
@@ -158,6 +197,10 @@ const GiyaTable = {
                 data: function() {
                     const userTypeId = sessionStorage.getItem('user_typeId');
                     const userDepartmentId = sessionStorage.getItem('user_departmentId');
+
+                    // Add debug logging
+                    console.log('User Type ID being sent:', userTypeId);
+                    console.log('User Department ID being sent:', userDepartmentId);
 
                     return {
                         _: new Date().getTime(),  // Add timestamp to prevent caching

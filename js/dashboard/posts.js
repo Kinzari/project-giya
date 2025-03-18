@@ -39,13 +39,111 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Use GiyaTable for initializing tables instead of custom implementation
     if (document.getElementById("latestPostsTable")) {
-        const action = (window.userTypeId == 5 && window.departmentId) ? `get_posts_by_department&department_id=${window.departmentId}` : 'get_posts';
+        const action = (window.userTypeId == 5 && window.departmentId) ? `get_posts_by_department&department_id=${window.departmentId}` : 'get_latest_posts';
 
         // Ensure discord-pagination class is added before initializing the table
         $('.student-table-container').addClass('discord-pagination');
 
-        // Initialize table
-        table = GiyaTable.initPostsTable('#latestPostsTable', action, null);
+        // Add debugging to check the data coming from the server
+        const debugCallback = function(json) {
+            if (!json || !json.data) {
+                console.error('Invalid JSON response:', json);
+                toastr.error('Server returned invalid data format');
+                return [];
+            }
+
+            // Debug log the first few records to check for user_typeId
+            console.log('Latest posts first 3 records:', json.data.slice(0, 3));
+
+            // Check if user_typeId is missing
+            const missingTypeIds = json.data.filter(item =>
+                item.user_typeId === undefined ||
+                item.user_typeId === null ||
+                item.user_typeId === '');
+
+            if (missingTypeIds.length > 0) {
+                console.warn(`${missingTypeIds.length} records are missing user_typeId`);
+                console.warn('Sample record with missing typeId:', missingTypeIds[0]);
+            }
+
+            return json.data;
+        };
+
+        // Initialize table with specific settings for latest posts
+        table = GiyaTable.initPostsTable('#latestPostsTable', 'get_latest_posts', null, {
+            order: [[7, 'desc'], [8, 'desc']], // Order by date and time columns (most recent first)
+            pageLength: 10,
+            ajax: {
+                dataSrc: debugCallback
+            },
+            columns: [
+                {
+                    data: "post_status",
+                    render: GiyaTable.renderStatusBadge
+                },
+                {
+                    data: "user_typeId",
+                    render: function(data) {
+                        // Improved handling of null/undefined/NaN values
+                        let typeId = parseInt(data, 10);
+
+                        // If data is null, undefined, empty string, or NaN after parsing
+                        if (data === null || data === undefined || data === '' || isNaN(typeId)) {
+                            return 'Unknown';
+                        }
+
+                        // Map user_typeId to the correct classification
+                        switch(typeId) {
+                            case 1: return 'Visitor';
+                            case 2: return 'Student';
+                            case 3: return 'Faculty';
+                            case 4: return 'Employee';
+                            case 5: return 'POC';
+                            case 6: return 'Administrator / SSG';
+                            default: return 'Unknown (Type ' + typeId + ')';
+                        }
+                    }
+                },
+                {
+                    data: "user_fullname"
+                },
+                {
+                    data: "postType_name"
+                },
+                {
+                    data: "post_message",
+                    render: function(data) {
+                        if (data && data.length > 15) {
+                            return data.substring(0, 15) + '...';
+                        }
+                        return data || '';
+                    }
+                },
+                {
+                    data: "department_name",
+                    render: function (data) {
+                        return data || 'Not Assigned';
+                    }
+                },
+                {
+                    data: "campus_name",
+                    render: function (data) {
+                        return data || 'Carmen';
+                    }
+                },
+                {
+                    data: "post_date"
+                },
+                {
+                    data: "post_time",
+                    render: function (data, type, row) {
+                        const dt = new Date(row.post_date + " " + data);
+                        const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+                        return dt.toLocaleTimeString('en-US', options);
+                    }
+                }
+            ]
+        });
 
         // Don't call addPageNumberInput here - it's now called from initPostsTable
     } else if (document.getElementById("postsTable")) {
@@ -55,29 +153,29 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (path.includes("visitors.html")) {
             action = (window.userTypeId == 5 && window.departmentId) ? `get_visitor_posts_by_department&department_id=${window.departmentId}` : "get_visitor_posts";
         } else if (path.includes("employees.html")) {
-            // Fix: Change to an endpoint that exists in the API
-            action = (window.userTypeId == 5 && window.departmentId) ? `get_employee_posts_by_department&department_id=${window.departmentId}` : "get_latest_posts";
+            // Updated to use the employee posts endpoint to fetch only Faculty (3) and Employee (4) posts
+            action = (window.userTypeId == 5 && window.departmentId) ?
+                `get_employee_posts_by_department&department_id=${window.departmentId}` :
+                "get_employee_posts"; // This endpoint should filter for user_typeId 3 and 4
         }
 
         // Ensure discord-pagination class is added before initializing the table
         $('.student-table-container').addClass('discord-pagination');
 
+        // Fix: Use the correct syntax for table initialization
         table = GiyaTable.initPostsTable('#postsTable', action, null);
-
-        // Don't call addPageNumberInput here - it's now called from initPostsTable
     }
 
     if (table) {
         GiyaTable.attachFiltering(table, '.btn-group button');
     }
-
     window.showPostDetails = showPostDetails;
     window.submitReply = submitReplyWithoutRefresh;
     window.changeStatus = changeStatus;
 
     // Remove campus column styling after tables are loaded
     // Remove the entire block that applies styles to campus columns
-
+    const attachFile = document.getElementById('attachFile');
     // Keep only the table header styling
     setTimeout(() => {
         // Apply styles to all table headers
@@ -85,7 +183,6 @@ document.addEventListener('DOMContentLoaded', function() {
             el.style.backgroundColor = '#155f37';
             el.style.color = 'white';
         });
-
         // Make sure the styling persists on hover
         const style = document.createElement('style');
         style.textContent = `
@@ -105,7 +202,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add attachment handlers
     const attachButton = document.getElementById('attachButton');
-    const attachFile = document.getElementById('attachFile');
     const attachmentPreview = document.getElementById('attachmentPreview');
     const fileName = document.getElementById('fileName');
     const removeAttachment = document.getElementById('removeAttachment');
@@ -130,9 +226,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
+let currentPostId = null;
 // Remove the redundant initializePostsTable function and use GiyaTable instead
-
+// Add this utility function for API calls with better error handling
 // Keep these functions as they are specific to post details
 function renderStatusBadge(data) {
     let statusText = "";
@@ -157,9 +253,6 @@ function renderStatusBadge(data) {
     }
     return `<span class="badge ${badgeClass}">${statusText}</span>`;
 }
-
-let currentPostId = null;
-
 // Add this utility function for API calls with better error handling
 async function safeApiCall(endpoint, options = {}) {
     try {
@@ -168,9 +261,7 @@ async function safeApiCall(endpoint, options = {}) {
         return response.data;
     } catch (error) {
         console.error(`API call error (${endpoint}):`, error);
-
         let errorMessage = 'Failed to load data from server';
-
         // Extract more detailed error message if available
         if (error.response) {
             // The request was made and the server responded with a status code
@@ -184,12 +275,10 @@ async function safeApiCall(endpoint, options = {}) {
             // Something happened in setting up the request that triggered an Error
             errorMessage = error.message || 'Unknown error';
         }
-
         toastr.error(errorMessage);
         throw error;
     }
 }
-
 async function showPostDetails(postId) {
     try {
         currentPostId = postId;
@@ -256,7 +345,6 @@ async function showPostDetails(postId) {
             }
             updateReplyForm(post.post_status, postId);
             setTimeout(scrollToBottom, 300);
-
             // Add check for forwarded status and update the UI accordingly
             const forwardBtn = document.getElementById('forwardPostBtn');
             if (forwardBtn) {
@@ -264,7 +352,6 @@ async function showPostDetails(postId) {
                 const userType = sessionStorage.getItem('user_typeId');
                 if (userType === '6') {
                     forwardBtn.style.display = 'inline-block';
-
                     // Disable forward button if already forwarded
                     if (post.is_forwarded == 1) {
                         forwardBtn.classList.add('disabled');
@@ -279,7 +366,6 @@ async function showPostDetails(postId) {
                 } else {
                     forwardBtn.style.display = 'none';
                 }
-
                 // If post is forwarded, show who forwarded it for POC users
                 if (post.is_forwarded == 1 && userType === '5' && post.forwarded_by_name) {
                     const forwardInfoEl = document.getElementById('forwardInfo');
@@ -303,14 +389,12 @@ async function showPostDetails(postId) {
         toastr.error('Failed to load post details');
     }
 }
-
 function updateModalButtons() {
     $('#postDetailsModal .btn-primary').addClass('btn-solid-primary').removeClass('btn-primary');
     $('#postDetailsModal .btn-warning').addClass('btn-solid-warning').removeClass('btn-warning');
     $('#postDetailsModal .btn-danger').addClass('btn-solid-danger').removeClass('btn-danger');
     $('#postDetailsModal .btn-success').addClass('btn-solid-success').removeClass('btn-success');
 }
-
 function getStatusClass(status) {
     switch (Number(status)) {
         case 0: return 'bg-danger';
@@ -319,7 +403,6 @@ function getStatusClass(status) {
         default: return 'bg-secondary';
     }
 }
-
 function getStatusText(status) {
     switch (Number(status)) {
         case 0: return 'Pending';
@@ -328,7 +411,6 @@ function getStatusText(status) {
         default: return 'Unknown';
     }
 }
-
 function renderReplies(replies) {
     const repliesContainer = document.querySelector('.replies-container');
     if (!repliesContainer) return;
@@ -341,10 +423,8 @@ function renderReplies(replies) {
                     <small>${new Date(reply.reply_date + " " + reply.reply_time).toLocaleString()}</small>
                 </div>
             </div>
-        `).join('')
-        : '<p class="text-center text-muted">No replies yet</p>';
+        `).join('') : '<p class="text-center text-muted">No replies yet</p>';
 }
-
 function updateReplyForm(status, postId) {
     const formContainer = document.querySelector('.reply-form-container');
     if (!formContainer) return;
@@ -397,21 +477,18 @@ function updateReplyForm(status, postId) {
         }
     }
 }
-
 function isAdminDashboardPage() {
     const path = window.location.pathname.toLowerCase();
     return path.includes('/dashboard/latest-post.html') ||
            path.includes('/dashboard/visitors.html') ||
            path.includes('students.html');
 }
-
 function scrollToBottom() {
     const repliesContainer = document.querySelector('.replies-container');
     if (repliesContainer) {
         repliesContainer.scrollTop = repliesContainer.scrollHeight;
     }
 }
-
 async function submitReplyWithoutRefresh(event, postId) {
     event.preventDefault();
     const messageInput = document.querySelector('.reply-input');
@@ -420,23 +497,19 @@ async function submitReplyWithoutRefresh(event, postId) {
     if (!messageInput) return;
     const message = messageInput.value.trim();
     if (!message && !attachFile.files[0]) return;
-
     try {
         messageInput.value = '';
         const adminName = "GIYA Representative";
-
         // Create FormData object for file upload
         const formData = new FormData();
         formData.append('post_id', postId);
         formData.append('reply_message', message);
         formData.append('admin_id', sessionStorage.getItem('user_id') || '25');
         formData.append('auto_update_status', true);
-
         // Add file if one is selected
         if (attachFile.files[0]) {
             formData.append('attachment', attachFile.files[0]);
         }
-
         // Add reply to UI immediately
         addReplyToUI(message, adminName, 'admin-message', new Date(), attachFile.files[0]?.name);
 
@@ -444,9 +517,7 @@ async function submitReplyWithoutRefresh(event, postId) {
         document.getElementById('attachmentPreview').style.display = 'none';
         document.getElementById('fileName').textContent = '';
         attachFile.value = '';
-
         scrollToBottom();
-
         await axios.post(
             `${sessionStorage.getItem('baseURL')}posts.php?action=submit_reply`,
             formData,
@@ -456,21 +527,17 @@ async function submitReplyWithoutRefresh(event, postId) {
                 }
             }
         );
-
         refreshTables();
     } catch (error) {
         console.error('Error submitting reply:', error);
         toastr.error('Failed to send reply');
     }
 }
-
 function addReplyToUI(message, authorName, cssClass, timestamp, attachment = null) {
     const repliesContainer = document.querySelector('.replies-container');
     if (!repliesContainer) return;
-
     const newReply = document.createElement('div');
     newReply.className = `message-bubble ${cssClass}`;
-
     let attachmentHtml = '';
     if (attachment) {
         attachmentHtml = `
@@ -480,7 +547,6 @@ function addReplyToUI(message, authorName, cssClass, timestamp, attachment = nul
             </div>
         `;
     }
-
     newReply.innerHTML = `
         <div class="message-content">
             <strong>${authorName}</strong>
@@ -489,14 +555,12 @@ function addReplyToUI(message, authorName, cssClass, timestamp, attachment = nul
             <small>${timestamp.toLocaleString()}</small>
         </div>
     `;
-
     const noRepliesMsg = repliesContainer.querySelector('p.text-muted');
     if (noRepliesMsg) {
         repliesContainer.innerHTML = '';
     }
     repliesContainer.appendChild(newReply);
 }
-
 async function changeStatus(postId, newStatus) {
     try {
         const statusText = newStatus === '3' ? 'resolved' : 'ongoing';
@@ -534,7 +598,6 @@ async function changeStatus(postId, newStatus) {
         toastr.error('Failed to update status');
     }
 }
-
 function refreshTables() {
     ['#postsTable', '#latestPostsTable', '#resolvedPostsTable'].forEach(tableId => {
         if ($.fn.DataTable.isDataTable(tableId)) {
@@ -542,37 +605,30 @@ function refreshTables() {
         }
     });
 }
-
 function getStatusBadgeHtml(status) {
     return renderStatusBadge(status);
 }
-
 window.currentFilter = 'all';
-
 // Fix the DataTables filtering that's causing maximum call stack exceeded error
 // Remove the existing filter and replace with a more stable version
 $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(fn => {
     // Keep all other filters except our problematic one
     return !fn.toString().includes('window.currentFilter');
 });
-
 // Add the correct filter for regular tables
 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
     // Skip filtering for resolved posts tables
     if (settings.nTable.id.includes('resolvedPostsTable')) {
         return true;
     }
-
     // For regular tables, apply the filter based on status
     const statusCell = data[0];
     if (!statusCell) return true;
-
     // Extract text from HTML
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = statusCell;
     const statusText = tempDiv.textContent.trim().toLowerCase();
-
-    // Apply filters
+    // Apply filter
     switch(window.currentFilter) {
         case 'all':
             return statusText !== 'resolved'; // Always exclude resolved posts on main pages
@@ -584,12 +640,10 @@ $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             return statusText !== 'resolved'; // Default to excluding resolved posts
     }
 });
-
 // Keep the attachPostFiltering function as a pass-through to GiyaTable
 function attachPostFiltering(table, filterButtonSelector) {
     GiyaTable.attachFiltering(table, filterButtonSelector);
 }
-
 function addFilterButtons() {
     const existingFilter = document.querySelector('.filter-buttons-container');
     if (!existingFilter) {
@@ -609,7 +663,6 @@ function addFilterButtons() {
         }
     }
 }
-
 function checkRequiredElements() {
     const elements = [
         'postUserName',
@@ -633,22 +686,45 @@ function checkRequiredElements() {
     });
     return allFound;
 }
-
 function isPOCUser() {
     const userInfo = sessionStorage.getItem('user');
     if (!userInfo) return false;
     const user = JSON.parse(userInfo);
     return user.user_typeId == 5;
 }
-
 function getCurrentUserDepartment() {
     const userInfo = sessionStorage.getItem('user');
     if (!userInfo) return '';
     const user = JSON.parse(userInfo);
     return user.department_name || '';
 }
-
 // Add headers to axios requests to include user type and department
+axios.interceptors.request.use(function (config) {
+    // Add user type and department headers to all requests
+    const userInfo = sessionStorage.getItem('user');
+    let userTypeId = sessionStorage.getItem('user_typeId');
+    let userDepartmentId = sessionStorage.getItem('user_departmentId');
+    // If user info exists but type/department aren't in session storage directly, extract them
+    if (userInfo && (!userTypeId || !userDepartmentId)) {
+        try {
+            const user = JSON.parse(userInfo);
+            userTypeId = userTypeId || user.user_typeId;
+            userDepartmentId = userDepartmentId || user.user_departmentId;
+            // Store these values in session storage for future use
+            if (user.user_typeId) sessionStorage.setItem('user_typeId', user.user_typeId);
+            if (user.user_departmentId) sessionStorage.setItem('user_departmentId', user.user_departmentId);
+        } catch (e) {
+            console.error('Error parsing user info:', e);
+        }
+    }
+    config.headers['User-Type'] = userTypeId || '';
+    config.headers['User-Department'] = userDepartmentId || '';
+    return config;
+}, function (error) {
+    return Promise.reject(error);
+});
+
+// Update the axios interceptor to use the correct header names that match what posts.php expects
 axios.interceptors.request.use(function (config) {
     // Add user type and department headers to all requests
     const userInfo = sessionStorage.getItem('user');
@@ -670,6 +746,7 @@ axios.interceptors.request.use(function (config) {
         }
     }
 
+    // Use the exact header names expected in posts.php
     config.headers['X-User-Type'] = userTypeId || '';
     config.headers['X-User-Department'] = userDepartmentId || '';
 
@@ -677,46 +754,3 @@ axios.interceptors.request.use(function (config) {
 }, function (error) {
     return Promise.reject(error);
 });
-
-// Update GiyaTable initialization to pass user info
-if (document.getElementById("postsTable")) {
-    // Define path locally if it doesn't exist in this scope
-    const path = window.location.pathname.toLowerCase();
-    let action = "";
-    // Fix here - Use window.userTypeId and window.departmentId instead
-    if (path.includes("students.html")) {
-        action = (window.userTypeId == 5 && window.departmentId) ? `get_student_posts_by_department&department_id=${window.departmentId}` : "get_student_posts";
-    } else if (path.includes("visitors.html")) {
-        action = (window.userTypeId == 5 && window.departmentId) ? `get_visitor_posts_by_department&department_id=${window.departmentId}` : "get_visitor_posts";
-    } else if (path.includes("employees.html")) {
-        // Fix: Change to an endpoint that exists in the API
-        action = (window.userTypeId == 5 && window.departmentId) ? `get_employee_posts_by_department&department_id=${window.departmentId}` : "get_latest_posts";
-    }
-
-    // Ensure discord-pagination class is added before initializing the table
-    $('.student-table-container').addClass('discord-pagination');
-
-    table = GiyaTable.initPostsTable('#postsTable', action);
-}
-
-function initializeTable(tableId) {
-    // ...existing code...
-
-    // Initialize the table with settings that prioritize recent posts
-    const table = $(tableId).DataTable({
-        // ...existing code...
-        order: [[6, 'desc'], [7, 'desc']], // Default order by date desc, then time desc
-        // ...existing code...
-    });
-
-    // ...existing code...
-}
-
-function refreshTable(tableId) {
-    const table = $(tableId).DataTable();
-
-    table.ajax.reload(function() {
-        // After reload, ensure we're still sorting by date and time descending
-        table.order([6, 'desc'], [7, 'desc']).draw();
-    }, false); // false keeps current page
-}

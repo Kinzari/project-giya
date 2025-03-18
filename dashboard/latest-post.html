@@ -15,7 +15,18 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css" />
     <link rel="stylesheet" href="/css/table-styles.css" />
     <script src="/js/dashboard/components.js"></script>
+    <style>
+        /* Left align text in table cells */
+        #latestPostsTable tbody td {
+            text-align: left;
+            vertical-align: middle;
+        }
 
+        /* Left align column headers */
+        #latestPostsTable thead th {
+            text-align: left;
+        }
+    </style>
 </head>
 
 <body>
@@ -46,9 +57,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Status</th>
+                                    <th>Classification</th>
                                     <th>Full Name</th>
                                     <th>Type</th>
-                                    <th>Title</th>
+                                    <th>Message</th>
                                     <th>Department</th>
                                     <th>Campus</th>
                                     <th>Date</th>
@@ -61,6 +73,7 @@
             </div>
         </div>
     </main>
+
     <!-- Post Details Modal -->
     <div class="modal fade" id="postDetailsModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -107,6 +120,7 @@
             </div>
         </div>
     </div>
+
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -122,52 +136,41 @@
     <script src="/js/dashboard/poc-restrictions.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Initialize the latest posts table with specific settings
-            const latestPostsTable = GiyaTable.initPostsTable('#latestPostsTable', 'get_latest_posts', null, {
-                order: [[6, 'desc'], [7, 'desc']], // Order by date and time columns (most recent first)
-                pageLength: 10,
-                columns: [
-                    {
-                        data: "post_status",
-                        render: GiyaTable.renderStatusBadge
-                    },
-                    {
-                        data: "user_fullname"
-                    },
-                    {
-                        data: "postType_name"
-                    },
-                    {
-                        data: "post_title"
-                    },
-                    {
-                        data: "department_name",
-                        render: function (data) {
-                            return data || 'Not Assigned';
-                        }
-                    },
-                    {
-                        data: "campus_name",
-                        render: function (data) {
-                            return data || 'Carmen';
-                        }
-                    },
-                    {
-                        data: "post_date"
-                    },
-                    {
-                        data: "post_time",
-                        render: function (data, type, row) {
-                            const dt = new Date(row.post_date + " " + data);
-                            const options = { hour: 'numeric', minute: '2-digit', hour12: true };
-                            return dt.toLocaleTimeString('en-US', options);
+            // Add debugging code to check headers being sent
+            const originalOpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function () {
+                this.addEventListener('load', function () {
+                    if (this.responseURL.includes('get_latest_posts')) {
+                        try {
+                            const data = JSON.parse(this.responseText);
+                            console.log('Data from server for latest posts:', data);
+
+                            // Check for missing typeId
+                            if (data && data.data && data.data.length > 0) {
+                                const missingTypeIds = data.data.filter(item =>
+                                    item.user_typeId === undefined ||
+                                    item.user_typeId === null ||
+                                    item.user_typeId === '');
+
+                                if (missingTypeIds.length > 0) {
+                                    console.warn(`${missingTypeIds.length} records have missing user_typeId`);
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
                         }
                     }
-                ]
-            });
+                });
+                originalOpen.apply(this, arguments);
+            };
 
-            // Make sure the filtering works for this table
-            GiyaTable.attachFiltering(latestPostsTable, '.btn-group button');
+            // Listen for DataTables error events
+            $(document).on('xhr.dt', function (e, settings, json, xhr) {
+                console.log('DataTables XHR complete:', xhr);
+                if (xhr.responseURL && xhr.responseURL.includes('get_latest_posts')) {
+                    console.log('Headers sent in request:', xhr.getAllResponseHeaders());
+                }
+            });
         });
     </script>
 </body>
