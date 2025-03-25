@@ -122,8 +122,8 @@ async function forwardCurrentPost() {
 
         const departmentSelect = document.getElementById('forwardDepartment');
         const campusSelect = document.getElementById('forwardCampus');
-        const notesInput = document.getElementById('forwardNotes');
 
+        // Remove reference to notes input
         if (!departmentSelect || !campusSelect) {
             toastr.error('Form elements not found');
             return;
@@ -131,7 +131,6 @@ async function forwardCurrentPost() {
 
         const departmentId = departmentSelect.value;
         const campusId = campusSelect.value;
-        const notes = notesInput ? notesInput.value : '';
 
         if (!departmentId || !campusId) {
             toastr.error('Please select both department and campus');
@@ -158,8 +157,7 @@ async function forwardCurrentPost() {
                 post_id: currentPostId,
                 department_id: departmentId,
                 campus_id: campusId,
-                forwarded_by: sessionStorage.getItem('user_id'),
-                notes: notes
+                forwarded_by: sessionStorage.getItem('user_id')
             }
         );
 
@@ -172,7 +170,7 @@ async function forwardCurrentPost() {
             const forwardModal = bootstrap.Modal.getInstance(document.getElementById('forwardPostModal'));
             if (forwardModal) forwardModal.hide();
 
-            // Refresh post details to show forwarding info
+            // Refresh post details - no need for the hideForwardMessage flag anymore
             await showPostDetails(currentPostId);
 
             // Refresh tables

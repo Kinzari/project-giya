@@ -11,7 +11,7 @@ const GiyaTable = {
         scrollX: false,
         scrollCollapse: true,
         language: {
-            emptyTable: "No data available - Please check API connection",
+            emptyTable: "No data available.",
             zeroRecords: "No matching records found",
             searchPlaceholder: "Search records...",
             search: "",
@@ -66,17 +66,19 @@ const GiyaTable = {
             {
                 title: "Classification",
                 data: "user_typeId",
-                render: function(data) {
-                    // Improved handling of null/undefined/NaN values
-                    // Use isNaN to properly check if the parsed value is NaN
+                render: function(data, type, row) {
+                    if (data === null || data === undefined || data === '') {
+                        if (row.user_typeId) {
+                            data = row.user_typeId;
+                        }
+                    }
+
                     let typeId = parseInt(data, 10);
 
-                    // If data is null, undefined, empty string, or NaN after parsing
                     if (data === null || data === undefined || data === '' || isNaN(typeId)) {
                         return 'Unknown';
                     }
 
-                    // Map user_typeId to the correct classification
                     switch(typeId) {
                         case 1: return 'Visitor';
                         case 2: return 'Student';
@@ -120,7 +122,6 @@ const GiyaTable = {
                 title: "Campus",
                 data: "campus_name",
                 render: function(data) {
-                    // Remove campus-specific class and styling
                     return data || 'Carmen';
                 },
                 width: "100px"
@@ -142,7 +143,7 @@ const GiyaTable = {
             }
         ];
 
-        const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/giya-api/';
+        const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
         const tableOptions = {
             ajax: {
@@ -150,67 +151,58 @@ const GiyaTable = {
                 type: 'GET',
                 dataType: 'json',
                 dataSrc: function(json) {
-                    if (!json || !json.data) {
-                        console.error('Invalid JSON response:', json);
+                    console.log('Received response:', json);
+
+                    // Handle different response formats
+                    if (json && json.data) {
+                        // Standard DataTables format with data property
+                        return json.data;
+                    } else if (json && json.success === true && Array.isArray(json.data)) {
+                        // Success:true format with array in data property
+                        return json.data;
+                    } else if (json && json.success === true && typeof json.data === 'object') {
+                        // Some endpoints might return object data instead of array
+                        return [json.data];
+                    } else if (Array.isArray(json)) {
+                        // Direct array response
+                        return json;
+                    } else {
+                        // Error handling for unexpected response formats
+                        console.error('Invalid response format:', json);
                         toastr.error('Server returned invalid data format');
                         return [];
                     }
-                    return json.data;
                 },
                 error: function(xhr, error, thrown) {
                     console.error('DataTables AJAX error:', xhr, error, thrown);
 
-                    // Handle empty response
                     if (!xhr.responseText) {
                         toastr.error('Server returned empty response');
                         return [];
                     }
 
-                    // Handle JSON parsing errors
                     try {
-                        // Try parsing it to see if it's valid JSON
                         JSON.parse(xhr.responseText);
                     } catch (e) {
-                        console.error('Invalid JSON response:', xhr.responseText);
+                        console.error('Invalid JSON response:', e);
                         toastr.error(`Invalid server response: ${e.message}`);
-
-                        // Make a diagnostic request to check response headers
-                        fetch(`${baseURL}posts.php?action=${action}`)
-                            .then(response => {
-                                console.log('Diagnostic response headers:',
-                                    Array.from(response.headers.entries()));
-                                return response.text();
-                            })
-                            .then(text => {
-                                console.log('Diagnostic response text (first 500 chars):',
-                                    text.substring(0, 500));
-                            })
-                            .catch(error => {
-                                console.error('Diagnostic fetch failed:', error);
-                            });
                     }
 
                     toastr.error(`Failed to load data: ${thrown || 'Server error'}`);
                     return [];
                 },
-                // Add cache busting and user type/department info
-                data: function() {
+                headers: function() {
                     const userTypeId = sessionStorage.getItem('user_typeId');
                     const userDepartmentId = sessionStorage.getItem('user_departmentId');
 
-                    // Add debug logging
-                    console.log('User Type ID being sent:', userTypeId);
-                    console.log('User Department ID being sent:', userDepartmentId);
-
                     return {
-                        _: new Date().getTime(),  // Add timestamp to prevent caching
-                        userType: userTypeId || '',
-                        userDepartment: userDepartmentId || ''
+                        'X-User-Type': userTypeId || '',
+                        'X-User-Department': userDepartmentId || ''
                     };
                 }
             },
             columns: columns,
-            order: [[6, 'desc'], [7, 'desc']], // Order by date and time columns in descending order
+            order: [[6, 'desc'], [7, 'desc']],
             columnDefs: [
                 {
                     responsivePriority: 1,
@@ -311,7 +303,7 @@ const GiyaTable = {
     },
 
     refreshTables: function() {
-        ['#postsTable', '#latestPostsTable'].forEach(tableId => {
+        ['#postsTable', '#latestPostsTable'].forEach(function(tableId) {
             if ($.fn.DataTable.isDataTable(tableId)) {
                 $(tableId).DataTable().ajax.reload(null, false);
             }
@@ -320,30 +312,24 @@ const GiyaTable = {
 
     addPageNumberInput: function(table) {
         const api = table.api();
-        if (api.page.info().pages <= 1) return; // Don't add for single page
+        if (api.page.info().pages <= 1) return;
 
-        // Set a small timeout to ensure pagination is fully rendered
-        setTimeout(() => {
-            // Remove existing input if any (to avoid duplicates)
+        setTimeout(function() {
             $(api.table().container()).find('.page-number-input-container').remove();
 
-            // Create input container with proper styling
             const inputContainer = $('<div class="page-number-input-container ms-2"></div>');
             const inputGroup = $('<div class="input-group input-group-sm"></div>');
             const inputLabel = $('<span class="input-group-text">Page</span>');
             const input = $('<input type="number" min="1" class="page-number-input form-control">');
             const totalPages = $(`<span class="input-group-text">of ${api.page.info().pages}</span>`);
 
-            // Assemble the components
             inputGroup.append(inputLabel);
             inputGroup.append(input);
             inputGroup.append(totalPages);
             inputContainer.append(inputGroup);
 
-            // Set initial value
             input.val(api.page.info().page + 1);
 
-            // Handle input events
             input.on('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -353,27 +339,22 @@ const GiyaTable = {
                     if (pageNum > 0 && pageNum <= maxPage) {
                         api.page(pageNum - 1).draw('page');
                     } else {
-                        // Reset to current page if invalid
                         $(this).val(api.page.info().page + 1);
                         toastr.warning(`Please enter a page number between 1 and ${maxPage}`);
                     }
                 }
             });
 
-            // Find the pagination container and append our input
-            // This uses a more reliable selector to find the pagination area
             const paginationContainer = $(api.table().container()).find('.dataTables_paginate');
 
-            // Insert before the pagination to avoid layout issues
             paginationContainer.prepend(inputContainer);
 
-            // Make sure the pagination and our input are displayed properly
             paginationContainer.css({
                 'display': 'flex',
                 'align-items': 'center',
                 'justify-content': 'flex-end'
             });
-        }, 100); // Short delay to ensure the pagination is rendered
+        }, 100);
     },
 
     updatePageInputValue: function(api) {
@@ -384,7 +365,6 @@ const GiyaTable = {
         if (input.length > 0) {
             input.val(api.page.info().page + 1);
 
-            // Also update the "of X" text in case total pages changed
             if (totalPagesSpan.length > 0) {
                 totalPagesSpan.text(`of ${api.page.info().pages}`);
             }
@@ -392,15 +372,12 @@ const GiyaTable = {
     }
 };
 
-// Update page input value AND visibility whenever draw event occurs
 $(document).on('draw.dt', function(e, settings) {
     const api = new $.fn.dataTable.Api(settings);
 
-    // Very short timeout to ensure DOM is ready
-    setTimeout(() => {
-        // First check if the input exists, if not add it
+    setTimeout(function() {
         if ($(api.table().container()).find('.page-number-input-container').length === 0) {
-            GiyaTable.addPageNumberInput({api: () => api});
+            GiyaTable.addPageNumberInput({api: function() { return api; }});
         } else {
             GiyaTable.updatePageInputValue(api);
         }

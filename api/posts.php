@@ -737,7 +737,13 @@ class PostsHandler
     public function handleGetPostsByDepartment($departmentId) {
         try {
             if (!is_numeric($departmentId)) {
-                return ["success" => false, "message" => "Invalid department ID"];
+                return [
+                    "draw" => 1,
+                    "recordsTotal" => 0,
+                    "recordsFiltered" => 0,
+                    "data" => [],
+                    "error" => "Invalid department ID"
+                ];
             }
 
             $stmt = $this->pdo->prepare("
@@ -745,6 +751,7 @@ class PostsHandler
                     p.*,
                     u.user_firstname,
                     u.user_lastname,
+                    u.user_typeId,  /* Explicitly include user_typeId */
                     CONCAT(u.user_firstname, ' ', u.user_lastname) as user_fullname,
                     u.user_schoolId,
                     t.postType_name,
@@ -769,14 +776,19 @@ class PostsHandler
             $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             return [
-                "success" => true,
+                "draw" => isset($_GET['draw']) ? intval($_GET['draw']) : 1,
+                "recordsTotal" => count($posts),
+                "recordsFiltered" => count($posts),
                 "data" => $posts
             ];
         } catch (\PDOException $e) {
             error_log("Database error in handleGetPostsByDepartment: " . $e->getMessage());
             return [
-                "success" => false,
-                "message" => "Database error: " . $e->getMessage()
+                "draw" => 1,
+                "recordsTotal" => 0,
+                "recordsFiltered" => 0,
+                "data" => [],
+                "error" => $e->getMessage()
             ];
         }
     }
@@ -792,6 +804,7 @@ class PostsHandler
                     p.*,
                     u.user_firstname,
                     u.user_lastname,
+                    u.user_typeId,  /* Explicitly include user_typeId */
                     CONCAT(u.user_firstname, ' ', u.user_lastname) as user_fullname,
                     u.user_schoolId,
                     t.postType_name,
@@ -817,7 +830,9 @@ class PostsHandler
             $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             return [
-                "success" => true,
+                "draw" => isset($_GET['draw']) ? intval($_GET['draw']) : 1,
+                "recordsTotal" => count($posts),
+                "recordsFiltered" => count($posts),
                 "data" => $posts
             ];
         } catch (\PDOException $e) {
@@ -841,10 +856,6 @@ class PostsHandler
                 ];
             }
 
-            $deptStmt = $this->pdo->prepare("SELECT department_name FROM tbldepartments WHERE department_id = ?");
-            $deptStmt->execute([$departmentId]);
-            $departmentName = $deptStmt->fetchColumn();
-
             $stmt = $this->pdo->prepare("
                 SELECT
                     p.post_id,
@@ -853,9 +864,11 @@ class PostsHandler
                     DATE_FORMAT(p.post_date, '%m-%d-%Y') as post_date,
                     p.post_time,
                     p.post_status,
+                    p.is_forwarded,
                     pt.postType_name,
                     u.user_id,
                     u.user_status,
+                    u.user_typeId,
                     CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
                     u.user_schoolId,
                     d.department_name,
@@ -867,6 +880,7 @@ class PostsHandler
                 LEFT JOIN tblcampus cp ON p.post_campusId = cp.campus_id
                 WHERE u.user_typeId = 1
                 AND p.post_departmentId = ?
+                AND p.is_forwarded = 1
                 ORDER BY p.post_date DESC, p.post_time DESC
             ");
             $stmt->execute([$departmentId]);
@@ -974,9 +988,11 @@ class PostsHandler
                     DATE_FORMAT(p.post_date, '%m-%d-%Y') as post_date,
                     p.post_time,
                     p.post_status,
+                    p.is_forwarded,
                     pt.postType_name,
                     u.user_id,
                     u.user_status,
+                    u.user_typeId,
                     CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
                     u.user_schoolId,
                     d.department_name,
@@ -988,6 +1004,7 @@ class PostsHandler
                 LEFT JOIN tblcampus cp ON p.post_campusId = cp.campus_id
                 WHERE u.user_typeId IN (3, 4)
                 AND p.post_departmentId = ?
+                AND p.is_forwarded = 1
                 ORDER BY p.post_date DESC, p.post_time DESC
             ");
             $stmt->execute([$departmentId]);
@@ -1026,6 +1043,7 @@ class PostsHandler
                     pt.postType_name,
                     u.user_id,
                     u.user_status,
+                    u.user_typeId,  /* Explicitly include user_typeId */
                     CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
                     u.user_schoolId,
                     cp.campus_name,
@@ -1080,6 +1098,7 @@ class PostsHandler
                     pt.postType_name,
                     u.user_id,
                     u.user_status,
+                    u.user_typeId,  /* Explicitly include user_typeId */
                     CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
                     u.user_schoolId,
                     cp.campus_name,
@@ -1143,6 +1162,7 @@ class PostsHandler
                     pt.postType_name,
                     u.user_id,
                     u.user_status,
+                    u.user_typeId,  /* Explicitly include user_typeId */
                     CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
                     u.user_schoolId,
                     cp.campus_name,
@@ -1204,6 +1224,7 @@ class PostsHandler
                     pt.postType_name,
                     u.user_id,
                     u.user_status,
+                    u.user_typeId,  /* Explicitly include user_typeId */
                     CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
                     u.user_schoolId,
                     cp.campus_name,
@@ -1265,7 +1286,6 @@ class PostsHandler
                     is_forwarded = 1,
                     forwarded_by = ?,
                     forwarded_at = NOW(),
-                    forwarded_notes = ?,
                     post_status = CASE WHEN post_status = 0 THEN 1 ELSE post_status END
                 WHERE post_id = ?
             ");
@@ -1273,7 +1293,6 @@ class PostsHandler
                 $data['department_id'],
                 $data['campus_id'],
                 $data['forwarded_by'],
-                $data['notes'] ?? null,
                 $data['post_id']
             ]);
 
@@ -1288,10 +1307,6 @@ class PostsHandler
             $campusName = $campusStmt->fetchColumn();
 
             $systemMessage = "Post forwarded to $departmentName department at $campusName campus";
-            if (!empty($data['notes'])) {
-                $systemMessage .= " with note: " . $data['notes'];
-            }
-
             $systemUserId = 25;
 
             $replyStmt = $this->pdo->prepare("
@@ -1364,6 +1379,71 @@ class PostsHandler
             return [];
         }
     }
+
+    // Modify the handleGetLatestPosts method to add additional filtering for POC users
+    public function handleGetLatestPosts() {
+        try {
+            $userInfo = $this->getUserTypeAndDepartment();
+            $userTypeId = $userInfo['userType'];
+            $userDepartmentId = $userInfo['userDepartment'];
+
+            $query = "
+                SELECT
+                    p.post_id,
+                    p.post_title,
+                    p.post_message,
+                    DATE_FORMAT(p.post_date, '%m-%d-%Y') as post_date,
+                    p.post_time,
+                    p.post_status,
+                    p.post_campusId,
+                    p.is_forwarded,
+                    pt.postType_name,
+                    u.user_id,
+                    u.user_status,
+                    u.user_typeId,
+                    CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
+                    u.user_schoolId,
+                    cp.campus_name,
+                    COALESCE(d2.department_name, d1.department_name, 'Not Assigned') as department_name
+                FROM tbl_giya_posts p
+                JOIN tblusers u ON p.post_userId = u.user_id
+                JOIN tbl_giya_posttype pt ON p.postType_id = pt.postType_id
+                LEFT JOIN tblcourses c ON u.user_courseId = c.course_id
+                LEFT JOIN tbldepartments d1 ON c.course_departmentId = d1.department_id
+                LEFT JOIN tbldepartments d2 ON p.post_departmentId = d2.department_id
+                LEFT JOIN tblcampus cp ON p.post_campusId = cp.campus_id
+                WHERE p.post_status IN (0, 1)";
+
+            // POC users should only see posts that have been forwarded to their department
+            if ($userTypeId == 5 && $userDepartmentId) {
+                $query .= " AND (p.is_forwarded = 1 AND p.post_departmentId = ?)";
+                $stmt = $this->pdo->prepare($query);
+                $stmt->execute([$userDepartmentId]);
+            } else {
+                $query .= " ORDER BY p.post_date DESC, p.post_time DESC";
+                $stmt = $this->pdo->prepare($query);
+                $stmt->execute();
+            }
+
+            $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return [
+                "draw" => isset($_GET['draw']) ? (int)$_GET['draw'] : 1,
+                "recordsTotal" => count($posts),
+                "recordsFiltered" => count($posts),
+                "data" => $posts
+            ];
+        } catch (\PDOException $e) {
+            error_log("Error in handleGetLatestPosts: " . $e->getMessage());
+            return [
+                "draw" => 1,
+                "recordsTotal" => 0,
+                "recordsFiltered" => 0,
+                "data" => [],
+                "error" => $e->getMessage()
+            ];
+        }
+    }
 }
 
 if (isset($_GET['action'])) {
@@ -1397,7 +1477,23 @@ if (isset($_GET['action'])) {
             break;
         case 'get_posts_by_department':
             $departmentId = $_GET['department_id'] ?? null;
-            outputJSON($handler->handleGetPostsByDepartment($departmentId));
+            $response = $handler->handleGetPostsByDepartment($departmentId);
+            outputJSON($response);
+            break;
+        case 'get_student_posts_by_department':
+            $departmentId = $_GET['department_id'] ?? null;
+            $response = $handler->handleGetStudentPostsByDepartment($departmentId);
+            outputJSON($response);
+            break;
+        case 'get_visitor_posts_by_department':
+            $departmentId = $_GET['department_id'] ?? null;
+            $response = $handler->handleGetVisitorPostsByDepartment($departmentId);
+            outputJSON($response);
+            break;
+        case 'get_employee_posts_by_department':
+            $departmentId = $_GET['department_id'] ?? null;
+            $response = $handler->handleGetEmployeePostsByDepartment($departmentId);
+            outputJSON($response);
             break;
         case 'get_resolved_posts':
             outputJSON($handler->handleGetResolvedPosts());
@@ -1451,57 +1547,8 @@ if (isset($_GET['action'])) {
         case 'get_latest_posts':
             safeApiHandler(function() use ($pdo) {
                 try {
-                    // Get user type and department from headers
-                    $headers = getallheaders();
-                    $userTypeId = isset($headers['X-User-Type']) ? $headers['X-User-Type'] : null;
-                    $userDepartmentId = isset($headers['X-User-Department']) ? $headers['X-User-Department'] : null;
-
-                    $query = "
-                        SELECT
-                            p.post_id,
-                            p.post_title,
-                            p.post_message,
-                            DATE_FORMAT(p.post_date, '%m-%d-%Y') as post_date,
-                            p.post_time,
-                            p.post_status,
-                            p.post_campusId,
-                            p.is_forwarded,
-                            pt.postType_name,
-                            u.user_id,
-                            u.user_status,
-                            u.user_typeId,  /* Explicitly include user_typeId */
-                            CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
-                            u.user_schoolId,
-                            cp.campus_name,
-                            COALESCE(d2.department_name, d1.department_name, 'Not Assigned') as department_name
-                        FROM tbl_giya_posts p
-                        JOIN tblusers u ON p.post_userId = u.user_id
-                        JOIN tbl_giya_posttype pt ON p.postType_id = pt.postType_id
-                        LEFT JOIN tblcourses c ON u.user_courseId = c.course_id
-                        LEFT JOIN tbldepartments d1 ON c.course_departmentId = d1.department_id
-                        LEFT JOIN tbldepartments d2 ON p.post_departmentId = d2.department_id
-                        LEFT JOIN tblcampus cp ON p.post_campusId = cp.campus_id
-                        WHERE p.post_status IN (0, 1) ";
-
-                    if ($userTypeId == 5 && $userDepartmentId) {
-                        $query .= " AND (p.is_forwarded = 1 AND p.post_departmentId = ?)";
-                        $stmt = $pdo->prepare($query);
-                        $stmt->execute([$userDepartmentId]);
-                    } else {
-                        $query .= " ORDER BY p.post_date DESC, p.post_time DESC";
-                        $stmt = $pdo->prepare($query);
-                        $stmt->execute();
-                    }
-
-                    $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                    $response = [
-                        "draw" => isset($_GET['draw']) ? (int)$_GET['draw'] : 1,
-                        "recordsTotal" => count($posts),
-                        "recordsFiltered" => count($posts),
-                        "data" => $posts
-                    ];
-
+                    $handler = new PostsHandler($pdo);
+                    $response = $handler->handleGetLatestPosts();
                     outputJSON($response);
                 } catch (PDOException $e) {
                     error_log('Error in get_latest_posts: ' . $e->getMessage());

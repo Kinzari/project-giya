@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 18, 2025 at 05:53 PM
+-- Generation Time: Mar 25, 2025 at 04:38 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -291,33 +291,32 @@ CREATE TABLE `tbl_giya_posts` (
   `inquiry_typeId` int(11) DEFAULT NULL,
   `is_forwarded` tinyint(1) NOT NULL DEFAULT 0,
   `forwarded_by` int(11) DEFAULT NULL,
-  `forwarded_at` datetime DEFAULT NULL,
-  `forwarded_notes` text DEFAULT NULL
+  `forwarded_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tbl_giya_posts`
 --
 
-INSERT INTO `tbl_giya_posts` (`post_id`, `post_userId`, `post_departmentId`, `post_campusId`, `postType_id`, `post_date`, `post_time`, `post_title`, `post_message`, `post_stars`, `post_status`, `inquiry_typeId`, `is_forwarded`, `forwarded_by`, `forwarded_at`, `forwarded_notes`) VALUES
-(1, 27, 1, 1, 2, '2025-02-25', '20:02:16', 'ENROLMENT PROCESS', 'How to Enroll?', 0, 2, 1, 0, NULL, NULL, NULL),
-(2, 27, 1, 1, 1, '2025-02-25', '20:07:01', 'dsa', '321', 0, 2, 15, 0, NULL, NULL, NULL),
-(4, 40, 1, 1, 1, '2025-02-26', '11:15:37', 'hk', 'Hk details', 0, 2, 6, 0, NULL, NULL, NULL),
-(5, 27, 1, 1, 1, '2025-02-26', '14:55:49', 'FORM 137 CREDENTIALS', 'Can i have an info about th requirements for graduating student?', 0, 2, 3, 0, NULL, NULL, NULL),
-(6, 30, 1, 1, 1, '2025-02-27', '12:57:49', 'asd', 'dsa', 0, 2, 2, 0, NULL, NULL, NULL),
-(7, 27, 1, 1, 1, '2025-02-27', '14:55:20', 'aasd', 'asdasd', 0, 2, 6, 0, NULL, NULL, NULL),
-(8, 27, 4, 1, 1, '2025-02-27', '15:11:40', 'THIS IS THE TITLE', 'THIS IS A MESSAGE', 0, 1, 1, 1, 26, '2025-03-16 18:59:04', 'test'),
-(9, 27, 1, 1, 1, '2025-02-27', '16:45:48', 'test', 'test123123', 0, 1, 5, 0, NULL, NULL, NULL),
-(10, 30, 4, 1, 1, '2025-02-28', '01:22:40', 'dsa', 'dsa', 0, 1, 15, 0, NULL, NULL, NULL),
-(11, 27, 1, 1, 1, '2025-03-01', '16:22:25', 'test', 'test', 0, 2, 2, 0, NULL, NULL, NULL),
-(12, 27, 1, 1, 1, '2025-03-01', '17:56:40', 'dsa', 'dsa', 0, 2, 2, 0, NULL, NULL, NULL),
-(13, 30, 1, 1, 3, '2025-03-01', '19:46:58', 'suggest', 'suggest text', 0, 2, 2, 0, NULL, NULL, NULL),
-(14, 30, 14, 1, 2, '2025-03-04', '20:39:32', 'feedback', 'feedback', 0, 2, 6, 0, NULL, NULL, NULL),
-(15, 30, 14, 1, 1, '2025-03-04', '22:11:13', 'csdl', 'csdl', 0, 1, 6, 0, NULL, NULL, NULL),
-(16, 45, 1, 1, 1, '2025-03-05', '00:40:36', 'academic', 'academic', 0, 2, 2, 0, NULL, NULL, NULL),
-(17, 45, 14, 1, 1, '2025-03-05', '09:32:11', 'csdl', 'csdl', 0, 2, 6, 0, NULL, NULL, NULL),
-(18, 27, 1, 1, 3, '2025-03-05', '14:22:38', 'suggest', 'suggest', 0, 1, 2, 0, NULL, NULL, NULL),
-(19, 27, 9, 3, 1, '2025-03-17', '13:26:17', 'iligan', 'iligan', 0, 1, 5, 1, 26, '2025-03-19 00:49:49', '');
+INSERT INTO `tbl_giya_posts` (`post_id`, `post_userId`, `post_departmentId`, `post_campusId`, `postType_id`, `post_date`, `post_time`, `post_title`, `post_message`, `post_stars`, `post_status`, `inquiry_typeId`, `is_forwarded`, `forwarded_by`, `forwarded_at`) VALUES
+(1, 27, 1, 1, 2, '2025-02-25', '20:02:16', 'ENROLMENT PROCESS', 'How to Enroll?', 0, 2, 1, 0, NULL, NULL),
+(2, 27, 1, 1, 1, '2025-02-25', '20:07:01', 'dsa', '321', 0, 2, 15, 0, NULL, NULL),
+(4, 40, 1, 1, 1, '2025-02-26', '11:15:37', 'hk', 'Hk details', 0, 2, 6, 0, NULL, NULL),
+(5, 27, 1, 1, 1, '2025-02-26', '14:55:49', 'FORM 137 CREDENTIALS', 'Can i have an info about th requirements for graduating student?', 0, 2, 3, 0, NULL, NULL),
+(6, 30, 1, 1, 1, '2025-02-27', '12:57:49', 'asd', 'dsa', 0, 2, 2, 0, NULL, NULL),
+(7, 27, 1, 1, 1, '2025-02-27', '14:55:20', 'aasd', 'asdasd', 0, 2, 6, 0, NULL, NULL),
+(8, 27, 4, 1, 1, '2025-02-27', '15:11:40', 'THIS IS THE TITLE', 'THIS IS A MESSAGE', 0, 1, 1, 1, 26, '2025-03-25 18:25:27'),
+(9, 27, 1, 1, 1, '2025-02-27', '16:45:48', 'test', 'test123123', 0, 1, 5, 0, NULL, NULL),
+(10, 30, 4, 1, 1, '2025-02-28', '01:22:40', 'dsa', 'dsa', 0, 1, 15, 1, 26, '2025-03-25 18:14:53'),
+(11, 27, 1, 1, 1, '2025-03-01', '16:22:25', 'test', 'test', 0, 2, 2, 0, NULL, NULL),
+(12, 27, 1, 1, 1, '2025-03-01', '17:56:40', 'dsa', 'dsa', 0, 2, 2, 0, NULL, NULL),
+(13, 30, 1, 1, 3, '2025-03-01', '19:46:58', 'suggest', 'suggest text', 0, 2, 2, 0, NULL, NULL),
+(14, 30, 14, 1, 2, '2025-03-04', '20:39:32', 'feedback', 'feedback', 0, 2, 6, 0, NULL, NULL),
+(15, 30, 4, 1, 1, '2025-03-04', '22:11:13', 'csdl', 'csdl', 0, 1, 6, 1, 26, '2025-03-25 18:21:59'),
+(16, 45, 1, 1, 1, '2025-03-05', '00:40:36', 'academic', 'academic', 0, 2, 2, 0, NULL, NULL),
+(17, 45, 14, 1, 1, '2025-03-05', '09:32:11', 'csdl', 'csdl', 0, 2, 6, 0, NULL, NULL),
+(18, 27, 1, 1, 3, '2025-03-05', '14:22:38', 'suggest', 'suggest', 0, 1, 2, 0, NULL, NULL),
+(19, 27, 9, 3, 1, '2025-03-17', '13:26:17', 'iligan', 'iligan', 0, 1, 5, 1, 26, '2025-03-19 00:49:49');
 
 -- --------------------------------------------------------
 
@@ -424,7 +423,12 @@ INSERT INTO `tbl_giya_reply` (`reply_id`, `reply_userId`, `reply_postId`, `reply
 (102, 25, 8, '2025-03-16', '18:59:04', NULL, 'Post forwarded to CITE department at Carmen campus with note: test', 1, NULL),
 (103, 26, 15, '2025-03-17', '14:11:10', NULL, 'test', 0, NULL),
 (104, 26, 15, '2025-03-17', '14:11:10', NULL, 'test', 0, NULL),
-(105, 25, 19, '2025-03-19', '00:49:49', NULL, 'Post forwarded to BASIC ED department at Iligan campus', 1, NULL);
+(105, 25, 19, '2025-03-19', '00:49:49', NULL, 'Post forwarded to BASIC ED department at Iligan campus', 1, NULL),
+(106, 43, 8, '2025-03-25', '18:01:06', NULL, 'test', 0, NULL),
+(107, 43, 8, '2025-03-25', '18:01:06', NULL, 'test', 0, NULL),
+(108, 25, 10, '2025-03-25', '18:14:53', NULL, 'Post forwarded to CITE department at Carmen campus', 1, NULL),
+(109, 25, 15, '2025-03-25', '18:21:59', NULL, 'Post forwarded to CITE department at Carmen campus', 1, NULL),
+(110, 25, 8, '2025-03-25', '18:25:27', NULL, 'Post forwarded to CITE department at Carmen campus with note: ttest', 1, NULL);
 
 --
 -- Indexes for dumped tables
@@ -555,7 +559,7 @@ ALTER TABLE `tbl_giya_posttype`
 -- AUTO_INCREMENT for table `tbl_giya_reply`
 --
 ALTER TABLE `tbl_giya_reply`
-  MODIFY `reply_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
+  MODIFY `reply_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
 
 --
 -- Constraints for dumped tables

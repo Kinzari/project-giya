@@ -1,22 +1,19 @@
 document.addEventListener('DOMContentLoaded', function() {
     const elementsExist = checkRequiredElements();
     if (!elementsExist) {
-        console.warn('Missing required elements - post details may not load correctly');
+        // Continue silently
     }
 
-    // Add this near the top of the file
     const path = window.location.pathname.toLowerCase();
 
     const baseURL = sessionStorage.getItem("baseURL");
     if (!baseURL) {
-        console.error("baseURL not found in sessionStorage");
-        sessionStorage.setItem('baseURL', 'http://localhost/giya-api/');
+        sessionStorage.setItem('baseURL', 'http://localhost/api/');
         toastr.warning('API URL not found. Using default URL. You may need to login again.');
     }
 
     let table;
     const userInfo = sessionStorage.getItem('user');
-    // Declare these variables in global scope to fix the reference error
     window.userTypeId = null;
     window.departmentId = null;
     if (userInfo) {
@@ -26,144 +23,54 @@ document.addEventListener('DOMContentLoaded', function() {
             window.userTypeId = user.user_typeId;
             if (window.userTypeId == 5 && !window.departmentId) {
                 toastr.warning('Department ID not found in your profile. Please contact the administrator.');
-                console.warn('POC user without department ID:', user);
             }
 
-            // Store these in sessionStorage for easier access
             sessionStorage.setItem('user_typeId', window.userTypeId);
             sessionStorage.setItem('user_departmentId', window.departmentId);
         } catch (e) {
-            console.error('Error parsing user info:', e);
+            // Silent catch
         }
     }
 
-    // Use GiyaTable for initializing tables instead of custom implementation
     if (document.getElementById("latestPostsTable")) {
-        const action = (window.userTypeId == 5 && window.departmentId) ? `get_posts_by_department&department_id=${window.departmentId}` : 'get_latest_posts';
+        let action = 'get_latest_posts';
 
-        // Ensure discord-pagination class is added before initializing the table
+        if (window.userTypeId == 5 && window.departmentId) {
+            action = `get_posts_by_department&department_id=${window.departmentId}`;
+            console.log(`POC user: Using endpoint ${action} with department ID ${window.departmentId}`);
+        }
+
         $('.student-table-container').addClass('discord-pagination');
 
-        // Add debugging to check the data coming from the server
-        const debugCallback = function(json) {
-            if (!json || !json.data) {
-                console.error('Invalid JSON response:', json);
-                toastr.error('Server returned invalid data format');
-                return [];
-            }
-
-            // Debug log the first few records to check for user_typeId
-            console.log('Latest posts first 3 records:', json.data.slice(0, 3));
-
-            // Check if user_typeId is missing
-            const missingTypeIds = json.data.filter(item =>
-                item.user_typeId === undefined ||
-                item.user_typeId === null ||
-                item.user_typeId === '');
-
-            if (missingTypeIds.length > 0) {
-                console.warn(`${missingTypeIds.length} records are missing user_typeId`);
-                console.warn('Sample record with missing typeId:', missingTypeIds[0]);
-            }
-
-            return json.data;
-        };
-
-        // Initialize table with specific settings for latest posts
-        table = GiyaTable.initPostsTable('#latestPostsTable', 'get_latest_posts', null, {
-            order: [[7, 'desc'], [8, 'desc']], // Order by date and time columns (most recent first)
-            pageLength: 10,
-            ajax: {
-                dataSrc: debugCallback
-            },
-            columns: [
-                {
-                    data: "post_status",
-                    render: GiyaTable.renderStatusBadge
-                },
-                {
-                    data: "user_typeId",
-                    render: function(data) {
-                        // Improved handling of null/undefined/NaN values
-                        let typeId = parseInt(data, 10);
-
-                        // If data is null, undefined, empty string, or NaN after parsing
-                        if (data === null || data === undefined || data === '' || isNaN(typeId)) {
-                            return 'Unknown';
-                        }
-
-                        // Map user_typeId to the correct classification
-                        switch(typeId) {
-                            case 1: return 'Visitor';
-                            case 2: return 'Student';
-                            case 3: return 'Faculty';
-                            case 4: return 'Employee';
-                            case 5: return 'POC';
-                            case 6: return 'Administrator / SSG';
-                            default: return 'Unknown (Type ' + typeId + ')';
-                        }
-                    }
-                },
-                {
-                    data: "user_fullname"
-                },
-                {
-                    data: "postType_name"
-                },
-                {
-                    data: "post_message",
-                    render: function(data) {
-                        if (data && data.length > 15) {
-                            return data.substring(0, 15) + '...';
-                        }
-                        return data || '';
-                    }
-                },
-                {
-                    data: "department_name",
-                    render: function (data) {
-                        return data || 'Not Assigned';
-                    }
-                },
-                {
-                    data: "campus_name",
-                    render: function (data) {
-                        return data || 'Carmen';
-                    }
-                },
-                {
-                    data: "post_date"
-                },
-                {
-                    data: "post_time",
-                    render: function (data, type, row) {
-                        const dt = new Date(row.post_date + " " + data);
-                        const options = { hour: 'numeric', minute: '2-digit', hour12: true };
-                        return dt.toLocaleTimeString('en-US', options);
-                    }
-                }
-            ]
+        table = GiyaTable.initPostsTable('#latestPostsTable', action, null, {
+            order: [[7, 'desc'], [8, 'desc']]
         });
-
-        // Don't call addPageNumberInput here - it's now called from initPostsTable
     } else if (document.getElementById("postsTable")) {
         let action = "";
         if (path.includes("students.html")) {
-            action = (window.userTypeId == 5 && window.departmentId) ? `get_student_posts_by_department&department_id=${window.departmentId}` : "get_student_posts";
+            action = (window.userTypeId == 5 && window.departmentId) ?
+                `get_student_posts_by_department&department_id=${window.departmentId}` :
+                "get_student_posts";
         } else if (path.includes("visitors.html")) {
-            action = (window.userTypeId == 5 && window.departmentId) ? `get_visitor_posts_by_department&department_id=${window.departmentId}` : "get_visitor_posts";
+            action = (window.userTypeId == 5 && window.departmentId) ?
+                `get_visitor_posts_by_department&department_id=${window.departmentId}` :
+                "get_visitor_posts";
         } else if (path.includes("employees.html")) {
-            // Updated to use the employee posts endpoint to fetch only Faculty (3) and Employee (4) posts
             action = (window.userTypeId == 5 && window.departmentId) ?
                 `get_employee_posts_by_department&department_id=${window.departmentId}` :
-                "get_employee_posts"; // This endpoint should filter for user_typeId 3 and 4
+                "get_employee_posts";
         }
 
-        // Ensure discord-pagination class is added before initializing the table
-        $('.student-table-container').addClass('discord-pagination');
+        console.log(`Initializing table with endpoint: ${action}`);
 
-        // Fix: Use the correct syntax for table initialization
-        table = GiyaTable.initPostsTable('#postsTable', action, null);
+        // Add error handling wrapper for debugging
+        try {
+            $('.student-table-container').addClass('discord-pagination');
+            table = GiyaTable.initPostsTable('#postsTable', action, null);
+        } catch (error) {
+            console.error(`Error initializing table with action ${action}:`, error);
+            toastr.error(`Failed to load posts. Please contact support. (Error: ${error.message})`);
+        }
     }
 
     if (table) {
@@ -173,17 +80,11 @@ document.addEventListener('DOMContentLoaded', function() {
     window.submitReply = submitReplyWithoutRefresh;
     window.changeStatus = changeStatus;
 
-    // Remove campus column styling after tables are loaded
-    // Remove the entire block that applies styles to campus columns
-    const attachFile = document.getElementById('attachFile');
-    // Keep only the table header styling
     setTimeout(() => {
-        // Apply styles to all table headers
         document.querySelectorAll('th').forEach(el => {
             el.style.backgroundColor = '#155f37';
             el.style.color = 'white';
         });
-        // Make sure the styling persists on hover
         const style = document.createElement('style');
         style.textContent = `
             table.dataTable thead th,
@@ -200,8 +101,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.head.appendChild(style);
     }, 500);
 
-    // Add attachment handlers
     const attachButton = document.getElementById('attachButton');
+    const attachFile = document.getElementById('attachFile');
     const attachmentPreview = document.getElementById('attachmentPreview');
     const fileName = document.getElementById('fileName');
     const removeAttachment = document.getElementById('removeAttachment');
@@ -226,7 +127,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
 let currentPostId = null;
+
 // Remove the redundant initializePostsTable function and use GiyaTable instead
 // Add this utility function for API calls with better error handling
 // Keep these functions as they are specific to post details
@@ -330,6 +233,12 @@ async function showPostDetails(postId) {
                 repliesContainer.appendChild(originalPostElement);
                 if (post.replies && post.replies.length > 0) {
                     post.replies.forEach(reply => {
+                        // Skip forward notification messages for all users
+                        if ((reply.display_name === 'GIYA Representative' &&
+                            reply.reply_message.includes('Post forwarded to'))) {
+                            return;
+                        }
+
                         const replyElement = document.createElement('div');
                         replyElement.className = `message-bubble ${reply.user_type === 'admin' ? 'admin-message' : 'user-message'}`;
                         replyElement.innerHTML = `
@@ -374,7 +283,6 @@ async function showPostDetails(postId) {
                             <div class="alert alert-info">
                                 <i class="bi bi-send me-2"></i>
                                 Forwarded by ${post.forwarded_by_name} on ${new Date(post.forwarded_at).toLocaleString()}
-                                ${post.forwarded_notes ? `<div class="mt-2 small">${post.forwarded_notes}</div>` : ''}
                             </div>
                         `;
                         forwardInfoEl.style.display = 'block';
@@ -477,12 +385,12 @@ function updateReplyForm(status, postId) {
         }
     }
 }
-function isAdminDashboardPage() {
-    const path = window.location.pathname.toLowerCase();
-    return path.includes('/dashboard/latest-post.html') ||
-           path.includes('/dashboard/visitors.html') ||
-           path.includes('students.html');
-}
+// function isAdminDashboardPage() {
+//     const path = window.location.pathname.toLowerCase();
+//     return path.includes('/dashboard/latest-post.html') ||
+//            path.includes('/dashboard/visitors.html') ||
+//            path.includes('students.html');
+// }
 function scrollToBottom() {
     const repliesContainer = document.querySelector('.replies-container');
     if (repliesContainer) {
@@ -754,3 +662,39 @@ axios.interceptors.request.use(function (config) {
 }, function (error) {
     return Promise.reject(error);
 });
+
+// Add a function to manually check if endpoints are configured correctly
+function testEndpoints() {
+    const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+    const departmentId = sessionStorage.getItem('user_departmentId');
+
+    if (!departmentId) {
+        console.warn('No department ID available for testing');
+        return;
+    }
+
+    const endpoints = [
+        `posts.php?action=get_posts_by_department&department_id=${departmentId}`,
+        `posts.php?action=get_student_posts_by_department&department_id=${departmentId}`,
+        `posts.php?action=get_visitor_posts_by_department&department_id=${departmentId}`,
+        `posts.php?action=get_employee_posts_by_department&department_id=${departmentId}`
+    ];
+
+    console.log('Testing department endpoints...');
+
+    endpoints.forEach(endpoint => {
+        fetch(`${baseURL}${endpoint}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(`Endpoint ${endpoint}: `, data);
+            })
+            .catch(error => {
+                console.error(`Error testing ${endpoint}:`, error);
+            });
+    });
+}
+
+// Run endpoint test if in development
+if (window.location.hostname === 'localhost' && window.userTypeId == 5) {
+    setTimeout(testEndpoints, 3000);
+}

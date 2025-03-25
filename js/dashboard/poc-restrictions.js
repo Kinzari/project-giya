@@ -47,6 +47,31 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     } catch (e) {
+        // Silent catch
+    }
+
+    const userTypeId = sessionStorage.getItem('user_typeId');
+
+    if (userTypeId === '5') {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    checkClassificationCells();
+                }
+            });
+        });
+
+        setTimeout(() => {
+            const tables = document.querySelectorAll('table.dataTable');
+            tables.forEach(table => {
+                observer.observe(table.querySelector('tbody'), {
+                    childList: true,
+                    subtree: true
+                });
+            });
+
+            checkClassificationCells();
+        }, 2000);
     }
 });
 
@@ -129,7 +154,6 @@ function restrictNavigation() {
         }
     });
 
-    // Add department indicator for POC users
     const departmentEl = document.getElementById('department-indicator');
     if (!departmentEl) {
         const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -156,4 +180,42 @@ function isPOC() {
     } catch (e) {
         return false;
     }
+}
+
+function checkClassificationCells() {
+    const classificationCells = document.querySelectorAll('td:nth-child(2)');
+
+    classificationCells.forEach(cell => {
+        if (cell.textContent.trim() === 'Unknown') {
+            const row = cell.closest('tr');
+            if (row) {
+                const table = row.closest('table');
+                if (table && table.id) {
+                    const tableId = '#' + table.id;
+                    if ($.fn.DataTable.isDataTable(tableId)) {
+                        const dataTable = $(tableId).DataTable();
+                        const rowData = dataTable.row(row).data();
+
+                        if (rowData && rowData.user_typeId) {
+                            const typeId = parseInt(rowData.user_typeId, 10);
+                            let classification = 'Unknown';
+
+                            switch(typeId) {
+                                case 1: classification = 'Visitor'; break;
+                                case 2: classification = 'Student'; break;
+                                case 3: classification = 'Faculty'; break;
+                                case 4: classification = 'Employee'; break;
+                                case 5: classification = 'POC'; break;
+                                case 6: classification = 'Administrator / SSG'; break;
+                            }
+
+                            if (classification !== 'Unknown') {
+                                cell.textContent = classification;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
