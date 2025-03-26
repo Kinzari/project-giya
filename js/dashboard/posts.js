@@ -5,77 +5,127 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const path = window.location.pathname.toLowerCase();
-
     const baseURL = sessionStorage.getItem("baseURL");
     if (!baseURL) {
         sessionStorage.setItem('baseURL', 'http://localhost/api/');
         toastr.warning('API URL not found. Using default URL. You may need to login again.');
     }
 
-    let table;
+    let userTypeId = null;
+    let departmentId = null;
     const userInfo = sessionStorage.getItem('user');
-    window.userTypeId = null;
-    window.departmentId = null;
+
     if (userInfo) {
         try {
             const user = JSON.parse(userInfo);
-            window.departmentId = user.user_departmentId;
-            window.userTypeId = user.user_typeId;
-            if (window.userTypeId == 5 && !window.departmentId) {
+            departmentId = user.user_departmentId;
+            userTypeId = user.user_typeId;
+
+            window.userTypeId = userTypeId;
+            window.departmentId = departmentId;
+
+            sessionStorage.setItem('user_typeId', userTypeId);
+            sessionStorage.setItem('user_departmentId', departmentId);
+
+            if (userTypeId == 5 && !departmentId) {
                 toastr.warning('Department ID not found in your profile. Please contact the administrator.');
             }
-
-            sessionStorage.setItem('user_typeId', window.userTypeId);
-            sessionStorage.setItem('user_departmentId', window.departmentId);
         } catch (e) {
-            // Silent catch
+            // Handle error silently
         }
     }
+
+    function initializeTable(tableId, action) {
+        const tableElement = document.getElementById(tableId);
+        if (!tableElement) {
+            return null;
+        }
+
+        if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
+            $(`#${tableId}`).DataTable().destroy();
+        }
+
+        const originalHtml = tableElement.outerHTML;
+        window[`${tableId}_originalHtml`] = originalHtml;
+
+        const table = GiyaTable.initPostsTable(`#${tableId}`, action, null, {
+            order: [[7, 'desc'], [8, 'desc']],
+            drawCallback: function(settings) {
+                tableElement.style.display = '';
+                tableElement.style.visibility = 'visible';
+
+                $('table.dataTable thead th').css({
+                    'background-color': '#155f37',
+                    'color': 'white'
+                });
+            }
+        });
+
+        window[`${tableId}Table`] = table;
+
+        const container = $(tableElement).closest('.student-table-container');
+        if (container.length) {
+            container.addClass('discord-pagination');
+        }
+
+        setInterval(() => {
+            const currentElement = document.getElementById(tableId);
+            if (!currentElement ||
+                currentElement.style.display === 'none' ||
+                !currentElement.offsetParent) {
+
+                const container = document.querySelector(`.table-responsive, [data-table-id="${tableId}"]`);
+                if (container) {
+                    container.innerHTML = window[`${tableId}_originalHtml`];
+
+                    const newTable = GiyaTable.initPostsTable(`#${tableId}`, action);
+                    window[`${tableId}Table`] = newTable;
+                }
+            }
+        }, 1000);
+
+        return table;
+    }
+
+    let table = null;
 
     if (document.getElementById("latestPostsTable")) {
         let action = 'get_latest_posts';
 
-        if (window.userTypeId == 5 && window.departmentId) {
-            action = `get_posts_by_department&department_id=${window.departmentId}`;
-            console.log(`POC user: Using endpoint ${action} with department ID ${window.departmentId}`);
+        if (userTypeId == 5 && departmentId) {
+            action = `get_posts_by_department&department_id=${departmentId}`;
         }
 
-        $('.student-table-container').addClass('discord-pagination');
-
-        table = GiyaTable.initPostsTable('#latestPostsTable', action, null, {
-            order: [[7, 'desc'], [8, 'desc']]
-        });
-    } else if (document.getElementById("postsTable")) {
+        table = initializeTable("latestPostsTable", action);
+        window.latestPostsTable = table;
+    }
+    else if (document.getElementById("postsTable")) {
         let action = "";
+
         if (path.includes("students.html")) {
-            action = (window.userTypeId == 5 && window.departmentId) ?
-                `get_student_posts_by_department&department_id=${window.departmentId}` :
+            action = (userTypeId == 5 && departmentId) ?
+                `get_student_posts_by_department&department_id=${departmentId}` :
                 "get_student_posts";
-        } else if (path.includes("visitors.html")) {
-            action = (window.userTypeId == 5 && window.departmentId) ?
-                `get_visitor_posts_by_department&department_id=${window.departmentId}` :
+        }
+        else if (path.includes("visitors.html")) {
+            action = (userTypeId == 5 && departmentId) ?
+                `get_visitor_posts_by_department&department_id=${departmentId}` :
                 "get_visitor_posts";
-        } else if (path.includes("employees.html")) {
-            action = (window.userTypeId == 5 && window.departmentId) ?
-                `get_employee_posts_by_department&department_id=${window.departmentId}` :
+        }
+        else if (path.includes("employees.html")) {
+            action = (userTypeId == 5 && departmentId) ?
+                `get_employee_posts_by_department&department_id=${departmentId}` :
                 "get_employee_posts";
         }
 
-        console.log(`Initializing table with endpoint: ${action}`);
-
-        // Add error handling wrapper for debugging
-        try {
-            $('.student-table-container').addClass('discord-pagination');
-            table = GiyaTable.initPostsTable('#postsTable', action, null);
-        } catch (error) {
-            console.error(`Error initializing table with action ${action}:`, error);
-            toastr.error(`Failed to load posts. Please contact support. (Error: ${error.message})`);
-        }
+        table = initializeTable("postsTable", action);
+        window.postsTable = table;
     }
 
     if (table) {
         GiyaTable.attachFiltering(table, '.btn-group button');
     }
+
     window.showPostDetails = showPostDetails;
     window.submitReply = submitReplyWithoutRefresh;
     window.changeStatus = changeStatus;
@@ -85,54 +135,19 @@ document.addEventListener('DOMContentLoaded', function() {
             el.style.backgroundColor = '#155f37';
             el.style.color = 'white';
         });
-        const style = document.createElement('style');
-        style.textContent = `
-            table.dataTable thead th,
-            .table thead th {
-                background-color: #155f37 !important;
-                color: white !important;
-            }
-
-            .table-hover thead tr:hover th {
-                color: white !important;
-                background-color: #155f37 !important;
-            }
-        `;
-        document.head.appendChild(style);
     }, 500);
 
     const attachButton = document.getElementById('attachButton');
     const attachFile = document.getElementById('attachFile');
-    const attachmentPreview = document.getElementById('attachmentPreview');
-    const fileName = document.getElementById('fileName');
-    const removeAttachment = document.getElementById('removeAttachment');
-
     if (attachButton && attachFile) {
         attachButton.addEventListener('click', () => {
             attachFile.click();
-        });
-
-        attachFile.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                fileName.textContent = file.name;
-                attachmentPreview.style.display = 'block';
-            }
-        });
-
-        removeAttachment.addEventListener('click', () => {
-            attachFile.value = '';
-            attachmentPreview.style.display = 'none';
-            fileName.textContent = '';
         });
     }
 });
 
 let currentPostId = null;
 
-// Remove the redundant initializePostsTable function and use GiyaTable instead
-// Add this utility function for API calls with better error handling
-// Keep these functions as they are specific to post details
 function renderStatusBadge(data) {
     let statusText = "";
     let badgeClass = "";
@@ -156,32 +171,26 @@ function renderStatusBadge(data) {
     }
     return `<span class="badge ${badgeClass}">${statusText}</span>`;
 }
-// Add this utility function for API calls with better error handling
+
 async function safeApiCall(endpoint, options = {}) {
     try {
         const baseURL = sessionStorage.getItem('baseURL') || '';
         const response = await axios.get(`${baseURL}${endpoint}`, options);
         return response.data;
     } catch (error) {
-        console.error(`API call error (${endpoint}):`, error);
         let errorMessage = 'Failed to load data from server';
-        // Extract more detailed error message if available
         if (error.response) {
-            // The request was made and the server responded with a status code
-            // that falls out of the range of 2xx
             errorMessage = `Server error: ${error.response.status}`;
-            console.error('Error response:', error.response.data);
         } else if (error.request) {
-            // The request was made but no response was received
             errorMessage = 'No response from server';
         } else {
-            // Something happened in setting up the request that triggered an Error
             errorMessage = error.message || 'Unknown error';
         }
         toastr.error(errorMessage);
         throw error;
     }
 }
+
 async function showPostDetails(postId) {
     try {
         currentPostId = postId;
@@ -190,9 +199,7 @@ async function showPostDetails(postId) {
             toastr.error('Base URL not found. Please re-login.');
             return;
         }
-        const loadingToast = toastr.info('Loading post details...', '', {timeOut: 0});
         const response = await axios.get(`${baseURL}posts.php?action=get_post_details&post_id=${postId}`);
-        toastr.clear(loadingToast);
         if (response.data.success && response.data.post) {
             const post = response.data.post;
             const modal = new bootstrap.Modal(document.getElementById('postDetailsModal'));
@@ -233,7 +240,6 @@ async function showPostDetails(postId) {
                 repliesContainer.appendChild(originalPostElement);
                 if (post.replies && post.replies.length > 0) {
                     post.replies.forEach(reply => {
-                        // Skip forward notification messages for all users
                         if ((reply.display_name === 'GIYA Representative' &&
                             reply.reply_message.includes('Post forwarded to'))) {
                             return;
@@ -254,14 +260,12 @@ async function showPostDetails(postId) {
             }
             updateReplyForm(post.post_status, postId);
             setTimeout(scrollToBottom, 300);
-            // Add check for forwarded status and update the UI accordingly
+
             const forwardBtn = document.getElementById('forwardPostBtn');
             if (forwardBtn) {
-                // Only show forward button for admins (user_typeId = 6), not POCs (user_typeId = 5)
                 const userType = sessionStorage.getItem('user_typeId');
                 if (userType === '6') {
                     forwardBtn.style.display = 'inline-block';
-                    // Disable forward button if already forwarded
                     if (post.is_forwarded == 1) {
                         forwardBtn.classList.add('disabled');
                         forwardBtn.setAttribute('data-bs-toggle', 'tooltip');
@@ -275,7 +279,7 @@ async function showPostDetails(postId) {
                 } else {
                     forwardBtn.style.display = 'none';
                 }
-                // If post is forwarded, show who forwarded it for POC users
+
                 if (post.is_forwarded == 1 && userType === '5' && post.forwarded_by_name) {
                     const forwardInfoEl = document.getElementById('forwardInfo');
                     if (forwardInfoEl) {
@@ -293,16 +297,17 @@ async function showPostDetails(postId) {
             toastr.error(response.data.message || 'Failed to load post details');
         }
     } catch (error) {
-        console.error('Error loading post details:', error);
         toastr.error('Failed to load post details');
     }
 }
+
 function updateModalButtons() {
     $('#postDetailsModal .btn-primary').addClass('btn-solid-primary').removeClass('btn-primary');
     $('#postDetailsModal .btn-warning').addClass('btn-solid-warning').removeClass('btn-warning');
     $('#postDetailsModal .btn-danger').addClass('btn-solid-danger').removeClass('btn-danger');
     $('#postDetailsModal .btn-success').addClass('btn-solid-success').removeClass('btn-success');
 }
+
 function getStatusClass(status) {
     switch (Number(status)) {
         case 0: return 'bg-danger';
@@ -311,6 +316,7 @@ function getStatusClass(status) {
         default: return 'bg-secondary';
     }
 }
+
 function getStatusText(status) {
     switch (Number(status)) {
         case 0: return 'Pending';
@@ -319,6 +325,7 @@ function getStatusText(status) {
         default: return 'Unknown';
     }
 }
+
 function renderReplies(replies) {
     const repliesContainer = document.querySelector('.replies-container');
     if (!repliesContainer) return;
@@ -333,12 +340,13 @@ function renderReplies(replies) {
             </div>
         `).join('') : '<p class="text-center text-muted">No replies yet</p>';
 }
+
 function updateReplyForm(status, postId) {
     const formContainer = document.querySelector('.reply-form-container');
     if (!formContainer) return;
     const userType = sessionStorage.getItem('user_typeId');
     status = String(status);
-    if (status === '3' || status === '2') {
+    if (status === '2') {
         formContainer.innerHTML = `
             <div class="alert alert-success mb-0 text-center">
                 <i class="bi bi-check-circle me-2"></i>
@@ -385,18 +393,22 @@ function updateReplyForm(status, postId) {
         }
     }
 }
-// function isAdminDashboardPage() {
-//     const path = window.location.pathname.toLowerCase();
-//     return path.includes('/dashboard/latest-post.html') ||
-//            path.includes('/dashboard/visitors.html') ||
-//            path.includes('students.html');
-// }
+
+function isAdminDashboardPage() {
+    const path = window.location.pathname.toLowerCase();
+    return path.includes('/dashboard/latest-post.html') ||
+           path.includes('/dashboard/visitors.html') ||
+           path.includes('/dashboard/students.html') ||
+           path.includes('/dashboard/employess.html');
+}
+
 function scrollToBottom() {
     const repliesContainer = document.querySelector('.replies-container');
     if (repliesContainer) {
         repliesContainer.scrollTop = repliesContainer.scrollHeight;
     }
 }
+
 async function submitReplyWithoutRefresh(event, postId) {
     event.preventDefault();
     const messageInput = document.querySelector('.reply-input');
@@ -408,20 +420,18 @@ async function submitReplyWithoutRefresh(event, postId) {
     try {
         messageInput.value = '';
         const adminName = "GIYA Representative";
-        // Create FormData object for file upload
         const formData = new FormData();
         formData.append('post_id', postId);
         formData.append('reply_message', message);
         formData.append('admin_id', sessionStorage.getItem('user_id') || '25');
         formData.append('auto_update_status', true);
-        // Add file if one is selected
+
         if (attachFile.files[0]) {
             formData.append('attachment', attachFile.files[0]);
         }
-        // Add reply to UI immediately
+
         addReplyToUI(message, adminName, 'admin-message', new Date(), attachFile.files[0]?.name);
 
-        // Reset attachment UI
         document.getElementById('attachmentPreview').style.display = 'none';
         document.getElementById('fileName').textContent = '';
         attachFile.value = '';
@@ -437,10 +447,10 @@ async function submitReplyWithoutRefresh(event, postId) {
         );
         refreshTables();
     } catch (error) {
-        console.error('Error submitting reply:', error);
         toastr.error('Failed to send reply');
     }
 }
+
 function addReplyToUI(message, authorName, cssClass, timestamp, attachment = null) {
     const repliesContainer = document.querySelector('.replies-container');
     if (!repliesContainer) return;
@@ -469,6 +479,7 @@ function addReplyToUI(message, authorName, cssClass, timestamp, attachment = nul
     }
     repliesContainer.appendChild(newReply);
 }
+
 async function changeStatus(postId, newStatus) {
     try {
         const statusText = newStatus === '3' ? 'resolved' : 'ongoing';
@@ -502,56 +513,108 @@ async function changeStatus(postId, newStatus) {
             toastr.error('Failed to update status');
         }
     } catch (error) {
-        console.error('Error changing status:', error);
         toastr.error('Failed to update status');
     }
 }
+
 function refreshTables() {
-    ['#postsTable', '#latestPostsTable', '#resolvedPostsTable'].forEach(tableId => {
-        if ($.fn.DataTable.isDataTable(tableId)) {
-            $(tableId).DataTable().ajax.reload(null, false);
+    function safeRefresh(tableVar, tableId) {
+        try {
+            if (tableVar && typeof tableVar.ajax === 'object' && typeof tableVar.ajax.reload === 'function') {
+                tableVar.ajax.reload(function() {
+                    const tableEl = document.getElementById(tableId);
+                    if (tableEl) {
+                        tableEl.style.display = '';
+                        tableEl.style.visibility = 'visible';
+                    }
+                }, false);
+
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            return false;
+        }
+    }
+
+    const refreshed = [];
+
+    if (window.latestPostsTable) {
+        refreshed.push(safeRefresh(window.latestPostsTable, "latestPostsTable"));
+    }
+
+    if (window.postsTable) {
+        refreshed.push(safeRefresh(window.postsTable, "postsTable"));
+    }
+
+    if (window.resolvedPostsTable) {
+        refreshed.push(safeRefresh(window.resolvedPostsTable, "resolvedPostsTable"));
+    }
+
+    if (!refreshed.some(Boolean)) {
+        ['latestPostsTable', 'postsTable', 'resolvedPostsTable'].forEach(tableId => {
+            try {
+                if (document.getElementById(tableId) && $.fn.DataTable.isDataTable(`#${tableId}`)) {
+                    $(`#${tableId}`).DataTable().ajax.reload();
+                }
+            } catch (error) {
+                // Handle error silently
+            }
+        });
+    }
+}
+
+function ensureTablesVisible() {
+    ['latestPostsTable', 'postsTable', 'resolvedPostsTable'].forEach(tableId => {
+        const table = document.getElementById(tableId);
+        if (table) {
+            table.style.display = '';
+            table.style.visibility = 'visible';
         }
     });
 }
+
+setInterval(ensureTablesVisible, 500);
+
 function getStatusBadgeHtml(status) {
     return renderStatusBadge(status);
 }
+
 window.currentFilter = 'all';
-// Fix the DataTables filtering that's causing maximum call stack exceeded error
-// Remove the existing filter and replace with a more stable version
+
 $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(fn => {
-    // Keep all other filters except our problematic one
     return !fn.toString().includes('window.currentFilter');
 });
-// Add the correct filter for regular tables
+
 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-    // Skip filtering for resolved posts tables
     if (settings.nTable.id.includes('resolvedPostsTable')) {
         return true;
     }
-    // For regular tables, apply the filter based on status
+
     const statusCell = data[0];
     if (!statusCell) return true;
-    // Extract text from HTML
+
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = statusCell;
     const statusText = tempDiv.textContent.trim().toLowerCase();
-    // Apply filter
+
     switch(window.currentFilter) {
         case 'all':
-            return statusText !== 'resolved'; // Always exclude resolved posts on main pages
+            return statusText !== 'resolved';
         case 'pending':
             return statusText === 'pending';
         case 'ongoing':
             return statusText === 'ongoing';
         default:
-            return statusText !== 'resolved'; // Default to excluding resolved posts
+            return statusText !== 'resolved';
     }
 });
-// Keep the attachPostFiltering function as a pass-through to GiyaTable
+
 function attachPostFiltering(table, filterButtonSelector) {
     GiyaTable.attachFiltering(table, filterButtonSelector);
 }
+
 function addFilterButtons() {
     const existingFilter = document.querySelector('.filter-buttons-container');
     if (!existingFilter) {
@@ -571,6 +634,7 @@ function addFilterButtons() {
         }
     }
 }
+
 function checkRequiredElements() {
     const elements = [
         'postUserName',
@@ -594,35 +658,36 @@ function checkRequiredElements() {
     });
     return allFound;
 }
+
 function isPOCUser() {
     const userInfo = sessionStorage.getItem('user');
     if (!userInfo) return false;
     const user = JSON.parse(userInfo);
     return user.user_typeId == 5;
 }
+
 function getCurrentUserDepartment() {
     const userInfo = sessionStorage.getItem('user');
     if (!userInfo) return '';
     const user = JSON.parse(userInfo);
     return user.department_name || '';
 }
-// Add headers to axios requests to include user type and department
+
 axios.interceptors.request.use(function (config) {
-    // Add user type and department headers to all requests
     const userInfo = sessionStorage.getItem('user');
     let userTypeId = sessionStorage.getItem('user_typeId');
     let userDepartmentId = sessionStorage.getItem('user_departmentId');
-    // If user info exists but type/department aren't in session storage directly, extract them
+
     if (userInfo && (!userTypeId || !userDepartmentId)) {
         try {
             const user = JSON.parse(userInfo);
             userTypeId = userTypeId || user.user_typeId;
             userDepartmentId = userDepartmentId || user.user_departmentId;
-            // Store these values in session storage for future use
+
             if (user.user_typeId) sessionStorage.setItem('user_typeId', user.user_typeId);
             if (user.user_departmentId) sessionStorage.setItem('user_departmentId', user.user_departmentId);
         } catch (e) {
-            console.error('Error parsing user info:', e);
+            // Handle error silently
         }
     }
     config.headers['User-Type'] = userTypeId || '';
@@ -632,29 +697,24 @@ axios.interceptors.request.use(function (config) {
     return Promise.reject(error);
 });
 
-// Update the axios interceptor to use the correct header names that match what posts.php expects
 axios.interceptors.request.use(function (config) {
-    // Add user type and department headers to all requests
     const userInfo = sessionStorage.getItem('user');
     let userTypeId = sessionStorage.getItem('user_typeId');
     let userDepartmentId = sessionStorage.getItem('user_departmentId');
 
-    // If user info exists but type/department aren't in session storage directly, extract them
     if (userInfo && (!userTypeId || !userDepartmentId)) {
         try {
             const user = JSON.parse(userInfo);
             userTypeId = userTypeId || user.user_typeId;
             userDepartmentId = userDepartmentId || user.user_departmentId;
 
-            // Store these values in session storage for future use
             if (user.user_typeId) sessionStorage.setItem('user_typeId', user.user_typeId);
             if (user.user_departmentId) sessionStorage.setItem('user_departmentId', user.user_departmentId);
         } catch (e) {
-            console.error('Error parsing user info:', e);
+            // Handle error silently
         }
     }
 
-    // Use the exact header names expected in posts.php
     config.headers['X-User-Type'] = userTypeId || '';
     config.headers['X-User-Department'] = userDepartmentId || '';
 
@@ -662,39 +722,3 @@ axios.interceptors.request.use(function (config) {
 }, function (error) {
     return Promise.reject(error);
 });
-
-// Add a function to manually check if endpoints are configured correctly
-function testEndpoints() {
-    const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
-    const departmentId = sessionStorage.getItem('user_departmentId');
-
-    if (!departmentId) {
-        console.warn('No department ID available for testing');
-        return;
-    }
-
-    const endpoints = [
-        `posts.php?action=get_posts_by_department&department_id=${departmentId}`,
-        `posts.php?action=get_student_posts_by_department&department_id=${departmentId}`,
-        `posts.php?action=get_visitor_posts_by_department&department_id=${departmentId}`,
-        `posts.php?action=get_employee_posts_by_department&department_id=${departmentId}`
-    ];
-
-    console.log('Testing department endpoints...');
-
-    endpoints.forEach(endpoint => {
-        fetch(`${baseURL}${endpoint}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log(`Endpoint ${endpoint}: `, data);
-            })
-            .catch(error => {
-                console.error(`Error testing ${endpoint}:`, error);
-            });
-    });
-}
-
-// Run endpoint test if in development
-if (window.location.hostname === 'localhost' && window.userTypeId == 5) {
-    setTimeout(testEndpoints, 3000);
-}

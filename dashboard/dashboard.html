@@ -46,19 +46,20 @@
                 </div>
                 <div class="card-body">
                     <form id="dashboard-filters" class="row g-3 align-items-end">
+                        <!-- All filters in one row -->
                         <!-- Date Range Picker (Two Separate Inputs) -->
-                        <div class="col-lg-2 col-md-6">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <label for="start-date" class="form-label">Start Date</label>
                             <input type="date" id="start-date" class="form-control">
                         </div>
 
-                        <div class="col-lg-2 col-md-6">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <label for="end-date" class="form-label">End Date</label>
                             <input type="date" id="end-date" class="form-control">
                         </div>
 
                         <!-- Department Filter -->
-                        <div class="col-lg-2 col-md-6" id="department-filter-container">
+                        <div class="col-lg-2 col-md-4 col-sm-6" id="department-filter-container">
                             <label for="department-filter" class="form-label">Department</label>
                             <select id="department-filter" class="form-select">
                                 <option value="">All Departments</option>
@@ -66,8 +67,8 @@
                             </select>
                         </div>
 
-                        <!-- Campus Filter (replacing Course filter) -->
-                        <div class="col-lg-2 col-md-6" id="campus-filter-container">
+                        <!-- Campus Filter -->
+                        <div class="col-lg-2 col-md-4 col-sm-6" id="campus-filter-container">
                             <label for="campus-filter" class="form-label">Campus</label>
                             <select id="campus-filter" class="form-select">
                                 <option value="">All Campuses</option>
@@ -76,7 +77,7 @@
                         </div>
 
                         <!-- Post Type Filter -->
-                        <div class="col-lg-2 col-md-6">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <label for="post-type-filter" class="form-label">Post Type</label>
                             <select id="post-type-filter" class="form-select">
                                 <option value="">All Types</option>
@@ -87,7 +88,7 @@
                         </div>
 
                         <!-- Status Filter -->
-                        <div class="col-lg-2 col-md-6">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <label for="status-filter" class="form-label">Status</label>
                             <select id="status-filter" class="form-select">
                                 <option value="">All</option>

@@ -1,40 +1,36 @@
 let pocTable;
 let currentPocData = null;
-const basePocApiUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+const baseApiUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
 $(document).ready(function() {
-    initBasicPocTable();
-    loadDepartmentsDropdown('department');
+    initPocTable();
     setupEventHandlers();
-    checkModals();
 });
 
-function initBasicPocTable() {
+function initPocTable() {
     try {
         if ($.fn.DataTable.isDataTable('#pocTable')) {
             $('#pocTable').DataTable().destroy();
         }
 
-        $('#pocTable').empty();
-        $('#pocTable').append('<thead><tr>' +
-            '<th>Employee ID</th>' +
-            '<th>Name</th>' +
-            '<th>Department</th>' +
-            '<th>Status</th>' +
-            '<th>Actions</th>' +
-            '</tr></thead><tbody></tbody>');
+        const userType = sessionStorage.getItem('user_typeId');
 
         pocTable = $('#pocTable').DataTable({
             ajax: {
-                url: `${basePocApiUrl}masterfile.php?action=poc`,
+                url: `${baseApiUrl}masterfile.php?action=poc`,
                 dataSrc: function(response) {
                     if (!response || !response.success) {
+                        console.error('Error loading POCs:', response?.message || 'Unknown error');
                         return [];
                     }
                     return response.data || [];
                 },
                 error: function(xhr, error, thrown) {
+                    console.error('Error loading POCs:', error, thrown);
                     return [];
+                },
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('X-User-Type', userType || '6');
                 }
             },
             columns: [
@@ -42,10 +38,12 @@ function initBasicPocTable() {
                 {
                     data: null,
                     render: function(data) {
-                        return `${data.user_lastname}, ${data.user_firstname}`;
+                        return `${data.user_firstname} ${data.user_lastname}`;
                     }
                 },
                 { data: 'department_name' },
+                { data: 'user_contact' },
+                { data: 'phinmaed_email' },
                 {
                     data: 'user_status',
                     render: function(data, type, row) {
@@ -84,8 +82,8 @@ function initBasicPocTable() {
             ],
             responsive: true,
             language: {
-                emptyTable: "No data available",
-                zeroRecords: "No matching records found",
+                emptyTable: "No POCs available",
+                zeroRecords: "No matching POCs found",
                 searchPlaceholder: "Search POCs...",
                 search: "",
                 lengthMenu: "_MENU_ per page",
@@ -98,22 +96,12 @@ function initBasicPocTable() {
                 $('.dataTables_filter input')
                     .attr('placeholder', 'Search POCs...')
                     .addClass('form-control-search');
-
-                $('#pocTable tbody tr').css('cursor', 'pointer');
-            }
-        });
-
-        $('#pocTable tbody').on('click', 'tr', function(e) {
-            if (!$(e.target).closest('button').length) {
-                const data = pocTable.row(this).data();
-                if (data) {
-                    showPocDetails(data.user_id);
-                }
             }
         });
 
         setupActionButtonEvents();
     } catch (error) {
+        console.error('Error initializing POC table:', error);
     }
 }
 
@@ -153,21 +141,7 @@ function setupActionButtonEvents() {
         const id = $(this).data('id');
         const isCurrentlyActive = $(this).data('active') == 1;
         const newStatus = isCurrentlyActive ? 0 : 1;
-        const statusText = isCurrentlyActive ? 'deactivate' : 'activate';
-
-        Swal.fire({
-            title: `${isCurrentlyActive ? 'Deactivate' : 'Activate'} POC?`,
-            text: `Are you sure you want to ${statusText} this Point of Contact account?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: isCurrentlyActive ? '#dc3545' : '#28a745',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: `Yes, ${statusText} it!`
-        }).then((result) => {
-            if (result.isConfirmed) {
-                togglePocStatus(id, newStatus);
-            }
-        });
+        togglePocStatus(id, newStatus);
     });
 }
 
@@ -188,21 +162,21 @@ function setupEventHandlers() {
         resetPocPassword(pocId);
     });
 
-    $('#detailsEdit').on('click', function() {
+    $(document).on('click', '#detailsEdit', function() {
         $('#pocDetailsModal').modal('hide');
         if (currentPocData) {
             editPoc(currentPocData.user_id);
         }
     });
 
-    $('#detailsDelete').on('click', function() {
+    $(document).on('click', '#detailsDelete', function() {
         $('#pocDetailsModal').modal('hide');
         if (currentPocData) {
             deletePoc(currentPocData.user_id);
         }
     });
 
-    $('#detailsResetPassword').on('click', function() {
+    $(document).on('click', '#detailsResetPassword', function() {
         $('#pocDetailsModal').modal('hide');
         if (currentPocData) {
             $('#resetPasswordPocId').val(currentPocData.user_id);
@@ -211,28 +185,88 @@ function setupEventHandlers() {
     });
 }
 
+function renderPocForm(data = null) {
+    const isEdit = data !== null;
+
+    const html = `
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="employeeId" class="form-label">Employee ID*</label>
+            <input type="text" class="form-control" id="employeeId" value="${isEdit ? data.user_schoolId : ''}" required>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="firstName" class="form-label">First Name*</label>
+            <input type="text" class="form-control" id="firstName" value="${isEdit ? data.user_firstname : ''}" required>
+        </div>
+        <div class="col-md-6">
+            <label for="lastName" class="form-label">Last Name*</label>
+            <input type="text" class="form-control" id="lastName" value="${isEdit ? data.user_lastname : ''}" required>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="email" class="form-label">PHINMA Email*</label>
+            <input type="email" class="form-control" id="email" placeholder="username@phinmaed.com"
+                value="${isEdit ? data.phinmaed_email : ''}" required>
+            <small class="text-muted">Must be a valid PHINMA email address</small>
+        </div>
+        <div class="col-md-6">
+            <label for="contact" class="form-label">Contact Number</label>
+            <input type="tel" class="form-control" id="contact" placeholder="09xxxxxxxxx"
+                value="${isEdit ? (data.user_contact || '') : ''}">
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="department" class="form-label">Department*</label>
+            <select class="form-select" id="department" required>
+                <option value="">Select Department</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password">
+            <small class="text-muted">Leave blank to keep current password (default: phinma-coc)</small>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" id="isActive" ${isEdit && data.user_status == 1 ? 'checked' : ''}>
+                <label class="form-check-label" for="isActive">Active account</label>
+            </div>
+        </div>
+    </div>
+    <div class="border-top pt-3 text-end">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary ms-2">Save POC</button>
+    </div>`;
+
+    $('#pocForm').html(html);
+
+    // Load departments dropdown
+    loadDepartmentsDropdown('department', isEdit ? data.user_departmentId : null);
+}
+
 function showPocDetails(pocId) {
+    const userType = sessionStorage.getItem('user_typeId');
+
     $.ajax({
-        url: `${basePocApiUrl}masterfile.php?action=get_poc`,
+        url: `${baseApiUrl}masterfile.php?action=get_poc`,
         type: 'GET',
         data: { id: pocId },
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success && response.data) {
                 const poc = response.data;
                 currentPocData = poc;
 
-                $('#detailsEmployeeId').text(poc.user_schoolId);
-
-                let fullName = `${poc.user_firstname} `;
-                if (poc.user_middlename) {
-                    fullName += `${poc.user_middlename} `;
-                }
-                fullName += poc.user_lastname;
-                if (poc.user_suffix) {
-                    fullName += `, ${poc.user_suffix}`;
-                }
-                $('#detailsFullName').text(fullName);
-
+                $('#detailsEmployeeId').text(poc.user_schoolId || 'N/A');
+                $('#detailsFullName').text(`${poc.user_firstname} ${poc.user_lastname}`);
                 $('#detailsEmail').text(poc.phinmaed_email || 'Not provided');
                 $('#detailsContact').text(poc.user_contact || 'Not provided');
                 $('#detailsDepartment').text(poc.department_name || 'Not assigned');
@@ -241,35 +275,13 @@ function showPocDetails(pocId) {
                     $('#detailsStatusBadge')
                         .removeClass('bg-danger')
                         .addClass('bg-success')
-                        .html(`Active <button class="btn btn-sm btn-outline-light ms-2 toggle-status-btn" data-id="${poc.user_id}" data-status="0">Deactivate</button>`);
+                        .text('Active');
                 } else {
                     $('#detailsStatusBadge')
                         .removeClass('bg-success')
                         .addClass('bg-danger')
-                        .html(`Inactive <button class="btn btn-sm btn-outline-light ms-2 toggle-status-btn" data-id="${poc.user_id}" data-status="1">Activate</button>`);
+                        .text('Inactive');
                 }
-
-                $('.toggle-status-btn').on('click', function(e) {
-                    e.preventDefault();
-                    const id = $(this).data('id');
-                    const newStatus = $(this).data('status');
-                    const action = newStatus == 1 ? 'activate' : 'deactivate';
-
-                    Swal.fire({
-                        title: `${newStatus == 1 ? 'Activate' : 'Deactivate'} POC?`,
-                        text: `Are you sure you want to ${action} this Point of Contact account?`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: newStatus == 1 ? '#28a745' : '#dc3545',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: `Yes, ${action} it!`
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            togglePocStatus(id, newStatus);
-                            $('#pocDetailsModal').modal('hide');
-                        }
-                    });
-                });
 
                 $('#pocDetailsModal').modal('show');
             } else {
@@ -281,21 +293,30 @@ function showPocDetails(pocId) {
 }
 
 function editPoc(pocId) {
+    const userType = sessionStorage.getItem('user_typeId');
+
     $.ajax({
-        url: `${basePocApiUrl}masterfile.php?action=get_poc`,
+        url: `${baseApiUrl}masterfile.php?action=get_poc`,
         type: 'GET',
         data: { id: pocId },
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success && response.data) {
                 const poc = response.data;
 
+                // Set form mode and POC ID
                 $('#pocForm').data('mode', 'edit');
                 $('#pocForm').data('id', poc.user_id);
 
+                // Render form with POC data
                 renderPocForm(poc);
 
+                // Update modal title
                 $('#pocModalLabel').text('Edit Point of Contact');
 
+                // Show the modal
                 $('#pocModal').modal('show');
             } else {
                 Swal.fire('Error', response.message || 'Failed to load POC data', 'error');
@@ -306,112 +327,54 @@ function editPoc(pocId) {
 }
 
 function showAddPocForm() {
-    $('#pocForm')[0].reset();
+    // Reset form
     $('#pocForm').removeData('id');
     $('#pocForm').data('mode', 'add');
 
+    // Render empty form
     renderPocForm();
 
+    // Set modal title
     $('#pocModalLabel').text('Add Point of Contact');
 
-    loadDepartmentsDropdown('department');
-
+    // Show modal
     $('#pocModal').modal('show');
 }
 
-function renderPocForm(poc = null) {
-    const isEdit = poc !== null;
-
-    const formHtml = `
-        <div class="row mb-3">
-            <div class="col-md-12">
-                <label for="employeeId" class="form-label">Employee ID*</label>
-                <input type="text" class="form-control" id="employeeId" value="${isEdit ? poc.user_schoolId : ''}" required>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="firstName" class="form-label">First Name*</label>
-                <input type="text" class="form-control" id="firstName" value="${isEdit ? poc.user_firstname : ''}" required>
-            </div>
-            <div class="col-md-6">
-                <label for="lastName" class="form-label">Last Name*</label>
-                <input type="text" class="form-control" id="lastName" value="${isEdit ? poc.user_lastname : ''}" required>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="middleName" class="form-label">Middle Name</label>
-                <input type="text" class="form-control" id="middleName" value="${isEdit ? poc.user_middlename || '' : ''}">
-            </div>
-            <div class="col-md-6">
-                <label for="suffix" class="form-label">Suffix</label>
-                <input type="text" class="form-control" id="suffix" value="${isEdit ? poc.user_suffix || '' : ''}" placeholder="Jr, Sr, III, etc">
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="department" class="form-label">Department*</label>
-                <select class="form-select" id="department" required>
-                    <option value="">Select Department</option>
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="contact" class="form-label">Contact Number (Optional)</label>
-                <input type="tel" class="form-control" id="contact" value="${isEdit ? poc.user_contact || '' : ''}" placeholder="09xxxxxxxxx">
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-12">
-                <label for="email" class="form-label">PHINMA Email*</label>
-                <input type="email" class="form-control" id="email" value="${isEdit ? poc.phinmaed_email || '' : ''}" placeholder="username@phinmaed.com" required>
-                <small class="text-muted">Must be a valid PHINMA email address</small>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-12">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="isActive" ${!isEdit || poc.user_status == 1 ? 'checked' : ''}>
-                    <label class="form-check-label" for="isActive">Active account</label>
-                </div>
-            </div>
-        </div>
-        <div class="border-top pt-3 text-end">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary ms-2">${isEdit ? 'Update' : 'Add'} POC</button>
-        </div>
-    `;
-
-    $('#pocForm').html(formHtml);
-
-    if (isEdit) {
-        loadDepartmentsDropdown('department', poc.user_departmentId);
-    }
-}
-
 function savePoc() {
+    const userType = sessionStorage.getItem('user_typeId');
     const formData = {
         mode: $('#pocForm').data('mode') || 'add',
         id: $('#pocForm').data('id'),
         employeeId: $('#employeeId').val(),
         firstName: $('#firstName').val(),
-        middleName: $('#middleName').val(),
         lastName: $('#lastName').val(),
-        suffix: $('#suffix').val(),
-        departmentId: $('#department').val(),
-        contact: $('#contact').val(),
         email: $('#email').val(),
+        contact: $('#contact').val(),
+        departmentId: $('#department').val(),
+        password: $('#password').val(),
         isActive: $('#isActive').is(':checked') ? 1 : 0
     };
 
     $.ajax({
-        url: `${basePocApiUrl}masterfile.php?action=submit_poc`,
+        url: `${baseApiUrl}masterfile.php?action=submit_poc`,
         type: 'POST',
         data: formData,
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success) {
                 $('#pocModal').modal('hide');
-                showSuccessMessage(formData.mode === 'add' ? 'POC added successfully' : 'POC updated successfully');
+
+                Swal.fire({
+                    title: 'Success',
+                    text: formData.mode === 'add' ? 'POC added successfully' : 'POC updated successfully',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
                 pocTable.ajax.reload();
             } else {
                 Swal.fire('Error', response.message || 'Failed to save POC', 'error');
@@ -421,19 +384,68 @@ function savePoc() {
     });
 }
 
+function deletePoc(pocId) {
+    Swal.fire({
+        title: 'Delete POC',
+        text: "Are you sure you want to delete this Point of Contact? This action cannot be undone.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, delete it'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const userType = sessionStorage.getItem('user_typeId');
+
+            $.ajax({
+                url: `${baseApiUrl}masterfile.php?action=poc_delete`,
+                type: 'POST',
+                data: { id: pocId },
+                headers: {
+                    'X-User-Type': userType || '6'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: 'Success',
+                            text: 'POC deleted successfully',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        pocTable.ajax.reload();
+                    } else {
+                        Swal.fire('Error', response.message || 'Failed to delete POC', 'error');
+                    }
+                },
+                error: handleAjaxError
+            });
+        }
+    });
+}
+
 function togglePocStatus(pocId, isActive) {
+    const userType = sessionStorage.getItem('user_typeId');
+
     $.ajax({
-        url: `${basePocApiUrl}masterfile.php?action=toggle_poc_status`,
+        url: `${baseApiUrl}masterfile.php?action=toggle_poc_status`,
         type: 'POST',
         data: { id: pocId, status: isActive },
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success) {
-                const statusText = isActive ? 'activated' : 'deactivated';
-                showSuccessMessage(`POC account ${statusText} successfully`);
-                pocTable.ajax.reload(null, false);
+                Swal.fire({
+                    title: 'Success',
+                    text: isActive ? 'POC activated successfully' : 'POC deactivated successfully',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                pocTable.ajax.reload();
             } else {
                 Swal.fire('Error', response.message || 'Failed to update status', 'error');
-                pocTable.ajax.reload(null, false);
             }
         },
         error: handleAjaxError
@@ -441,71 +453,105 @@ function togglePocStatus(pocId, isActive) {
 }
 
 function resetPocPassword(pocId) {
-    const requestData = { user_id: pocId };
+    const userType = sessionStorage.getItem('user_typeId');
 
     $.ajax({
-        url: `${basePocApiUrl}giya.php?action=reset_password`,
+        url: `${baseApiUrl}giya.php?action=reset_password`,
         type: 'POST',
-        data: requestData,
-        dataType: 'json',
+        data: { user_id: pocId },
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             $('#resetPasswordModal').modal('hide');
 
             if (response.success) {
-                showSuccessMessage('Password has been reset to default (phinma-coc)');
+                Swal.fire({
+                    title: 'Success',
+                    text: 'Password has been reset to default (phinma-coc)',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             } else {
                 Swal.fire('Error', response.message || 'Failed to reset password', 'error');
             }
         },
         error: function(xhr, status, error) {
-            try {
-                const errorResponse = JSON.parse(xhr.responseText);
-                Swal.fire('Error', errorResponse.message || 'Failed to reset password', 'error');
-            } catch (e) {
-                handleAjaxError(xhr, status, error);
-            }
-
             $('#resetPasswordModal').modal('hide');
+            handleAjaxError(xhr, status, error);
         }
     });
 }
 
 function validatePocForm() {
-    const employeeId = $('#employeeId').val();
-    if (!employeeId || employeeId.trim() === '') {
+    const employeeId = $('#employeeId').val().trim();
+    if (!employeeId) {
         Swal.fire('Error', 'Employee ID is required', 'error');
         return false;
     }
 
-    const firstName = $('#firstName').val();
-    const lastName = $('#lastName').val();
-    if (!firstName || firstName.trim() === '' || !lastName || lastName.trim() === '') {
+    const firstName = $('#firstName').val().trim();
+    const lastName = $('#lastName').val().trim();
+    if (!firstName || !lastName) {
         Swal.fire('Error', 'First name and last name are required', 'error');
         return false;
     }
 
-    const department = $('#department').val();
-    if (!department) {
-        Swal.fire('Error', 'Please select a department', 'error');
+    const email = $('#email').val().trim();
+    if (!email) {
+        Swal.fire('Error', 'Email is required', 'error');
         return false;
     }
 
-    const contact = $('#contact').val();
-    if (contact && contact.trim() !== '' && !validatePhoneNumber(contact)) {
+    if (!validatePhinmaEmail(email)) {
+        Swal.fire('Error', 'Please enter a valid PHINMA email address (@phinmaed.com)', 'error');
+        return false;
+    }
+
+    const contact = $('#contact').val().trim();
+    if (contact && !validatePhoneNumber(contact)) {
         Swal.fire('Error', 'Please enter a valid Philippine mobile number (e.g., 09xxxxxxxxx)', 'error');
         return false;
     }
 
-    const email = $('#email').val();
-    if (email && email.trim() !== '' && !validateEmail(email)) {
-        Swal.fire('Error', 'Please enter a valid PHINMA email address (@phinmaed.com)', 'error');
+    const departmentId = $('#department').val();
+    if (!departmentId) {
+        Swal.fire('Error', 'Please select a department', 'error');
         return false;
     }
 
     return true;
 }
 
-function validateEmail(email) {
+function loadDepartmentsDropdown(selectId, selectedId = null) {
+    const userType = sessionStorage.getItem('user_typeId');
+
+    $.ajax({
+        url: `${baseApiUrl}masterfile.php?action=departments`,
+        type: 'GET',
+        headers: {
+            'X-User-Type': userType || '6'
+        },
+        success: function(response) {
+            if (response.success && response.data) {
+                let options = '<option value="">Select Department</option>';
+
+                response.data.forEach(function(dept) {
+                    const isSelected = selectedId && dept.department_id == selectedId ? 'selected' : '';
+                    options += `<option value="${dept.department_id}" ${isSelected}>${dept.department_name}</option>`;
+                });
+
+                $(`#${selectId}`).html(options);
+            }
+        },
+        error: function() {
+            $(`#${selectId}`).html('<option value="">Error loading departments</option>');
+        }
+    });
+}
+
+function validatePhinmaEmail(email) {
     const re = /^[a-zA-Z0-9._%+-]+@phinmaed\.com$/;
     return re.test(String(email).toLowerCase());
 }
@@ -515,80 +561,8 @@ function validatePhoneNumber(phone) {
     return re.test(String(phone));
 }
 
-function checkModals() {
-    if ($('#pocDetailsModal').length === 0) {
-        createPocDetailsModal();
-    }
-
-    if ($('#resetPasswordModal').length === 0) {
-        createResetPasswordModal();
-    }
-}
-
-function createPocDetailsModal() {
-    const modalHtml = `
-    <div class="modal fade" id="pocDetailsModal" tabindex="-1" aria-labelledby="pocDetailsModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="pocDetailsModalTitle">POC Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Employee ID:</strong> <span id="detailsEmployeeId"></span></p>
-                    <p><strong>Full Name:</strong> <span id="detailsFullName"></span></p>
-                    <p><strong>Email:</strong> <span id="detailsEmail"></span></p>
-                    <p><strong>Contact:</strong> <span id="detailsContact"></span></p>
-                    <p><strong>Department:</strong> <span id="detailsDepartment"></span></p>
-                    <p><strong>Status:</strong> <span id="detailsStatusBadge" class="badge"></span></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-warning" id="detailsResetPassword">Reset Password</button>
-                    <button type="button" class="btn btn-primary" id="detailsEdit">Edit</button>
-                    <button type="button" class="btn btn-danger" id="detailsDelete">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>`;
-
-    $('body').append(modalHtml);
-}
-
-function createResetPasswordModal() {
-    const modalHtml = `
-    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="resetPasswordModalTitle">Reset Password</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to reset this account's password to the default (phinma-coc)?</p>
-                    <input type="hidden" id="resetPasswordPocId">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-warning" id="confirmResetPassword">Reset Password</button>
-                </div>
-            </div>
-        </div>
-    </div>`;
-
-    $('body').append(modalHtml);
-}
-
-function showSuccessMessage(message) {
-    Swal.fire({
-        title: 'Success',
-        text: message,
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-    });
-}
-
 function handleAjaxError(xhr, status, error) {
+    console.error('Ajax Error:', status, error);
     Swal.fire({
         title: 'Error',
         text: 'An error occurred while communicating with the server',

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const quickViewTableBody = document.getElementById('quickViewTableBody');
     const noResultsMessage = document.getElementById('noResultsMessage') ||
                             createNoResultsElement();
+    const debugInfo = document.getElementById('debugInfo');
 
     function createNoResultsElement() {
         const element = document.createElement('div');
@@ -14,6 +15,23 @@ document.addEventListener('DOMContentLoaded', () => {
         element.textContent = 'No inquiries found for this ID or email.';
         quickViewForm.after(element);
         return element;
+    }
+
+
+    function getBaseUrl() {
+
+        const storedBaseUrl = sessionStorage.getItem('baseURL');
+        if (storedBaseUrl) {
+            return storedBaseUrl;
+        }
+
+
+        if (window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1') {
+            return 'http://localhost/api/';
+        } else {
+
+            return '/api/';
+        }
     }
 
     quickViewForm.addEventListener('submit', async (e) => {
@@ -29,53 +47,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
         quickViewResults.style.display = 'none';
         noResultsMessage.style.display = 'none';
+        if (debugInfo) debugInfo.style.display = 'none';
 
         try {
-            const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+
+            const baseURL = getBaseUrl();
             const apiUrl = `${baseURL}posts.php?action=get_quick_view&identifier=${encodeURIComponent(identifier)}`;
-            const response = await axios.get(apiUrl);
+
+            if (debugInfo) {
+                debugInfo.textContent = `Calling API: ${apiUrl}`;
+                debugInfo.style.display = 'block';
+            }
+
+            console.log("Attempting API call to:", apiUrl);
+
+
+            const response = await axios.get(apiUrl, { timeout: 15000 });
+            console.log("API Response:", response.data);
 
             toastr.clear(loadingToast);
 
-            const responseData = response.data;
-            let postsData = null;
 
-            if (responseData.status === 'success' && responseData.data && Array.isArray(responseData.data)) {
-                postsData = responseData.data;
-            } else if (Array.isArray(responseData)) {
-                postsData = responseData;
-            } else if (responseData.posts && Array.isArray(responseData.posts)) {
-                postsData = responseData.posts;
-            } else if (responseData.data && Array.isArray(responseData.data)) {
-                postsData = responseData.data;
-            }
+            if (response.data && response.data.status === 'success' && response.data.data && response.data.data.length > 0) {
 
-            if (postsData && postsData.length > 0) {
-                quickViewTableBody.innerHTML = postsData.map(item => `
+                quickViewTableBody.innerHTML = response.data.data.map(item => `
                     <tr>
                         <td>#${item.post_id}</td>
-                        <td>${item.postType_name || item.type || 'Unknown'}</td>
+                        <td>${item.postType_name || 'Unknown'}</td>
                         <td>${formatDate(item.post_date)}</td>
                         <td><span class="badge ${getStatusBadgeClass(item.post_status)}">${getStatusText(item.post_status)}</span></td>
                     </tr>
                 `).join('');
 
                 quickViewResults.style.display = 'block';
-                toastr.success(`Found ${postsData.length} inquiries`);
+                toastr.success(`Found ${response.data.data.length} inquiries`);
+
+
+                sessionStorage.setItem('baseURL', baseURL);
+
+                if (debugInfo) {
+                    debugInfo.textContent = `Found ${response.data.data.length} results for: ${identifier}`;
+                    debugInfo.style.display = 'block';
+                }
             } else {
                 noResultsMessage.style.display = 'block';
                 toastr.info('No inquiries found for this ID or email.');
             }
         } catch (error) {
             toastr.clear(loadingToast);
+            console.error("API Error:", error);
+
 
             if (error.response) {
-                const errorMessage = error.response.data?.message || 'Server returned an error';
+
+                const errorMessage = error.response.data?.message || `Server error ${error.response.status}`;
                 toastr.error(`Error: ${errorMessage}`);
+
+                if (debugInfo) {
+                    debugInfo.textContent = `Server Error (${error.response.status}): ${errorMessage}`;
+                    debugInfo.style.display = 'block';
+                }
             } else if (error.request) {
+
                 toastr.error('No response from server. Please check your connection.');
+
+
+                const currentBaseUrl = getBaseUrl();
+                let suggestion = "Suggestions: ";
+
+                if (currentBaseUrl.startsWith('http://')) {
+                    suggestion += "Server might require HTTPS. ";
+                } else if (currentBaseUrl.startsWith('https://')) {
+                    suggestion += "Try using HTTP instead. ";
+                }
+
+                suggestion += "Check that the API is running at " + currentBaseUrl;
+
+                if (debugInfo) {
+                    debugInfo.innerHTML = `Error: No response received from server<br><small>${suggestion}</small>`;
+                    debugInfo.style.display = 'block';
+                }
             } else {
-                toastr.error('Error sending request. Please try again later.');
+
+                toastr.error('Error sending request: ' + error.message);
+
+                if (debugInfo) {
+                    debugInfo.textContent = `Error: ${error.message}`;
+                    debugInfo.style.display = 'block';
+                }
             }
         }
     });
@@ -86,11 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const parts = dateStr.split(/[-\/]/);
 
             if (parts.length === 3) {
-                if (parseInt(parts[0]) <= 12) {
-                    return `${parts[0]}/${parts[1]}/${parts[2]}`;
-                } else {
-                    return `${parts[1]}/${parts[2]}/${parts[0]}`;
-                }
+                return dateStr;
             }
 
             const date = new Date(dateStr);
@@ -134,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             quickViewForm.reset();
             quickViewResults.style.display = 'none';
             noResultsMessage.style.display = 'none';
+            if (debugInfo) debugInfo.style.display = 'none';
             quickViewModal.show();
         });
     }

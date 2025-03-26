@@ -4,8 +4,6 @@ require 'db_connection.php';
 // Ensure proper JSON encoding with error handling
 function outputJSON($data) {
     header('Content-Type: application/json');
-    // Log the raw data for debugging
-    error_log("Output data before encoding: " . print_r($data, true));
 
     $json = json_encode($data);
 
@@ -210,25 +208,16 @@ class PostsHandler
             $userTypeId = $userInfo['userType'];
             $userDepartmentId = $userInfo['userDepartment'];
 
-            // Initialize $sql variable before using it
             $sql = "
                 SELECT
-                    p.post_id,
-                    p.post_title,
-                    p.post_message,
-                    DATE_FORMAT(p.post_date, '%m-%d-%Y') as post_date,
-                    p.post_time,
-                    p.post_status,
-                    p.post_campusId,
-                    p.is_forwarded,
-                    pt.postType_name,
-                    u.user_id,
-                    u.user_status,
+                    p.*,
                     u.user_typeId,
-                    CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
-                    u.user_schoolId,
+                    CONCAT(u.user_firstname, ' ', u.user_lastname) as user_fullname,
+                    pt.postType_name,
+                    COALESCE(d2.department_name, d1.department_name, 'Not Assigned') as department_name,
                     cp.campus_name,
-                    COALESCE(d2.department_name, d1.department_name, 'Not Assigned') as department_name
+                    i.inquiry_type,
+                    fb.user_firstname as forwarded_by_name
                 FROM tbl_giya_posts p
                 JOIN tblusers u ON p.post_userId = u.user_id
                 JOIN tbl_giya_posttype pt ON p.postType_id = pt.postType_id
@@ -236,18 +225,23 @@ class PostsHandler
                 LEFT JOIN tbldepartments d1 ON c.course_departmentId = d1.department_id
                 LEFT JOIN tbldepartments d2 ON p.post_departmentId = d2.department_id
                 LEFT JOIN tblcampus cp ON p.post_campusId = cp.campus_id
+                LEFT JOIN tbl_giya_inquiry_types i ON p.inquiry_typeId = i.inquiry_id
+                LEFT JOIN tblusers fb ON p.forwarded_by = fb.user_id
                 WHERE u.user_typeId = 2 ";
 
             if ($userTypeId == 5 && $userDepartmentId) {
-                $sql .= " AND (p.is_forwarded = 1 AND p.post_departmentId = ?)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([$userDepartmentId]);
+                // For POC users, show posts that are either:
+                // 1. Forwarded to their department
+                // 2. Originally assigned to their department
+                $sql .= " AND (p.post_departmentId = ? OR (p.is_forwarded = 1 AND p.post_departmentId = ?))";
+                $params = [$userDepartmentId, $userDepartmentId];
             } else {
-                $sql .= " ORDER BY p.post_date DESC, p.post_time DESC";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute();
+                $params = [];
             }
 
+            $sql .= " ORDER BY p.post_date DESC, p.post_time DESC";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
             $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             return [
@@ -275,41 +269,35 @@ class PostsHandler
             $userTypeId = $userInfo['userType'];
             $userDepartmentId = $userInfo['userDepartment'];
 
-            // Initialize $sql variable before using it
             $sql = "
                 SELECT
                     p.*,
-                    u.user_firstname,
-                    u.user_lastname,
                     u.user_typeId,
                     CONCAT(u.user_firstname, ' ', u.user_lastname) as user_fullname,
-                    u.user_schoolId,
-                    t.postType_name,
+                    pt.postType_name,
                     d.department_name,
-                    c.campus_name,
+                    cp.campus_name,
                     i.inquiry_type,
-                    fb.user_firstname as forwarded_by_firstname,
-                    fb.user_lastname as forwarded_by_lastname,
-                    CONCAT(fb.user_firstname, ' ', fb.user_lastname) as forwarded_by_name
+                    fb.user_firstname as forwarded_by_name
                 FROM tbl_giya_posts p
                 JOIN tblusers u ON p.post_userId = u.user_id
-                JOIN tbl_giya_posttype t ON p.postType_id = t.postType_id
+                JOIN tbl_giya_posttype pt ON p.postType_id = pt.postType_id
                 LEFT JOIN tbldepartments d ON p.post_departmentId = d.department_id
-                LEFT JOIN tblcampus c ON p.post_campusId = c.campus_id
+                LEFT JOIN tblcampus cp ON p.post_campusId = cp.campus_id
                 LEFT JOIN tbl_giya_inquiry_types i ON p.inquiry_typeId = i.inquiry_id
                 LEFT JOIN tblusers fb ON p.forwarded_by = fb.user_id
                 WHERE u.user_typeId = 1 ";
 
             if ($userTypeId == 5 && $userDepartmentId) {
-                $sql .= " AND (p.is_forwarded = 1 AND p.post_departmentId = ?)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([$userDepartmentId]);
+                $sql .= " AND (p.post_departmentId = ? OR (p.is_forwarded = 1 AND p.post_departmentId = ?))";
+                $params = [$userDepartmentId, $userDepartmentId];
             } else {
-                $sql .= " ORDER BY p.post_date DESC, p.post_time DESC";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute();
+                $params = [];
             }
 
+            $sql .= " ORDER BY p.post_date DESC, p.post_time DESC";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
             $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             return [
@@ -356,14 +344,32 @@ class PostsHandler
                 }
             }
 
-            // Insert reply with attachment
+            // Check post status
+            $checkStmt = $this->pdo->prepare("SELECT post_status FROM tbl_giya_posts WHERE post_id = ?");
+            $checkStmt->execute([$data['post_id']]);
+            $status = $checkStmt->fetchColumn();
+
+            if ($status == 2) {
+                return ["success" => false, "message" => "Cannot reply to resolved posts"];
+            }
+
+            // Check if admin
+            $userTypeStmt = $this->pdo->prepare("SELECT user_typeId FROM tblusers WHERE user_id = ?");
+            $userTypeStmt->execute([$data['admin_id']]);
+            $userType = $userTypeStmt->fetchColumn();
+
+            $isAdminUser = in_array($userType, ['3', '4', '5', '6']);
+
+            // FIXED: Remove duplicate insert and only insert reply once
             $stmt = $this->pdo->prepare("
                 INSERT INTO tbl_giya_reply (
-                    reply_userId, reply_postId, reply_message,
-                    reply_date, reply_time, attachment_path
-                ) VALUES (
-                    ?, ?, ?, CURDATE(), CURTIME(), ?
-                )
+                    reply_userId,
+                    reply_postId,
+                    reply_date,
+                    reply_time,
+                    reply_message,
+                    attachment_path
+                ) VALUES (?, ?, CURDATE(), CURTIME(), ?, ?)
             ");
 
             $stmt->execute([
@@ -373,35 +379,7 @@ class PostsHandler
                 $attachmentPath
             ]);
 
-            $checkStmt = $this->pdo->prepare("SELECT post_status FROM tbl_giya_posts WHERE post_id = ?");
-            $checkStmt->execute([$data['post_id']]);
-            $status = $checkStmt->fetchColumn();
-
-            if ($status == 3) {
-                return ["success" => false, "message" => "Cannot reply to resolved posts"];
-            }
-
-            $userTypeStmt = $this->pdo->prepare("SELECT user_typeId FROM tblusers WHERE user_id = ?");
-            $userTypeStmt->execute([$data['admin_id']]);
-            $userType = $userTypeStmt->fetchColumn();
-
-            $isAdminUser = in_array($userType, ['3', '4', '5', '6']);
-
-            $stmt = $this->pdo->prepare("
-                INSERT INTO tbl_giya_reply (
-                    reply_userId,
-                    reply_postId,
-                    reply_date,
-                    reply_time,
-                    reply_message
-                ) VALUES (?, ?, CURDATE(), CURTIME(), ?)
-            ");
-            $stmt->execute([
-                $data['admin_id'],
-                $data['post_id'],
-                $data['reply_message']
-            ]);
-
+            // Update post status if admin reply and post is pending
             if ($isAdminUser && $status == 0) {
                 $updateStmt = $this->pdo->prepare("
                     UPDATE tbl_giya_posts
@@ -424,6 +402,7 @@ class PostsHandler
         }
     }
 
+    // FIXED: Fix the duplicate reply issue in addReply and handleSubmitReply functions
     public function addReply($data)
     {
         if (!isset($data['post_id']) || !isset($data['user_id']) || !isset($data['content'])) {
@@ -445,7 +424,17 @@ class PostsHandler
 
             $isAdminUser = in_array($userType, ['3', '4', '5', '6']);
 
-            $isRead = $isAdminUser ? 0 : 1;
+            // Get post owner ID for notification purposes
+            $postOwnerStmt = $this->pdo->prepare("SELECT post_userId FROM tbl_giya_posts WHERE post_id = ?");
+            $postOwnerStmt->execute([$data['post_id']]);
+            $postOwnerId = $postOwnerStmt->fetchColumn();
+
+            // Determine if this is a self-reply (user replying to their own post)
+            $isSelfReply = ($data['user_id'] == $postOwnerId);
+
+            // If admin is replying to user's post, mark as unread for notification
+            // If user is replying to their own post, no notification needed
+            $isRead = ($isAdminUser && !$isSelfReply) ? 0 : 1;
 
             $stmt = $this->pdo->prepare("
                 INSERT INTO tbl_giya_reply (
@@ -479,6 +468,7 @@ class PostsHandler
                 "reply_id" => $this->pdo->lastInsertId()
             ];
         } catch (\PDOException $e) {
+            error_log("Error in addReply: " . $e->getMessage());
             return [
                 "status" => "error",
                 "message" => "Database error: " . $e->getMessage()
@@ -628,55 +618,65 @@ class PostsHandler
         }
     }
 
-    public function checkNewReplies($userId)
-    {
+    // FIXED: Check for the correct response format
+    public function checkNewReplies($userId) {
         try {
+            if (!$userId) {
+                return ["success" => false, "message" => "User ID is required"];
+            }
+
             $stmt = $this->pdo->prepare("
                 SELECT COUNT(*) as unread_count
-                FROM tbl_giya_posts p
-                JOIN tbl_giya_reply r ON p.post_id = r.reply_postId
-                JOIN tblusers u ON r.reply_userId = u.user_id
+                FROM tbl_giya_reply r
+                JOIN tbl_giya_posts p ON r.reply_postId = p.post_id
                 WHERE p.post_userId = ?
-                AND u.user_typeId IN (3, 4, 5, 6)
                 AND r.is_read = 0
                 AND p.post_status != 2
+                AND r.reply_userId != p.post_userId  -- Exclude self-replies
             ");
             $stmt->execute([$userId]);
             $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
+            $unreadCount = (int)$result['unread_count'];
+
             return [
-                "status" => "success",
-                "unreadCount" => (int)$result['unread_count']
+                "success" => true,
+                "unreadCount" => $unreadCount
             ];
         } catch (\PDOException $e) {
             return [
-                "status" => "error",
+                "success" => false,
                 "message" => "Database error: " . $e->getMessage()
             ];
         }
     }
 
-    public function markRepliesRead($userId)
-    {
+    // FIXED: Ensure consistent response format
+    public function markRepliesRead($userId) {
         try {
+            if (!$userId) {
+                return ["success" => false, "message" => "User ID is required"];
+            }
+
             $stmt = $this->pdo->prepare("
                 UPDATE tbl_giya_reply r
                 JOIN tbl_giya_posts p ON r.reply_postId = p.post_id
-                JOIN tblusers u ON r.reply_userId = u.user_id
                 SET r.is_read = 1
                 WHERE p.post_userId = ?
-                AND u.user_typeId IN (3, 4, 5, 6)
                 AND r.is_read = 0
             ");
             $stmt->execute([$userId]);
 
+            $count = $stmt->rowCount();
+
             return [
-                "status" => "success",
-                "message" => "All notifications marked as read"
+                "success" => true,
+                "message" => "All notifications marked as read",
+                "count" => $count
             ];
         } catch (\PDOException $e) {
             return [
-                "status" => "error",
+                "success" => false,
                 "message" => "Database error: " . $e->getMessage()
             ];
         }
@@ -690,7 +690,6 @@ class PostsHandler
             }
 
             $identifier = trim($identifier);
-            error_log("Quick View Request for identifier: " . $identifier);
 
             $stmt = $this->pdo->prepare("
                 SELECT
@@ -714,8 +713,6 @@ class PostsHandler
             $stmt->execute([$likePattern, $likePattern, $likePattern]);
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            error_log("Quick View found " . count($results) . " results for: " . $identifier);
-
             if (empty($results)) {
                 return ["status" => "error", "message" => "No inquiries found for the provided ID or email"];
             }
@@ -726,7 +723,6 @@ class PostsHandler
                 "count" => count($results)
             ];
         } catch (PDOException $e) {
-            error_log("Error in handleQuickView: " . $e->getMessage());
             return [
                 "status" => "error",
                 "message" => "Database error: " . $e->getMessage()
@@ -1031,239 +1027,179 @@ class PostsHandler
     public function handleGetResolvedPosts()
     {
         try {
-            $stmt = $this->pdo->prepare("
-                SELECT
-                    p.post_id,
-                    p.post_title,
-                    p.post_message,
-                    DATE_FORMAT(p.post_date, '%m-%d-%Y') as post_date,
-                    p.post_time,
-                    p.post_status,
-                    p.post_campusId,
-                    pt.postType_name,
-                    u.user_id,
-                    u.user_status,
-                    u.user_typeId,  /* Explicitly include user_typeId */
-                    CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
-                    u.user_schoolId,
-                    cp.campus_name,
-                    COALESCE(d2.department_name, d1.department_name, 'Not Assigned') as department_name
+            // Check if user is logged in
+            $userTypeAndDepartment = $this->getUserTypeAndDepartment();
+            $userTypeId = $userTypeAndDepartment['user_typeId'] ?? null;
+            $departmentId = $userTypeAndDepartment['department_id'] ?? null;
+
+            // Set query parameters
+            $params = [];
+            $query = "
+                SELECT p.*, pt.postType_name,
+                CONCAT(u.user_firstname, ' ', u.user_lastname) as user_fullname,
+                u.user_schoolId, u.user_typeId, ut.user_type,
+                d.department_name, c.campus_name,
+                i.inquiry_type
                 FROM tbl_giya_posts p
                 JOIN tblusers u ON p.post_userId = u.user_id
+                JOIN tblusertype ut ON u.user_typeId = ut.user_typeId
                 JOIN tbl_giya_posttype pt ON p.postType_id = pt.postType_id
-                LEFT JOIN tblcourses c ON u.user_courseId = c.course_id
-                LEFT JOIN tbldepartments d1 ON c.course_departmentId = d1.department_id
-                LEFT JOIN tbldepartments d2 ON p.post_departmentId = d2.department_id
-                LEFT JOIN tblcampus cp ON p.post_campusId = cp.campus_id
-                WHERE p.post_status IN (2, 3)
-                ORDER BY p.post_date DESC, p.post_time DESC
-            ");
-            $stmt->execute();
+                LEFT JOIN tbldepartments d ON p.post_departmentId = d.department_id
+                LEFT JOIN tblcampus c ON p.post_campusId = c.campus_id
+                LEFT JOIN tbl_giya_inquiry_types i ON p.inquiry_typeId = i.inquiry_id
+                WHERE p.post_status = 2
+            ";
+
+            // If POC, restrict to their department
+            if ($userTypeId == 5 && $departmentId) {
+                $query .= " AND p.post_departmentId = ?";
+                $params[] = $departmentId;
+            }
+
+            $query .= " ORDER BY p.post_date DESC, p.post_time DESC";
+
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute($params);
             $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            return [
-                "draw" => isset($_GET['draw']) ? intval($_GET['draw']) : 1,
-                "recordsTotal" => count($posts),
-                "recordsFiltered" => count($posts),
-                "data" => $posts
-            ];
-        } catch (\PDOException $e) {
-            error_log("Error in handleGetResolvedPosts: " . $e->getMessage());
-            return [
-                "draw" => 1,
-                "recordsTotal" => 0,
-                "recordsFiltered" => 0,
-                "data" => [],
-                "error" => $e->getMessage()
-            ];
+            return outputJSON(['success' => true, 'data' => $posts]);
+        } catch (Exception $e) {
+            return outputJSON(['success' => false, 'message' => 'Error fetching resolved posts: ' . $e->getMessage()]);
         }
     }
 
     public function handleGetResolvedStudentPosts()
     {
         try {
-            $userInfo = $this->getUserTypeAndDepartment();
-            $userTypeId = $userInfo['userType'];
-            $userDepartmentId = $userInfo['userDepartment'];
+            // Check if user is logged in
+            $userTypeAndDepartment = $this->getUserTypeAndDepartment();
+            $userTypeId = $userTypeAndDepartment['user_typeId'] ?? null;
+            $departmentId = $userTypeAndDepartment['department_id'] ?? null;
 
+            // Set query parameters
+            $params = [2]; // Student user_typeId
             $query = "
-                SELECT
-                    p.post_id,
-                    p.post_title,
-                    p.post_message,
-                    DATE_FORMAT(p.post_date, '%m-%d-%Y') as post_date,
-                    p.post_time,
-                    p.post_status,
-                    p.post_campusId,
-                    pt.postType_name,
-                    u.user_id,
-                    u.user_status,
-                    u.user_typeId,  /* Explicitly include user_typeId */
-                    CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
-                    u.user_schoolId,
-                    cp.campus_name,
-                    COALESCE(d2.department_name, d1.department_name, 'Not Assigned') as department_name
+                SELECT p.*, pt.postType_name,
+                CONCAT(u.user_firstname, ' ', u.user_lastname) as user_fullname,
+                u.user_schoolId, u.user_typeId, ut.user_type,
+                d.department_name, c.campus_name,
+                i.inquiry_type
                 FROM tbl_giya_posts p
                 JOIN tblusers u ON p.post_userId = u.user_id
+                JOIN tblusertype ut ON u.user_typeId = ut.user_typeId
                 JOIN tbl_giya_posttype pt ON p.postType_id = pt.postType_id
-                LEFT JOIN tblcourses c ON u.user_courseId = c.course_id
-                LEFT JOIN tbldepartments d1 ON c.course_departmentId = d1.department_id
-                LEFT JOIN tbldepartments d2 ON p.post_departmentId = d2.department_id
-                LEFT JOIN tblcampus cp ON p.post_campusId = cp.campus_id
-                WHERE u.user_typeId = 2 AND p.post_status IN (2, 3)";
+                LEFT JOIN tbldepartments d ON p.post_departmentId = d.department_id
+                LEFT JOIN tblcampus c ON p.post_campusId = c.campus_id
+                LEFT JOIN tbl_giya_inquiry_types i ON p.inquiry_typeId = i.inquiry_id
+                WHERE p.post_status = 2 AND u.user_typeId = ?
+            ";
 
-            // If POC user, add department filtering
-            if ($userTypeId == 5 && $userDepartmentId) {
+            // If POC, restrict to their department
+            if ($userTypeId == 5 && $departmentId) {
                 $query .= " AND p.post_departmentId = ?";
-                $stmt = $this->pdo->prepare($query);
-                $stmt->execute([$userDepartmentId]);
-            } else {
-                $query .= " ORDER BY p.post_date DESC, p.post_time DESC";
-                $stmt = $this->pdo->prepare($query);
-                $stmt->execute();
+                $params[] = $departmentId;
             }
 
+            $query .= " ORDER BY p.post_date DESC, p.post_time DESC";
+
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute($params);
             $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            return [
-                "draw" => isset($_GET['draw']) ? intval($_GET['draw']) : 1,
-                "recordsTotal" => count($posts),
-                "recordsFiltered" => count($posts),
-                "data" => $posts
-            ];
-        } catch (\PDOException $e) {
-            error_log("Error in handleGetResolvedStudentPosts: " . $e->getMessage());
-            return [
-                "draw" => 1,
-                "recordsTotal" => 0,
-                "recordsFiltered" => 0,
-                "data" => [],
-                "error" => $e->getMessage()
-            ];
+            return outputJSON(['success' => true, 'data' => $posts]);
+        } catch (Exception $e) {
+            return outputJSON(['success' => false, 'message' => 'Error fetching resolved student posts: ' . $e->getMessage()]);
         }
     }
 
     public function handleGetResolvedVisitorPosts()
     {
         try {
-            $userInfo = $this->getUserTypeAndDepartment();
-            $userTypeId = $userInfo['userType'];
-            $userDepartmentId = $userInfo['userDepartment'];
+            // Check if user is logged in
+            $userTypeAndDepartment = $this->getUserTypeAndDepartment();
+            $userTypeId = $userTypeAndDepartment['user_typeId'] ?? null;
+            $departmentId = $userTypeAndDepartment['department_id'] ?? null;
 
+            // Set query parameters
+            $params = [1]; // Visitor user_typeId
             $query = "
-                SELECT
-                    p.post_id,
-                    p.post_title,
-                    p.post_message,
-                    DATE_FORMAT(p.post_date, '%m-%d-%Y') as post_date,
-                    p.post_time,
-                    p.post_status,
-                    p.post_campusId,
-                    pt.postType_name,
-                    u.user_id,
-                    u.user_status,
-                    u.user_typeId,  /* Explicitly include user_typeId */
-                    CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
-                    u.user_schoolId,
-                    cp.campus_name,
-                    COALESCE(d.department_name, 'Not Assigned') as department_name
+                SELECT p.*, pt.postType_name,
+                CONCAT(u.user_firstname, ' ', u.user_lastname) as user_fullname,
+                u.user_schoolId, u.user_typeId, ut.user_type,
+                d.department_name, c.campus_name,
+                i.inquiry_type
                 FROM tbl_giya_posts p
                 JOIN tblusers u ON p.post_userId = u.user_id
+                JOIN tblusertype ut ON u.user_typeId = ut.user_typeId
                 JOIN tbl_giya_posttype pt ON p.postType_id = pt.postType_id
                 LEFT JOIN tbldepartments d ON p.post_departmentId = d.department_id
-                LEFT JOIN tblcampus cp ON p.post_campusId = cp.campus_id
-                WHERE u.user_typeId = 1 AND p.post_status IN (2, 3)";
+                LEFT JOIN tblcampus c ON p.post_campusId = c.campus_id
+                LEFT JOIN tbl_giya_inquiry_types i ON p.inquiry_typeId = i.inquiry_id
+                WHERE p.post_status = 2 AND u.user_typeId = ?
+            ";
 
-            // If POC user, add department filtering
-            if ($userTypeId == 5 && $userDepartmentId) {
+            // If POC, restrict to their department
+            if ($userTypeId == 5 && $departmentId) {
                 $query .= " AND p.post_departmentId = ?";
-                $stmt = $this->pdo->prepare($query);
-                $stmt->execute([$userDepartmentId]);
-            } else {
-                $query .= " ORDER BY p.post_date DESC, p.post_time DESC";
-                $stmt = $this->pdo->prepare($query);
-                $stmt->execute();
+                $params[] = $departmentId;
             }
 
+            $query .= " ORDER BY p.post_date DESC, p.post_time DESC";
+
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute($params);
             $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            return [
-                "draw" => isset($_GET['draw']) ? intval($_GET['draw']) : 1,
-                "recordsTotal" => count($posts),
-                "recordsFiltered" => count($posts),
-                "data" => $posts
-            ];
-        } catch (\PDOException $e) {
-            error_log("Error in handleGetResolvedVisitorPosts: " . $e->getMessage());
-            return [
-                "draw" => 1,
-                "recordsTotal" => 0,
-                "recordsFiltered" => 0,
-                "data" => [],
-                "error" => $e->getMessage()
-            ];
+            return outputJSON(['success' => true, 'data' => $posts]);
+        } catch (Exception $e) {
+            return outputJSON(['success' => false, 'message' => 'Error fetching resolved visitor posts: ' . $e->getMessage()]);
         }
     }
 
     public function handleGetResolvedEmployeePosts()
     {
         try {
-            $userInfo = $this->getUserTypeAndDepartment();
-            $userTypeId = $userInfo['userType'];
-            $userDepartmentId = $userInfo['userDepartment'];
+            // Check if user is logged in
+            $userTypeAndDepartment = $this->getUserTypeAndDepartment();
+            $userTypeId = $userTypeAndDepartment['user_typeId'] ?? null;
+            $departmentId = $userTypeAndDepartment['department_id'] ?? null;
+
+            // Set query parameters - Employee (3 = Faculty, 4 = Employee)
+            $employeeTypes = [3, 4];
+            $placeholders = implode(',', array_fill(0, count($employeeTypes), '?'));
+            $params = $employeeTypes;
 
             $query = "
-                SELECT
-                    p.post_id,
-                    p.post_title,
-                    p.post_message,
-                    DATE_FORMAT(p.post_date, '%m-%d-%Y') as post_date,
-                    p.post_time,
-                    p.post_status,
-                    p.post_campusId,
-                    pt.postType_name,
-                    u.user_id,
-                    u.user_status,
-                    u.user_typeId,  /* Explicitly include user_typeId */
-                    CONCAT(u.user_firstname, ' ', u.user_lastname) AS user_fullname,
-                    u.user_schoolId,
-                    cp.campus_name,
-                    COALESCE(d.department_name, 'Not Assigned') as department_name
+                SELECT p.*, pt.postType_name,
+                CONCAT(u.user_firstname, ' ', u.user_lastname) as user_fullname,
+                u.user_schoolId, u.user_typeId, ut.user_type,
+                d.department_name, c.campus_name,
+                i.inquiry_type
                 FROM tbl_giya_posts p
                 JOIN tblusers u ON p.post_userId = u.user_id
+                JOIN tblusertype ut ON u.user_typeId = ut.user_typeId
                 JOIN tbl_giya_posttype pt ON p.postType_id = pt.postType_id
                 LEFT JOIN tbldepartments d ON p.post_departmentId = d.department_id
-                LEFT JOIN tblcampus cp ON p.post_campusId = cp.campus_id
-                WHERE u.user_typeId IN (3, 4) AND p.post_status IN (2, 3)";
+                LEFT JOIN tblcampus c ON p.post_campusId = c.campus_id
+                LEFT JOIN tbl_giya_inquiry_types i ON p.inquiry_typeId = i.inquiry_id
+                WHERE p.post_status = 2 AND u.user_typeId IN ({$placeholders})
+            ";
 
-            // If POC user, add department filtering
-            if ($userTypeId == 5 && $userDepartmentId) {
+            // If POC, restrict to their department
+            if ($userTypeId == 5 && $departmentId) {
                 $query .= " AND p.post_departmentId = ?";
-                $stmt = $this->pdo->prepare($query);
-                $stmt->execute([$userDepartmentId]);
-            } else {
-                $query .= " ORDER BY p.post_date DESC, p.post_time DESC";
-                $stmt = $this->pdo->prepare($query);
-                $stmt->execute();
+                $params[] = $departmentId;
             }
 
+            $query .= " ORDER BY p.post_date DESC, p.post_time DESC";
+
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute($params);
             $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            return [
-                "draw" => isset($_GET['draw']) ? intval($_GET['draw']) : 1,
-                "recordsTotal" => count($posts),
-                "recordsFiltered" => count($posts),
-                "data" => $posts
-            ];
-        } catch (\PDOException $e) {
-            error_log("Error in handleGetResolvedEmployeePosts: " . $e->getMessage());
-            return [
-                "draw" => 1,
-                "recordsTotal" => 0,
-                "recordsFiltered" => 0,
-                "data" => [],
-                "error" => $e->getMessage()
-            ];
+            return outputJSON(['success' => true, 'data' => $posts]);
+        } catch (Exception $e) {
+            return outputJSON(['success' => false, 'message' => 'Error fetching resolved employee posts: ' . $e->getMessage()]);
         }
     }
 
@@ -1496,16 +1432,31 @@ if (isset($_GET['action'])) {
             outputJSON($response);
             break;
         case 'get_resolved_posts':
-            outputJSON($handler->handleGetResolvedPosts());
+            safeApiHandler(function () use ($pdo) {
+                $handler = new PostsHandler($pdo);
+                return $handler->handleGetResolvedPosts();
+            });
             break;
+
         case 'get_resolved_student_posts':
-            outputJSON($handler->handleGetResolvedStudentPosts());
+            safeApiHandler(function () use ($pdo) {
+                $handler = new PostsHandler($pdo);
+                return $handler->handleGetResolvedStudentPosts();
+            });
             break;
+
         case 'get_resolved_visitor_posts':
-            outputJSON($handler->handleGetResolvedVisitorPosts());
+            safeApiHandler(function () use ($pdo) {
+                $handler = new PostsHandler($pdo);
+                return $handler->handleGetResolvedVisitorPosts();
+            });
             break;
+
         case 'get_resolved_employee_posts':
-            outputJSON($handler->handleGetResolvedEmployeePosts());
+            safeApiHandler(function () use ($pdo) {
+                $handler = new PostsHandler($pdo);
+                return $handler->handleGetResolvedEmployeePosts();
+            });
             break;
         case 'forward_post':
             $data = json_decode(file_get_contents("php://input"), true);
@@ -1565,6 +1516,51 @@ if (isset($_GET['action'])) {
         case 'get_employee_posts':
             outputJSON($handler->handleGetEmployeePosts());
             break;
+        case 'check_new_replies':
+            if (!isset($_GET['user_id'])) {
+                outputJSON(['success' => false, 'message' => 'User ID is required']);
+                exit;
+            }
+            outputJSON($handler->checkNewReplies($_GET['user_id']));
+            break;
+        case 'add_reply':
+            $formData = $_POST;
+            if (empty($formData)) {
+                $jsonData = json_decode(file_get_contents("php://input"), true);
+                if ($jsonData) {
+                    $formData = $jsonData;
+                }
+            }
+
+            outputJSON($handler->addReply($formData));
+            break;
+
+        case 'mark_replies_read':
+            $data = json_decode(file_get_contents("php://input"), true);
+            if (!isset($data['user_id'])) {
+                outputJSON(['success' => false, 'message' => 'User ID is required']);
+            }
+            outputJSON($handler->markRepliesRead($data['user_id']));
+            break;
+
+        case 'get_quick_view':
+            // Add CORS headers to ensure client can access from any origin
+            header("Access-Control-Allow-Origin: *");
+            header("Access-Control-Allow-Methods: GET");
+            header("Access-Control-Allow-Headers: Content-Type, X-Requested-With");
+
+            $identifier = $_GET['identifier'] ?? '';
+            try {
+                $result = $handler->handleQuickView($identifier);
+                outputJSON($result);
+            } catch (Exception $e) {
+                outputJSON([
+                    "status" => "error",
+                    "message" => "Server error: " . $e->getMessage()
+                ]);
+            }
+            break;
+
         default:
             outputJSON(["success" => false, "message" => "Invalid action"]);
             break;

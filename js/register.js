@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Verify baseURL exists
+
     const baseURL = sessionStorage.getItem("baseURL");
     if (!baseURL) {
         window.location.href = 'index.html';

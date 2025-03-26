@@ -27,6 +27,59 @@
                 <h3>All Resolved Posts</h3>
             </div>
 
+            <!-- Filters Section -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-funnel me-2"></i>Filters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="post-filters" class="row g-3 align-items-end">
+                        <!-- All filters in one row -->
+                        <!-- Classification Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <label for="classification-filter" class="form-label">Classification</label>
+                            <select class="form-select filter-control" id="classification-filter" data-column="1">
+                                <option value="">All</option>
+                                <option value="Visitor">Visitor</option>
+                                <option value="Student">Student</option>
+                                <option value="Faculty">Faculty</option>
+                                <option value="Employee">Employee</option>
+                            </select>
+                        </div>
+                        <!-- Post Type/Concern Type Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <label for="concern-type-filter" class="form-label">Concern Type</label>
+                            <select class="form-select filter-control" id="concern-type-filter" data-column="3">
+                                <option value="">All</option>
+                                <option value="Inquiry">Inquiry</option>
+                                <option value="Feedback">Feedback</option>
+                                <option value="Suggestion">Suggestion</option>
+                            </select>
+                        </div>
+                        <!-- Department Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12" id="department-filter-container">
+                            <label for="department-filter" class="form-label">Department</label>
+                            <select class="form-select filter-control" id="department-filter" data-column="5">
+                                <option value="">All</option>
+                                <!-- Departments will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <!-- Campus Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <label for="campus-filter" class="form-label">Campus</label>
+                            <select class="form-select filter-control" id="campus-filter" data-column="6">
+                                <option value="">All</option>
+                                <!-- Campuses will be loaded dynamically -->
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+
             <div class="card shadow-sm border-0 student-table-container">
                 <div class="card-header bg-white py-3">
                     <h5 class="mb-0">Resolved Posts</h5>

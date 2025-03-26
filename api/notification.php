@@ -1,12 +1,7 @@
 <?php
 require 'db_connection.php';
 
-// This script can be scheduled to run weekly via cron job
-// It will mark all read notifications older than 30 days as read
-// and clean up any inconsistencies
-
 try {
-    // Mark old replies as read (older than 30 days)
     $stmt = $pdo->prepare("
         UPDATE tbl_giya_reply
         SET is_read = 1

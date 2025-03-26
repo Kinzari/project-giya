@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Load the navbar component
     const navbarPlaceholder = document.getElementById('navbar-placeholder');
     if (navbarPlaceholder) {
         fetch('/dashboard-components/navbar.html')
@@ -12,17 +11,13 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 navbarPlaceholder.innerHTML = data;
 
-                // Call setupSidebarToggle after a slight delay to ensure DOM is ready
                 setTimeout(setupSidebarToggle, 100);
             })
             .catch(error => {
-                console.error('Error loading navbar:', error);
-                // Fallback - create a basic navbar if loading fails
                 createBasicNavbar(navbarPlaceholder);
             });
     }
 
-    // Load the sidebar component
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
     if (sidebarPlaceholder) {
         fetch('/dashboard-components/sidebar.html')
@@ -33,23 +28,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.text();
             })
             .then(data => {
-                // Before inserting HTML into the DOM, check if user is POC and only remove masterfiles menu
                 try {
                     const userString = sessionStorage.getItem('user');
                     if (userString) {
                         const user = JSON.parse(userString);
                         if (user.user_typeId == 5) {
-                            // Only remove the masterfiles dropdown, not the entire sidebar
                             const tempDiv = document.createElement('div');
                             tempDiv.innerHTML = data;
 
-                            // Find the masterfiles dropdown link specifically
                             const masterFilesDropdown = tempDiv.querySelector('#masterFilesDropdown');
                             if (masterFilesDropdown) {
-                                // Only remove the masterfiles dropdown, not its parent container
                                 masterFilesDropdown.remove();
 
-                                // Also find and remove the dropdown menu associated with masterfiles
                                 const dropdownMenus = tempDiv.querySelectorAll('.dropdown-menu');
                                 dropdownMenus.forEach(menu => {
                                     if (menu.previousElementSibling &&
@@ -59,25 +49,19 @@ document.addEventListener('DOMContentLoaded', function() {
                                 });
                             }
 
-                            // Set the modified HTML with masterfiles menu removed but other items intact
                             sidebarPlaceholder.innerHTML = tempDiv.innerHTML;
-                            console.log("Only masterfiles menu removed for POC");
                         } else {
-                            // For non-POC users, insert the original HTML
                             sidebarPlaceholder.innerHTML = data;
                         }
                     } else {
                         sidebarPlaceholder.innerHTML = data;
                     }
                 } catch (e) {
-                    console.error('Error processing sidebar:', e);
                     sidebarPlaceholder.innerHTML = data;
                 }
 
-                // Set active menu item based on current page
                 highlightActiveMenuItem();
 
-                // Add logout functionality
                 const logoutButton = document.getElementById('logout-button');
                 if (logoutButton) {
                     logoutButton.addEventListener('click', function() {
@@ -85,18 +69,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
 
-                // Update user information in sidebar
                 updateUserInfo();
             })
             .catch(error => {
-                console.error('Error loading sidebar:', error);
-                // Fallback - create a basic sidebar if loading fails
                 createBasicSidebar(sidebarPlaceholder);
             });
     }
 });
 
-// Helper function to highlight the active menu item
 function highlightActiveMenuItem() {
     const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
     const navLinks = document.querySelectorAll('.nav-items a.nav-link');
@@ -112,10 +92,9 @@ function highlightActiveMenuItem() {
     });
 }
 
-// Helper function to update user information
 function updateUserInfo() {
     const userName = document.querySelector('.user-name');
-    const userTitle = document.querySelector('.user-title'); // Add reference to user title element
+    const userTitle = document.querySelector('.user-title');
 
     if (userName) {
         const firstName = sessionStorage.getItem('user_firstname');
@@ -126,7 +105,6 @@ function updateUserInfo() {
             userName.textContent = `${firstName} ${lastName}`;
         }
 
-        // Update user title based on user type
         if (userTitle) {
             if (userTypeId === '6') {
                 userTitle.textContent = 'Administrator';
@@ -139,7 +117,6 @@ function updateUserInfo() {
     }
 }
 
-// Handle logout with confirmation
 function handleLogout() {
     Swal.fire({
         title: 'Logout',
@@ -157,7 +134,6 @@ function handleLogout() {
     });
 }
 
-// Create basic navbar as fallback
 function createBasicNavbar(container) {
     container.innerHTML = `
         <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
@@ -173,7 +149,6 @@ function createBasicNavbar(container) {
         </nav>
     `;
 
-    // Attach click handler for the sidebar toggle
     const sidebarToggle = container.querySelector('.sidebar-toggle');
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function() {
@@ -186,7 +161,6 @@ function createBasicNavbar(container) {
     }
 }
 
-// Create basic sidebar as fallback
 function createBasicSidebar(container) {
     container.innerHTML = `
         <div class="offcanvas offcanvas-start bg-purple text-white" tabindex="-1" id="sideSheet">
@@ -220,40 +194,32 @@ function createBasicSidebar(container) {
         </div>
     `;
 
-    // Add logout functionality
     const logoutButton = container.querySelector('#logout-button');
     if (logoutButton) {
         logoutButton.addEventListener('click', handleLogout);
     }
 
-    // Set active menu item
     highlightActiveMenuItem();
 }
 
-// Update the setupSidebarToggle function to enable closing by clicking outside
 function setupSidebarToggle() {
-    // Wait for DOM to be fully loaded
     setTimeout(() => {
         const sidebarToggle = document.querySelector('.sidebar-toggle');
         if (sidebarToggle) {
-            // Remove any existing listeners to avoid duplicates
             const newSidebarToggle = sidebarToggle.cloneNode(true);
             sidebarToggle.parentNode.replaceChild(newSidebarToggle, sidebarToggle);
 
             newSidebarToggle.addEventListener('click', function(e) {
-                // Prevent default behavior and event bubbling
                 e.preventDefault();
                 e.stopPropagation();
 
                 const sidebar = document.getElementById('sideSheet');
                 if (sidebar) {
-                    // Remove data-bs-backdrop="static" to allow closing when clicking outside
                     sidebar.removeAttribute('data-bs-backdrop');
 
                     const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(sidebar);
                     bsOffcanvas.toggle();
 
-                    // Clean up backdrop when sidebar is hidden
                     sidebar.addEventListener('hidden.bs.offcanvas', function() {
                         const backdrops = document.querySelectorAll('.offcanvas-backdrop');
                         backdrops.forEach(el => el.remove());

@@ -9,7 +9,6 @@ class InquiryHandler {
     }
 
     public function submitInquiry($data) {
-        // 1. Validate required fields
         if (empty($data['user_id'])) {
             return ["success" => false, "message" => "User ID is required"];
         }
@@ -24,7 +23,6 @@ class InquiryHandler {
         }
 
         try {
-            // 2. Look up the numeric IDs from tbl_giya_inquiry_types based on the post_type string
             $lookupSql = "
                 SELECT inquiry_id, department_id
                 FROM tbl_giya_inquiry_types
@@ -35,12 +33,10 @@ class InquiryHandler {
             $lookupStmt->execute([':postType' => $data['post_type']]);
             $row = $lookupStmt->fetch(\PDO::FETCH_ASSOC);
 
-            // If not found, user typed an invalid post_type string
             if (!$row) {
                 return ["success" => false, "message" => "Invalid post type"];
             }
 
-            // 3. Insert the post with proper IDs from the database
             $insertSql = "
                 INSERT INTO tbl_giya_posts (
                     post_userId,
@@ -69,12 +65,12 @@ class InquiryHandler {
             $insertStmt = $this->pdo->prepare($insertSql);
             $insertStmt->execute([
                 ':userId'   => $data['user_id'],
-                ':deptId'   => $row['department_id'] ?? 1,   // fallback if null
-                ':campusId' => $data['campus_id'] ?? 1,      // Default to Carmen campus if not specified
-                ':pTypeId'  => $data['post_type_id'] ?? 1,   // Now getting from input data
+                ':deptId'   => $row['department_id'] ?? 1,
+                ':campusId' => $data['campus_id'] ?? 1,
+                ':pTypeId'  => $data['post_type_id'] ?? 1,
                 ':title'    => $data['post_title'],
                 ':message'  => $data['post_message'],
-                ':inquiryId' => $row['inquiry_id']          // numeric PK from the lookup
+                ':inquiryId' => $row['inquiry_id']
             ]);
 
             return [
@@ -92,7 +88,6 @@ class InquiryHandler {
 
     public function checkPrivacyPolicy($userId) {
         try {
-            // Check if the user exists and get their privacy policy status
             $stmt = $this->pdo->prepare("
                 SELECT privacy_policy_check
                 FROM tblusers
@@ -125,7 +120,6 @@ class InquiryHandler {
 
     public function updatePrivacyPolicy($userId, $status) {
         try {
-            // Update the user's privacy policy check status
             $stmt = $this->pdo->prepare("
                 UPDATE tblusers
                 SET privacy_policy_check = ?
@@ -148,7 +142,6 @@ class InquiryHandler {
 
     public function getInquiryTypes() {
         try {
-            // Use DISTINCT to avoid duplicates
             $stmt = $this->pdo->prepare("
                 SELECT DISTINCT inquiry_id, inquiry_type, description, department_id
                 FROM tbl_giya_inquiry_types
@@ -179,7 +172,6 @@ class InquiryHandler {
     }
 }
 
-// Route handling section
 if (isset($_GET['action'])) {
     $handler = new InquiryHandler($pdo);
 

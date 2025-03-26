@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 25, 2025 at 04:38 PM
+-- Generation Time: Mar 26, 2025 at 09:06 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -183,13 +183,12 @@ INSERT INTO `tblusers` (`user_id`, `user_schoolId`, `user_lastname`, `user_first
 (7, '02-2526-00007', 'Castro', 'Michael', '', '', '', '', '', 'phinma-coc', 7, 4, 1, 1, 2, 1, 10, 0),
 (8, '02-2526-00008', 'Flores', 'Chloe', 'Ann', '', '', '', '', 'phinma-coc', 8, 4, 2, 1, 2, 1, 10, 0),
 (9, '02-2526-00009', 'De Leon', 'Ethan', '', '', '', '', '', 'phinma-coc', 10, 5, 2, 1, 2, 1, 10, 0),
-(10, '02-2526-00010', 'Villanueva', 'Ella', 'Grace', '', '', '', '', 'phinma-coc', 9, 5, 3, 1, 2, 1, 10, 0),
 (13, '01-2526-00001', 'Luna', 'James', '', '', '', '', '', 'phinma-coc', NULL, 1, NULL, 1, 3, 1, 10, 0),
 (14, '01-2526-00002', 'Fernandez', 'Laura', 'Marie', '', '', '', '', 'phinma-coc', NULL, 2, NULL, 1, 3, 1, 10, 0),
 (15, '01-2526-00003', 'Torres', 'Mark', '', '', '', '', '', 'phinma-coc', NULL, 3, NULL, 1, 3, 1, 10, 0),
 (16, '01-2526-00004', 'Ramos', 'Samantha', 'Jade', '', '', '', '', 'phinma-coc', NULL, 4, NULL, 1, 3, 1, 10, 0),
 (17, '01-2526-00005', 'Alvarez', 'Andrew', '', '', '', '', '', 'phinma-coc', NULL, 5, NULL, 1, 3, 1, 10, 0),
-(18, '01-2526-00006', 'Lim', 'Isabella', 'Grace', '', '', '', '', 'phinma-coc', NULL, 6, NULL, 1, 3, 1, 10, 0),
+(18, '01-2526-00006', 'Lim', 'Isabella', 'Grace', '', '', '', '', 'phinma-coc', NULL, 6, NULL, 1, 4, 1, 10, 0),
 (19, '25-002-A', 'Cruz', 'Jasmine', '', '', 'jas.coc@phinmaed.com', '', '', 'phinma-coc', NULL, 1, NULL, 1, 5, 1, 50, 0),
 (20, '25-003-A', 'Rivera', 'Nathan', 'Paul', '', 'na.ri.coc@phinmaed.com', '', '', 'phinma-coc', NULL, 2, NULL, 1, 5, 1, 50, 0),
 (21, '25-005-A', 'Perez', 'Liam', '', '', 'li.pe.coc@phinmaed.com', '', '', 'phinma-coc', NULL, 7, NULL, 1, 5, 1, 50, 0),
@@ -208,7 +207,7 @@ INSERT INTO `tblusers` (`user_id`, `user_schoolId`, `user_lastname`, `user_first
 (36, 'vs-2526-00007', 'Espartero', 'Xena', '', '', '', 'xena.victoria@gmail.com', '09759983211', 'Jenna2013', NULL, NULL, NULL, 1, 1, 1, 10, 0),
 (38, 'vs-2526-00008', 'Aclan', 'Jewel Faith', 'Espartero', '', '', 'jewelfaith@gmail.com', '09752581073', 'Jewelfaith7', NULL, NULL, NULL, 1, 1, 1, 10, 0),
 (40, 'vs-2526-00009', 'Belono-ac', 'Shaun', 'Terceno', '', '', 'belonoacshaun1@gmail.com', '09361470082', '#Shaunu45888', NULL, NULL, NULL, 1, 1, 1, 10, 1),
-(43, '25-001-A', 'Galudo ', 'Darwin ', NULL, NULL, 'dmgaludo.coc@phinmaed.com', '', '09177728346', 'phinma-coc', NULL, 4, NULL, 1, 5, 1, 50, 0),
+(43, '25-001-A', 'Galudo ', 'Darwin', NULL, NULL, 'dmgaludo.coc@phinmaed.com', '', '09177728346', 'phinma-coc', NULL, 4, NULL, 1, 5, 1, 50, 0),
 (44, '02-1718-03273', 'Zata', 'Boss', 'Ascunsion', NULL, 'bovi.zata.coc@phinmaed.com', '', '', 'phinma-coc', 19, 4, 3, 1, 2, 1, 10, 0),
 (45, 'vs-2526-00010', 'kinzari', 'kinzari', 'kinzari', '', '', 'kinzari@gmail.com', '09123456789', 'Kinzari7', NULL, NULL, NULL, 1, 1, 1, 10, 1);
 
@@ -235,6 +234,36 @@ INSERT INTO `tblusertype` (`user_typeId`, `user_type`, `user_defaultLevel`) VALU
 (4, 'Employee', 10),
 (5, 'POC', 50),
 (6, 'Administrator / SSG', 100);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_giya_faq`
+--
+
+CREATE TABLE `tbl_giya_faq` (
+  `faq_id` int(11) NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text NOT NULL,
+  `display_order` int(11) NOT NULL DEFAULT 0,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `date_created` timestamp NOT NULL DEFAULT current_timestamp(),
+  `date_updated` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tbl_giya_faq`
+--
+
+INSERT INTO `tbl_giya_faq` (`faq_id`, `question`, `answer`, `display_order`, `is_active`, `date_created`, `date_updated`) VALUES
+(1, 'How can I submit an inquiry?', 'You can submit an inquiry by filling out the inquiry form on our website. Simply go to the \"Inquiry\" section, provide your details, and click submit. We\'ll get back to you promptly.', 1, 1, '2025-03-26 15:50:49', '2025-03-26 15:59:00'),
+(2, 'How do I provide feedback about your services?', 'To provide feedback, navigate to the \"Feedback\" section of our website. Share your thoughts, suggestions, or concerns to help us improve. We value your input!', 2, 1, '2025-03-26 15:50:49', NULL),
+(3, 'Can I share compliments or suggestions?', 'Absolutely! Visit the \"Suggestion\" section to share your compliments or ideas. Your suggestions help us grow and improve our community.', 3, 1, '2025-03-26 15:50:49', NULL),
+(4, 'Do I already have an account as current student of PHINMA COC?', 'Yes, all PHINMA - COC students automatically have a Giya account.', 4, 1, '2025-03-26 15:50:49', NULL),
+(5, 'How do I create an account?', 'To create an account, you can register through our visitor registration form if you\'re not a student or employee of PHINMA-COC.', 5, 0, '2025-03-26 15:50:49', '2025-03-26 18:34:49'),
+(6, 'What is the typical response time for inquiries?', 'We aim to respond to all inquiries within 24-72 hours during weekdays. Complex issues may take a bit longer to resolve.', 6, 1, '2025-03-26 15:50:49', NULL),
+(7, 'Can I track the status of my submitted concern?', 'Yes, you can check the status of your submissions by clicking on the floating button with a list icon located at the bottom right of your screen after logging in.', 7, 1, '2025-03-26 15:50:49', NULL),
+(8, 'test123', 'test', 9, 1, '2025-03-26 18:37:49', '2025-03-26 19:56:47');
 
 -- --------------------------------------------------------
 
@@ -299,7 +328,7 @@ CREATE TABLE `tbl_giya_posts` (
 --
 
 INSERT INTO `tbl_giya_posts` (`post_id`, `post_userId`, `post_departmentId`, `post_campusId`, `postType_id`, `post_date`, `post_time`, `post_title`, `post_message`, `post_stars`, `post_status`, `inquiry_typeId`, `is_forwarded`, `forwarded_by`, `forwarded_at`) VALUES
-(1, 27, 1, 1, 2, '2025-02-25', '20:02:16', 'ENROLMENT PROCESS', 'How to Enroll?', 0, 2, 1, 0, NULL, NULL),
+(1, 13, 4, 1, 2, '2025-02-25', '20:02:16', 'ENROLMENT PROCESS', 'How to Enroll?', 0, 1, 1, 1, 26, '2025-03-26 19:32:18'),
 (2, 27, 1, 1, 1, '2025-02-25', '20:07:01', 'dsa', '321', 0, 2, 15, 0, NULL, NULL),
 (4, 40, 1, 1, 1, '2025-02-26', '11:15:37', 'hk', 'Hk details', 0, 2, 6, 0, NULL, NULL),
 (5, 27, 1, 1, 1, '2025-02-26', '14:55:49', 'FORM 137 CREDENTIALS', 'Can i have an info about th requirements for graduating student?', 0, 2, 3, 0, NULL, NULL),
@@ -312,11 +341,12 @@ INSERT INTO `tbl_giya_posts` (`post_id`, `post_userId`, `post_departmentId`, `po
 (12, 27, 1, 1, 1, '2025-03-01', '17:56:40', 'dsa', 'dsa', 0, 2, 2, 0, NULL, NULL),
 (13, 30, 1, 1, 3, '2025-03-01', '19:46:58', 'suggest', 'suggest text', 0, 2, 2, 0, NULL, NULL),
 (14, 30, 14, 1, 2, '2025-03-04', '20:39:32', 'feedback', 'feedback', 0, 2, 6, 0, NULL, NULL),
-(15, 30, 4, 1, 1, '2025-03-04', '22:11:13', 'csdl', 'csdl', 0, 1, 6, 1, 26, '2025-03-25 18:21:59'),
+(15, 30, 4, 1, 1, '2025-03-04', '22:11:13', 'csdl', 'csdl', 0, 2, 6, 1, 26, '2025-03-25 18:21:59'),
 (16, 45, 1, 1, 1, '2025-03-05', '00:40:36', 'academic', 'academic', 0, 2, 2, 0, NULL, NULL),
 (17, 45, 14, 1, 1, '2025-03-05', '09:32:11', 'csdl', 'csdl', 0, 2, 6, 0, NULL, NULL),
 (18, 27, 1, 1, 3, '2025-03-05', '14:22:38', 'suggest', 'suggest', 0, 1, 2, 0, NULL, NULL),
-(19, 27, 9, 3, 1, '2025-03-17', '13:26:17', 'iligan', 'iligan', 0, 1, 5, 1, 26, '2025-03-19 00:49:49');
+(19, 27, 9, 3, 1, '2025-03-17', '13:26:17', 'iligan', 'iligan', 0, 1, 5, 1, 26, '2025-03-19 00:49:49'),
+(20, 30, 18, 1, 1, '2025-03-26', '21:56:38', 'IT_SERVICES', 'IT_SERVICES', 0, 1, 8, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -372,10 +402,10 @@ INSERT INTO `tbl_giya_reply` (`reply_id`, `reply_userId`, `reply_postId`, `reply
 (19, 25, 8, '2025-02-27', '15:12:54', NULL, 'REPLY ', 1, NULL),
 (20, 27, 8, '2025-02-27', '15:14:40', NULL, 'HRY', 0, NULL),
 (21, 25, 6, '2025-02-28', '00:35:58', NULL, 'asd', 1, NULL),
-(22, 30, 6, '2025-02-28', '00:36:53', NULL, 'dsa', 0, NULL),
+(22, 30, 6, '2025-02-28', '00:36:53', NULL, 'dsa', 1, NULL),
 (31, 25, 4, '2025-02-28', '01:21:56', NULL, 'dsa', 0, NULL),
 (56, 25, 10, '2025-02-28', '03:45:22', NULL, 'test?', 1, NULL),
-(57, 30, 10, '2025-02-28', '03:47:17', NULL, 'hello', 0, NULL),
+(57, 30, 10, '2025-02-28', '03:47:17', NULL, 'hello', 1, NULL),
 (58, 27, 9, '2025-02-28', '18:01:31', NULL, 'dsa', 0, NULL),
 (59, 27, 9, '2025-02-28', '20:21:34', NULL, 'asd', 0, NULL),
 (60, 27, 9, '2025-02-28', '20:22:51', NULL, '3', 0, NULL),
@@ -421,14 +451,36 @@ INSERT INTO `tbl_giya_reply` (`reply_id`, `reply_userId`, `reply_postId`, `reply
 (100, 26, 15, '2025-03-05', '15:28:42', NULL, 'test', 1, NULL),
 (101, 43, 8, '2025-03-10', '13:25:37', NULL, 'test', 0, NULL),
 (102, 25, 8, '2025-03-16', '18:59:04', NULL, 'Post forwarded to CITE department at Carmen campus with note: test', 1, NULL),
-(103, 26, 15, '2025-03-17', '14:11:10', NULL, 'test', 0, NULL),
-(104, 26, 15, '2025-03-17', '14:11:10', NULL, 'test', 0, NULL),
+(103, 26, 15, '2025-03-17', '14:11:10', NULL, 'test', 1, NULL),
+(104, 26, 15, '2025-03-17', '14:11:10', NULL, 'test', 1, NULL),
 (105, 25, 19, '2025-03-19', '00:49:49', NULL, 'Post forwarded to BASIC ED department at Iligan campus', 1, NULL),
 (106, 43, 8, '2025-03-25', '18:01:06', NULL, 'test', 0, NULL),
 (107, 43, 8, '2025-03-25', '18:01:06', NULL, 'test', 0, NULL),
 (108, 25, 10, '2025-03-25', '18:14:53', NULL, 'Post forwarded to CITE department at Carmen campus', 1, NULL),
 (109, 25, 15, '2025-03-25', '18:21:59', NULL, 'Post forwarded to CITE department at Carmen campus', 1, NULL),
-(110, 25, 8, '2025-03-25', '18:25:27', NULL, 'Post forwarded to CITE department at Carmen campus with note: ttest', 1, NULL);
+(110, 25, 8, '2025-03-25', '18:25:27', NULL, 'Post forwarded to CITE department at Carmen campus with note: ttest', 1, NULL),
+(111, 25, 1, '2025-03-26', '19:32:18', NULL, 'Post forwarded to CITE department at Carmen campus', 1, NULL),
+(112, 26, 19, '2025-03-26', '21:27:12', NULL, 'test', 0, NULL),
+(113, 26, 19, '2025-03-26', '21:27:12', NULL, 'test', 0, NULL),
+(114, 26, 20, '2025-03-26', '22:31:40', NULL, 'test', 1, NULL),
+(115, 26, 20, '2025-03-26', '22:31:40', NULL, 'test', 1, NULL),
+(116, 26, 20, '2025-03-26', '22:33:00', NULL, 'huh', 1, NULL),
+(117, 26, 20, '2025-03-26', '22:33:00', NULL, 'huh', 1, NULL),
+(118, 26, 20, '2025-03-26', '22:34:54', NULL, 'notif', 1, NULL),
+(119, 26, 20, '2025-03-26', '22:34:54', NULL, 'notif', 1, NULL),
+(120, 26, 20, '2025-03-26', '22:38:44', NULL, 'test123', 1, NULL),
+(121, 26, 20, '2025-03-26', '22:38:44', NULL, 'test123', 1, NULL),
+(122, 26, 20, '2025-03-26', '22:39:09', NULL, 'duped', 1, NULL),
+(123, 26, 20, '2025-03-26', '22:39:09', NULL, 'duped', 1, NULL),
+(124, 26, 20, '2025-03-26', '22:52:53', NULL, 'test', 1, NULL),
+(125, 26, 20, '2025-03-26', '22:52:53', NULL, 'test', 1, NULL),
+(126, 26, 20, '2025-03-26', '23:01:46', NULL, 'test', 1, NULL),
+(127, 26, 20, '2025-03-26', '23:01:49', NULL, '321', 1, NULL),
+(128, 26, 20, '2025-03-26', '23:15:57', NULL, 'test notif', 1, NULL),
+(129, 26, 20, '2025-03-26', '23:25:05', NULL, 'test notif', 1, NULL),
+(130, 26, 20, '2025-03-26', '23:29:22', NULL, '0', 1, NULL),
+(131, 30, 20, '2025-03-26', '23:42:04', NULL, 'huj', 1, NULL),
+(132, 26, 20, '2025-03-26', '23:42:20', NULL, '21', 1, NULL);
 
 --
 -- Indexes for dumped tables
@@ -475,6 +527,12 @@ ALTER TABLE `tblusers`
 --
 ALTER TABLE `tblusertype`
   ADD PRIMARY KEY (`user_typeId`);
+
+--
+-- Indexes for table `tbl_giya_faq`
+--
+ALTER TABLE `tbl_giya_faq`
+  ADD PRIMARY KEY (`faq_id`);
 
 --
 -- Indexes for table `tbl_giya_inquiry_types`
@@ -535,19 +593,25 @@ ALTER TABLE `tblschoolyear`
 -- AUTO_INCREMENT for table `tblusers`
 --
 ALTER TABLE `tblusers`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+
+--
+-- AUTO_INCREMENT for table `tbl_giya_faq`
+--
+ALTER TABLE `tbl_giya_faq`
+  MODIFY `faq_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `tbl_giya_inquiry_types`
 --
 ALTER TABLE `tbl_giya_inquiry_types`
-  MODIFY `inquiry_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `inquiry_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `tbl_giya_posts`
 --
 ALTER TABLE `tbl_giya_posts`
-  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `tbl_giya_posttype`
@@ -559,7 +623,7 @@ ALTER TABLE `tbl_giya_posttype`
 -- AUTO_INCREMENT for table `tbl_giya_reply`
 --
 ALTER TABLE `tbl_giya_reply`
-  MODIFY `reply_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
+  MODIFY `reply_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=133;
 
 --
 -- Constraints for dumped tables

@@ -33,25 +33,65 @@ const GiyaTable = {
 
             $('table.dataTable tbody tr').css('cursor', 'pointer');
 
-            // Left align text in table cells - updated from center to left
             $('table.dataTable tbody td').css({
                 'text-align': 'left',
                 'vertical-align': 'middle'
             });
 
-            // Style table headers - keep this part
             $('table.dataTable thead th').css({
                 'background-color': '#155f37',
                 'color': 'white',
-                'text-align': 'left' // Add left alignment to headers too
+                'text-align': 'left'
             });
 
-            // Add page number input
             GiyaTable.addPageNumberInput(this);
         }
     },
 
     initPostsTable: function(tableSelector, action, rowClickHandler = null, additionalOptions = {}) {
+        window.lastInitTime = Date.now();
+        window.lastInitSelector = tableSelector;
+        window.lastInitAction = action;
+
+        if (!window.giyaTables) {
+            window.giyaTables = {};
+        }
+
+        const trackingKey = tableSelector.replace('#', '');
+        if (!window[trackingKey]) {
+            window[trackingKey] = {
+                initialized: false,
+                attempts: 0,
+                lastAttempt: Date.now(),
+                element: document.querySelector(tableSelector),
+                action: action
+            };
+        }
+
+        if (window.giyaTables[tableSelector]) {
+            try {
+                const existingTable = $(tableSelector).DataTable();
+                if (existingTable) {
+                    setTimeout(() => {
+                        const tableEl = document.querySelector(tableSelector);
+                        if (tableEl) tableEl.style.display = '';
+                    }, 50);
+
+                    return existingTable;
+                }
+            } catch (error) {
+                // Continue with initialization
+            }
+        }
+
+        const originalTable = document.querySelector(tableSelector);
+        if (!originalTable) {
+            return null;
+        }
+
+        if (!window.tableOriginals) window.tableOriginals = {};
+        window.tableOriginals[tableSelector] = originalTable.cloneNode(true);
+
         if ($.fn.DataTable.isDataTable(tableSelector)) {
             $(tableSelector).DataTable().destroy();
         }
@@ -145,80 +185,152 @@ const GiyaTable = {
 
         const baseURL = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
-        const tableOptions = {
+        const userTypeId = sessionStorage.getItem('user_typeId');
+        const userDepartmentId = sessionStorage.getItem('user_departmentId');
+
+        if (!window.tableData) window.tableData = {};
+
+        const staticConfig = {
             ajax: {
                 url: `${baseURL}posts.php?action=${action}`,
                 type: 'GET',
                 dataType: 'json',
+                cache: false,
+                headers: {
+                    'X-User-Type': userTypeId || '',
+                    'X-User-Department': userDepartmentId || ''
+                },
                 dataSrc: function(json) {
-                    console.log('Received response:', json);
+                    let dataArray = [];
 
-                    // Handle different response formats
-                    if (json && json.data) {
-                        // Standard DataTables format with data property
-                        return json.data;
+                    if (json && json.data && Array.isArray(json.data)) {
+                        dataArray = json.data;
                     } else if (json && json.success === true && Array.isArray(json.data)) {
-                        // Success:true format with array in data property
-                        return json.data;
+                        dataArray = json.data;
                     } else if (json && json.success === true && typeof json.data === 'object') {
-                        // Some endpoints might return object data instead of array
-                        return [json.data];
+                        dataArray = [json.data];
                     } else if (Array.isArray(json)) {
-                        // Direct array response
-                        return json;
-                    } else {
-                        // Error handling for unexpected response formats
-                        console.error('Invalid response format:', json);
-                        toastr.error('Server returned invalid data format');
-                        return [];
+                        dataArray = json;
                     }
+
+                    window.tableData[tableSelector] = dataArray;
+
+                    return dataArray;
                 },
-                error: function(xhr, error, thrown) {
-                    console.error('DataTables AJAX error:', xhr, error, thrown);
-
-                    if (!xhr.responseText) {
-                        toastr.error('Server returned empty response');
-                        return [];
+                error: function(xhr, status, error) {
+                    if (window.tableData && window.tableData[tableSelector]) {
+                        return window.tableData[tableSelector];
                     }
-
-                    try {
-                        JSON.parse(xhr.responseText);
-                    } catch (e) {
-                        console.error('Invalid JSON response:', e);
-                        toastr.error(`Invalid server response: ${e.message}`);
-                    }
-
-                    toastr.error(`Failed to load data: ${thrown || 'Server error'}`);
                     return [];
-                },
-                headers: function() {
-                    const userTypeId = sessionStorage.getItem('user_typeId');
-                    const userDepartmentId = sessionStorage.getItem('user_departmentId');
-
-                    return {
-                        'X-User-Type': userTypeId || '',
-                        'X-User-Department': userDepartmentId || ''
-                    };
                 }
             },
             columns: columns,
-            order: [[6, 'desc'], [7, 'desc']],
-            columnDefs: [
-                {
-                    responsivePriority: 1,
-                    targets: [0, 1]
-                },
-                {
-                    responsivePriority: 2,
-                    targets: -1
-                }
-            ]
+            destroy: false,
+            retrieve: true,
+            processing: true,
+            responsive: false,
+            deferRender: false,
+            stateSave: false,
+            lengthChange: true,
+            autoWidth: false,
+            searching: true,
+            ordering: true,
+            info: true,
+            paging: true,
+            order: [[6, 'desc'], [7, 'desc']]
         };
 
-        const mergedOptions = $.extend(true, {}, this.defaults, tableOptions, additionalOptions);
+        const defaultsMod = { ...this.defaults };
+        defaultsMod.drawCallback = function(settings) {
+            const tableElement = document.querySelector(tableSelector);
+            if (tableElement) {
+                tableElement.style.display = '';
+                tableElement.style.visibility = 'visible';
+            }
 
-        const table = $(tableSelector).DataTable(mergedOptions);
+            $('table.dataTable thead th').css({
+                'background-color': '#155f37',
+                'color': 'white',
+                'text-align': 'left'
+            });
 
+            try {
+                GiyaTable.addPageNumberInput(this);
+            } catch (e) {
+                // Ignore errors
+            }
+        };
+
+        const finalOptions = $.extend(true,
+            {},
+            defaultsMod,
+            staticConfig,
+            additionalOptions
+        );
+
+        let table = null;
+        try {
+            table = $(tableSelector).DataTable(finalOptions);
+
+            window.giyaTables[tableSelector] = table;
+            window[trackingKey].initialized = true;
+
+            if (!window.allTables) window.allTables = {};
+            window.allTables[tableSelector] = table;
+
+            if (rowClickHandler) {
+                $(tableSelector + ' tbody').on('click', 'tr', function() {
+                    const data = table.row(this).data();
+                    if (data) {
+                        rowClickHandler(data);
+                    }
+                });
+            } else {
+                $(tableSelector + ' tbody').on('click', 'tr', function() {
+                    const data = table.row(this).data();
+                    if (data && window.showPostDetails) {
+                        window.showPostDetails(data.post_id);
+                    }
+                });
+            }
+
+            $(tableSelector).addClass('table-hover');
+            $(tableSelector + ' tbody').addClass('cursor-pointer');
+
+            monitorTableVisibility(tableSelector, table);
+
+            return table;
+        } catch (e) {
+            setTimeout(() => {
+                try {
+                    if (!$.fn.DataTable.isDataTable(tableSelector)) {
+                        const container = $(tableSelector).closest('.table-responsive, .card-body');
+                        if (container.length && window.tableOriginals && window.tableOriginals[tableSelector]) {
+                            container.empty();
+                            container.append(window.tableOriginals[tableSelector].cloneNode(true));
+
+                            $(tableSelector).DataTable({
+                                ajax: {
+                                    url: `${baseURL}posts.php?action=${action}`,
+                                    headers: {
+                                        'X-User-Type': userTypeId || '',
+                                        'X-User-Department': userDepartmentId || ''
+                                    }
+                                },
+                                columns: columns
+                            });
+                        }
+                    }
+                } catch (recoverError) {
+                    // Recovery failed
+                }
+            }, 500);
+
+            return null;
+        }
+    },
+
+    attachTableClickHandlers: function(tableSelector, table, rowClickHandler) {
         if (rowClickHandler) {
             $(tableSelector + ' tbody').on('click', 'tr', function() {
                 const data = table.row(this).data();
@@ -237,8 +349,26 @@ const GiyaTable = {
 
         $(tableSelector).addClass('table-hover');
         $(tableSelector + ' tbody').addClass('cursor-pointer');
+    },
 
-        return table;
+    attachTableEventListeners: function(tableSelector, table) {
+        table.on('xhr.dt', function (e, settings, json, xhr) {
+            setTimeout(() => {
+                const tableEl = document.querySelector(tableSelector);
+                if (tableEl) {
+                    tableEl.style.display = '';
+                }
+            }, 50);
+        });
+
+        table.on('draw.dt', function() {
+            setTimeout(() => {
+                const tableEl = document.querySelector(tableSelector);
+                if (tableEl) {
+                    tableEl.style.display = '';
+                }
+            }, 50);
+        });
     },
 
     renderStatusBadge: function(data) {
@@ -303,11 +433,24 @@ const GiyaTable = {
     },
 
     refreshTables: function() {
-        ['#postsTable', '#latestPostsTable'].forEach(function(tableId) {
-            if ($.fn.DataTable.isDataTable(tableId)) {
-                $(tableId).DataTable().ajax.reload(null, false);
-            }
-        });
+        if (window.allTables) {
+            Object.keys(window.allTables).forEach(tableSelector => {
+                try {
+                    const table = window.allTables[tableSelector];
+                    if (table && typeof table.ajax === 'object' && typeof table.ajax.reload === 'function') {
+                        table.ajax.reload(function() {
+                            const tableEl = document.querySelector(tableSelector);
+                            if (tableEl) {
+                                tableEl.style.display = '';
+                                tableEl.style.visibility = 'visible';
+                            }
+                        }, false);
+                    }
+                } catch (error) {
+                    // Ignore errors
+                }
+            });
+        }
     },
 
     addPageNumberInput: function(table) {
@@ -372,6 +515,20 @@ const GiyaTable = {
     }
 };
 
+$(document).on('init.dt', function(e, settings) {
+    const api = new $.fn.dataTable.Api(settings);
+    const tableId = $(api.table().node()).attr('id');
+
+    setTimeout(function() {
+        const rowCount = api.rows().count();
+
+        if (rowCount === 0 && window.lastProcessedTableData &&
+            window.lastProcessedTableData.length > 0) {
+            api.ajax.reload();
+        }
+    }, 500);
+});
+
 $(document).on('draw.dt', function(e, settings) {
     const api = new $.fn.dataTable.Api(settings);
 
@@ -382,6 +539,268 @@ $(document).on('draw.dt', function(e, settings) {
             GiyaTable.updatePageInputValue(api);
         }
     }, 50);
+});
+
+window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const tableContainers = document.querySelectorAll('.student-table-container');
+        tableContainers.forEach(container => {
+            const observer = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    if (mutation.type === 'childList') {
+                        const tables = {
+                            '#latestPostsTable': window.originalTables && window.originalTables['#latestPostsTable'],
+                            '#postsTable': window.originalTables && window.originalTables['#postsTable'],
+                            '#resolvedPostsTable': window.originalTables && window.originalTables['#resolvedPostsTable']
+                        };
+
+                        for (const [selector, originalTable] of Object.entries(tables)) {
+                            if (originalTable && !document.querySelector(selector)) {
+                                const tableResponsive = container.querySelector('.table-responsive');
+                                if (tableResponsive) {
+                                    tableResponsive.appendChild(originalTable);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            observer.observe(container, { childList: true, subtree: true });
+
+            if (!window.tableObservers) window.tableObservers = [];
+            window.tableObservers.push(observer);
+        });
+    }, 500);
+});
+
+window.GiyaTable = GiyaTable;
+
+$(document).ready(function() {
+    setTimeout(() => {
+        const tables = [
+            '#latestPostsTable',
+            '#postsTable',
+            '#resolvedPostsTable',
+            '#studentsTable',
+            '#employeeTable'
+        ];
+
+        tables.forEach(tableId => {
+            const table = document.querySelector(tableId);
+            if (!table) return;
+
+            const container = $(tableId).closest('.card, .student-table-container')[0];
+            if (!container) return;
+
+            if (!window.originalTableHTML) window.originalTableHTML = {};
+            window.originalTableHTML[tableId] = table.outerHTML;
+
+            const observer = new MutationObserver(mutations => {
+                for (const mutation of mutations) {
+                    if (mutation.type === 'childList') {
+                        if (!document.querySelector(tableId) && window.originalTableHTML[tableId]) {
+                            const tableContainer = $(container).find('.table-responsive, .card-body')[0];
+                            if (tableContainer) {
+                                tableContainer.innerHTML = window.originalTableHTML[tableId];
+
+                                if (window.giyaTables && window.giyaTables[tableId]) {
+                                    const tableAction = tableId === '#latestPostsTable'
+                                        ? 'get_latest_posts'
+                                        : tableId === '#postsTable'
+                                            ? getPostsAction()
+                                            : 'get_resolved_posts';
+
+                                    setTimeout(() => {
+                                        if (!$.fn.DataTable.isDataTable(tableId)) {
+                                            GiyaTable.initPostsTable(tableId, tableAction);
+                                        }
+                                    }, 100);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            observer.observe(container, { childList: true, subtree: true });
+
+            if (!window.tableObservers) window.tableObservers = {};
+            window.tableObservers[tableId] = observer;
+        });
+    }, 500);
+
+    function getPostsAction() {
+        const path = window.location.pathname.toLowerCase();
+        const userTypeId = window.userTypeId || sessionStorage.getItem('user_typeId');
+        const departmentId = window.departmentId || sessionStorage.getItem('user_departmentId');
+
+        if (path.includes('students.html')) {
+            return (userTypeId == 5 && departmentId) ?
+                `get_student_posts_by_department&department_id=${departmentId}` :
+                "get_student_posts";
+        } else if (path.includes('visitors.html')) {
+            return (userTypeId == 5 && departmentId) ?
+                `get_visitor_posts_by_department&department_id=${departmentId}` :
+                "get_visitor_posts";
+        } else if (path.includes('employees.html')) {
+            return (userTypeId == 5 && departmentId) ?
+                `get_employee_posts_by_department&department_id=${departmentId}` :
+                "get_employee_posts";
+        }
+        return 'get_latest_posts';
+    }
+});
+
+function monitorTableVisibility(tableSelector, tableInstance) {
+    if (!window.tableMonitors) window.tableMonitors = {};
+    window.tableMonitors[tableSelector] = {
+        lastChecked: Date.now(),
+        instance: tableInstance,
+        visible: true
+    };
+
+    const monitorInterval = setInterval(() => {
+        const tableElement = document.querySelector(tableSelector);
+
+        if (window.tableMonitors[tableSelector]) {
+            window.tableMonitors[tableSelector].lastChecked = Date.now();
+            window.tableMonitors[tableSelector].visible =
+                tableElement &&
+                (tableElement.style.display !== 'none') &&
+                (tableElement.offsetParent !== null);
+        }
+
+        if (!tableElement ||
+            tableElement.style.display === 'none' ||
+            tableElement.offsetParent === null) {
+
+            if (tableElement) {
+                tableElement.style.display = '';
+                tableElement.style.visibility = 'visible';
+            } else if (window.tableOriginals && window.tableOriginals[tableSelector]) {
+                const container = $(tableSelector).closest('.table-responsive, .card-body');
+                if (container.length) {
+                    container.append(window.tableOriginals[tableSelector].cloneNode(true));
+
+                    if (!$.fn.DataTable.isDataTable(tableSelector) && window.tableData && window.tableData[tableSelector]) {
+                        $(tableSelector).DataTable({
+                            data: window.tableData[tableSelector],
+                            columns: window.giyaTableColumns || GiyaTable.getDefaultColumns()
+                        });
+                    }
+                }
+            }
+        }
+    }, 200);
+
+    if (!window.monitorIntervals) window.monitorIntervals = {};
+    window.monitorIntervals[tableSelector] = monitorInterval;
+
+    window.addEventListener('beforeunload', () => {
+        if (window.monitorIntervals && window.monitorIntervals[tableSelector]) {
+            clearInterval(window.monitorIntervals[tableSelector]);
+        }
+    });
+}
+
+GiyaTable.getDefaultColumns = function() {
+    return [
+        {
+            title: "Status",
+            data: "post_status",
+            render: this.renderStatusBadge,
+        },
+        {
+            title: "Classification",
+            data: "user_typeId",
+        },
+        {
+            title: "Full Name",
+            data: "user_fullname"
+        },
+        {
+            title: "Type",
+            data: "postType_name",
+        },
+        {
+            title: "Message",
+            data: "post_message",
+        },
+        {
+            title: "Department",
+            data: "department_name",
+        },
+        {
+            title: "Campus",
+            data: "campus_name",
+        },
+        {
+            title: "Date",
+            data: "post_date",
+        },
+        {
+            title: "Time",
+            data: "post_time",
+        }
+    ];
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `
+        table.dataTable,
+        table.table,
+        table#latestPostsTable,
+        table#postsTable,
+        table#resolvedPostsTable {
+            display: table !important;
+            visibility: visible !important;
+        }
+
+        .table-responsive {
+            display: block !important;
+            visibility: visible !important;
+            overflow: auto !important;
+        }
+    `;
+    document.head.appendChild(styleEl);
+
+    const observer = new MutationObserver((mutations) => {
+        const activeSelectors = [];
+        if (window.tableMonitors) {
+            activeSelectors.push(...Object.keys(window.tableMonitors));
+        }
+
+        const tablesAffected = mutations.some(mutation => {
+            return activeSelectors.some(selector => {
+                return mutation.target.matches &&
+                       (mutation.target.matches(selector) ||
+                        mutation.target.querySelector(selector));
+            });
+        });
+
+        if (tablesAffected) {
+            activeSelectors.forEach(selector => {
+                const table = document.querySelector(selector);
+                if (table) {
+                    if (table.style.display === 'none' || table.offsetParent === null) {
+                        table.style.display = '';
+                        table.style.visibility = 'visible';
+                    }
+                }
+            });
+        }
+    });
+
+    observer.observe(document.body, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+        attributeFilter: ['style', 'class']
+    });
+
+    window.globalVisibilityObserver = observer;
 });
 
 window.GiyaTable = GiyaTable;

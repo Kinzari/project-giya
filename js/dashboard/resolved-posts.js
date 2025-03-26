@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const baseURL = sessionStorage.getItem("baseURL");
     if (!baseURL) {
-        console.error("baseURL not found in sessionStorage");
         sessionStorage.setItem('baseURL', 'http://localhost/api/');
         toastr.warning('API URL not found. Using default URL. You may need to login again.');
     }
@@ -17,38 +16,13 @@ document.addEventListener('DOMContentLoaded', function() {
             departmentId = user.user_departmentId;
             userTypeId = user.user_typeId;
         } catch (e) {
-            console.error('Error parsing user info:', e);
+            // Parse error
         }
     }
 
-    // Debug function with enhanced detail
-    function debugTableData(action, endpoint) {
-        $.ajax({
-            url: `${baseURL}posts.php?action=${action}`,
-            type: 'GET',
-            success: function(response) {
-                console.log(`${action} API Response:`, response);
-                if (response && response.data && response.data.length > 0) {
-                    const firstRecord = response.data[0];
-                    console.log('First record:', firstRecord);
-                    console.log('All properties:', Object.keys(firstRecord));
-                    console.log('Classification data:', {
-                        user_typeId: firstRecord.user_typeId,
-                        user_type: firstRecord.user_type
-                    });
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('API Error:', error);
-            }
-        });
-    }
-
-    // Improved getEndpoint function to better handle specific resolved post types
     function getEndpoint() {
         let apiAction = "";
 
-        // Determine which API endpoint to use based on current page
         if (path.includes("visitors-resolved.html")) {
             apiAction = "get_resolved_visitor_posts";
         } else if (path.includes("students-resolved.html")) {
@@ -56,64 +30,51 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (path.includes("employees-resolved.html")) {
             apiAction = "get_resolved_employee_posts";
         } else {
-            // Default - all resolved posts
             apiAction = "get_resolved_posts";
-        }
-
-        // For POC users, we might need to filter by department
-        // But we still want to see resolved posts, not all posts
-        if (userTypeId == 5 && departmentId) {
-            // We'll use the same endpoints but filter on the client side
-            console.log(`POC user (${userTypeId}) with department ${departmentId} accessing resolved posts`);
         }
 
         return apiAction;
     }
 
-    // Enhanced helper function to get user type label with better fallback handling
     function getUserTypeLabel(typeId) {
-        // Convert to integer if it's a string, handle null/undefined
         if (typeId === null || typeId === undefined) {
             return 'Unknown';
         }
 
-        // Try parsing as integer, default to 0 if parsing fails
         const parsedTypeId = parseInt(typeId, 10) || 0;
 
-        // Match with tblusertype.user_typeId values from your database
         switch(parsedTypeId) {
             case 1: return 'Visitor';
             case 2: return 'Student';
             case 3: return 'Faculty';
             case 4: return 'Employee';
             case 5: return 'POC';
-            case 6: return 'Administrator'; // Administrator / SSG
+            case 6: return 'Administrator';
             default: return `Unknown (${typeId})`;
         }
     }
 
-    // Initialize the resolved posts table with appropriate data source
     if (document.getElementById("resolvedPostsTable")) {
         const endpoint = getEndpoint();
 
-        // Debug the API response
-        debugTableData(endpoint, endpoint);
-
         const resolvedTable = $('#resolvedPostsTable').DataTable({
-            order: [[6, 'desc'], [7, 'desc']], // Most recent posts first by date and time
+            order: [[6, 'desc'], [7, 'desc']],
             ajax: {
                 url: `${baseURL}posts.php?action=${endpoint}`,
                 type: 'GET',
                 dataSrc: function(json) {
                     if (!json || !json.data) {
-                        console.error('Invalid data format returned from server:', json);
                         return [];
                     }
 
-                    console.log(`Received ${json.data.length} resolved posts.`);
-                    console.log('Sample data:', json.data[0]);
+                    document.querySelectorAll('.filter-control').forEach(filter => {
+                        const value = filter.value;
+                        if (value) {
+                            const columnIndex = parseInt(filter.getAttribute('data-column'));
+                            json.data = json.data.filter(item => item[columnIndex] === value);
+                        }
+                    });
 
-                    // For POC users, filter by department if needed
                     if (userTypeId == 5 && departmentId) {
                         return json.data.filter(item =>
                             item.post_departmentId == departmentId ||
@@ -121,22 +82,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         );
                     }
 
-                    // Add user_typeId inference for records that are missing it
                     json.data.forEach(record => {
                         if (!record.user_typeId && record.user_schoolId) {
                             const schoolId = record.user_schoolId.toLowerCase();
                             if (schoolId.startsWith('02-')) {
-                                record.user_typeId = 2; // Student
+                                record.user_typeId = 2;
                             } else if (schoolId.startsWith('01-')) {
-                                record.user_typeId = 3; // Faculty/Employee
+                                record.user_typeId = 3;
                             } else if (schoolId.startsWith('vs-')) {
-                                record.user_typeId = 1; // Visitor
+                                record.user_typeId = 1;
                             } else if (schoolId.startsWith('25-')) {
-                                record.user_typeId = endpoint.includes('employee') ? 4 : 5; // POC/Administrator
+                                record.user_typeId = endpoint.includes('employee') ? 4 : 5;
                             }
                         }
 
-                        // If endpoint-specific and still no user_typeId, set based on endpoint
                         if (!record.user_typeId) {
                             if (endpoint.includes('visitor')) {
                                 record.user_typeId = 1;
@@ -151,7 +110,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     return json.data;
                 },
                 error: function(xhr, error, thrown) {
-                    console.error('DataTables Ajax error:', error, thrown);
                     toastr.error('Error loading resolved posts data. Please try refreshing the page.');
                 }
             },
@@ -166,12 +124,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: "Classification",
                     data: null,
                     render: function(data, type, row) {
-                        // Debug the row data to help identify the issues
-                        if (type === 'display' && !row.user_typeId) {
-                            console.debug('Row missing user_typeId:', row);
-                        }
-
-                        // First priority: look for user_typeId in multiple possible locations
                         let typeId = null;
                         if (row.user_typeId !== undefined && row.user_typeId !== null) {
                             typeId = row.user_typeId;
@@ -181,12 +133,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             typeId = row.user.user_typeId;
                         }
 
-                        // If we found a valid type ID, return its label
                         if (typeId !== null) {
                             return getUserTypeLabel(typeId);
                         }
 
-                        // Second priority: infer from school ID prefix
                         if (row.user_schoolId) {
                             const schoolId = row.user_schoolId.toLowerCase();
                             if (schoolId.startsWith('02-')) {
@@ -200,7 +150,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         }
 
-                        // Third priority: infer from endpoint name
                         if (endpoint.includes('visitor')) {
                             return 'Visitor';
                         } else if (endpoint.includes('student')) {
@@ -227,7 +176,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: "Message",
                     data: null,
                     render: function(data, type, row) {
-                        // Prefer post_message, but use post_title if message is not available
                         let content = row.post_message || row.post_title || '';
 
                         if (content && content.length > 20) {
@@ -296,7 +244,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Handle row click events
         $('#resolvedPostsTable tbody').on('click', 'tr', function() {
             const data = resolvedTable.row(this).data();
             if (data && data.post_id) {
@@ -305,10 +252,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Define currentPostId in this scope to make it accessible
     let currentPostId = null;
 
-    // Define a function for showing resolved posts details
     window.showResolvedPostDetails = function(postId) {
         try {
             currentPostId = postId;
@@ -329,7 +274,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         const modal = new bootstrap.Modal(document.getElementById('postDetailsModal'));
                         modal.show();
 
-                        // Update modal content with post details
                         setTimeout(updateModalButtons, 300);
 
                         const userNameElement = document.getElementById('postUserName');
@@ -404,12 +348,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => {
-                    console.error('Error loading post details:', error);
                     toastr.error('Failed to load post details');
                     toastr.clear(loadingToast);
                 });
         } catch (error) {
-            console.error('Error showing post details:', error);
             toastr.error('Failed to load post details');
         }
     };
@@ -454,7 +396,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Add table header styling function
     function applyTableHeaderStyling() {
         document.querySelectorAll('th').forEach(el => {
             el.style.backgroundColor = '#155f37';
@@ -462,10 +403,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Apply styling after table is initialized
     setTimeout(applyTableHeaderStyling, 500);
 
-    // Apply styling again after any table redraw
     $(document).on('draw.dt', function() {
         setTimeout(applyTableHeaderStyling, 100);
     });

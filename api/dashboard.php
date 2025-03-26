@@ -1,5 +1,4 @@
 <?php
-// Enable CORS for development
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST");
 header("Access-Control-Allow-Headers: Content-Type, X-Retry, X-User-Type, X-User-Id");
@@ -7,14 +6,11 @@ header('Content-Type: application/json');
 
 require 'db_connection.php';
 
-// Basic authentication check for dashboard - allow public access to basic stats
 function checkAccess() {
-    // Skip auth for get_stats action
     if ($_GET['action'] === 'get_stats') {
         return true;
     }
 
-    // For other actions, require authentication
     if (isset($_SERVER['HTTP_X_USER_TYPE'])) {
         $userType = $_SERVER['HTTP_X_USER_TYPE'];
         if ($userType != '6' && $userType != '5') {
@@ -39,7 +35,6 @@ function checkAccess() {
     return true;
 }
 
-// Check access for non-OPTIONS requests
 if ($_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
     checkAccess();
 }

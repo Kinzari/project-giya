@@ -1,4 +1,3 @@
-
 document.querySelectorAll('.toggle-password').forEach(icon => {
     icon.addEventListener('click', function() {
         const targetId = this.getAttribute('data-target');
@@ -127,7 +126,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const userId = sessionStorage.getItem('user_id');
     const userTypeId = sessionStorage.getItem('user_typeId');
 
-    if (!userId || ![1, 2].includes(parseInt(userTypeId))) {
+    // Update to include both Faculty (3) and Employee (4) types
+    if (!userId || ![1, 2, 3, 4].includes(parseInt(userTypeId))) {
         window.location.href = '/index.html';
     }
 });

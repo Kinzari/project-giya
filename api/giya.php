@@ -1,7 +1,6 @@
 <?php
 require 'db_connection.php';
 
-// Add this function to check admin access for sensitive operations
 function requireAdminAccess() {
     $headers = getallheaders();
     $userType = isset($headers['X-User-Type']) ? $headers['X-User-Type'] : null;
@@ -17,7 +16,6 @@ function requireAdminAccess() {
     }
 }
 
-// Add these handlers for departments and campuses
 function handleGetDepartments($pdo) {
     try {
         $stmt = $pdo->query("SELECT department_id, department_name FROM tbldepartments ORDER BY department_name");
@@ -59,14 +57,11 @@ if (!isset($_GET['action'])) {
 
 $action = $_GET['action'];
 
-// Add a list of actions that require admin access
 $adminOnlyActions = [
     'reset_password',
     'update_user_status',
-    // Add any other admin-only actions here
 ];
 
-// Check if current action requires admin access
 if (in_array($action, $adminOnlyActions)) {
     requireAdminAccess();
 }
@@ -83,7 +78,6 @@ switch ($action) {
         }
 
         try {
-            // Modified query to use separate named parameters
             $query = $pdo->prepare("
                 SELECT
                     u.*,
@@ -104,7 +98,6 @@ switch ($action) {
                    OR u.user_email = :email
             ");
 
-            // Bind parameters separately
             $query->bindValue(':school_id', $loginInput, PDO::PARAM_STR);
             $query->bindValue(':email', $loginInput, PDO::PARAM_STR);
             $query->execute();
@@ -137,7 +130,7 @@ switch ($action) {
                 "user_suffix" => $user['user_suffix'] ?? '',
                 "user_typeId" => (int)$user['user_typeId'],
                 "department_name" => $user['department_name'],
-                "user_departmentId" => $user['user_departmentId'] ?? null, // Make sure to include department ID
+                "user_departmentId" => $user['user_departmentId'] ?? null,
                 "user_campusId" => $user['user_campusId'] ?? 1,
                 "campus_name" => $user['campus_name'] ?? 'Carmen',
                 "course_name" => $user['course_name'],
@@ -259,11 +252,9 @@ switch ($action) {
         }
 
         try {
-            // ✅ Update user status in database
             $stmt = $pdo->prepare("UPDATE tblusers SET user_status = :user_status WHERE user_id = :user_id");
             $stmt->execute([':user_status' => $user_status, ':user_id' => $user_id]);
 
-            // ✅ Fetch the **updated** user status to return in response
             $stmt = $pdo->prepare("SELECT user_status FROM tblusers WHERE user_id = :user_id");
             $stmt->execute([':user_id' => $user_id]);
             $updatedUser = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -271,7 +262,7 @@ switch ($action) {
             echo json_encode([
                 "success" => true,
                 "message" => "User status updated successfully.",
-                "user_status" => (int) $updatedUser['user_status'], // Ensure we send the latest status
+                "user_status" => (int) $updatedUser['user_status'],
                 "user_id" => (int) $user_id
             ]);
         } catch (Exception $e) {
@@ -320,25 +311,11 @@ switch ($action) {
         break;
 
     case 'reset_password':
-        // Debug the incoming data to check why user_id might be missing
-        file_put_contents(
-            'debug_reset_password.log',
-            date('Y-m-d H:i:s') . ' - REQUEST: ' . print_r($_REQUEST, true) .
-            ' POST: ' . print_r($_POST, true) .
-            ' GET: ' . print_r($_GET, true) .
-            ' RAW: ' . file_get_contents('php://input') . PHP_EOL,
-            FILE_APPEND
-        );
-
-        // Try to get user_id from different sources
         $user_id = null;
 
-        // Check POST directly
         if (isset($_POST['user_id'])) {
             $user_id = $_POST['user_id'];
-        }
-        // Check if payload is JSON
-        else {
+        } else {
             $jsonInput = json_decode(file_get_contents('php://input'), true);
             if ($jsonInput && isset($jsonInput['user_id'])) {
                 $user_id = $jsonInput['user_id'];
@@ -348,9 +325,7 @@ switch ($action) {
         if (!$user_id) {
             echo json_encode([
                 "success" => false,
-                "message" => "User ID is required. Debug: POST=" . json_encode($_POST) .
-                            ", GET=" . json_encode($_GET) .
-                            ", REQUEST=" . json_encode($_REQUEST)
+                "message" => "User ID is required."
             ]);
             exit;
         }

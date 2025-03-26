@@ -16,13 +16,10 @@
     <link rel="stylesheet" href="/css/table-styles.css" />
     <script src="/js/dashboard/components.js"></script>
     <style>
-        /* Left align text in table cells */
         #postsTable tbody td {
             text-align: left;
             vertical-align: middle;
         }
-
-        /* Left align column headers */
         #postsTable thead th {
             text-align: left;
         }
@@ -42,10 +39,56 @@
                     <button class="btn btn-outline-primary active" data-filter="all">All Active</button>
                     <button class="btn btn-outline-danger" data-filter="pending">Pending</button>
                     <button class="btn btn-outline-warning" data-filter="ongoing">Ongoing</button>
-                    <!-- Removed resolved filter button since we have dedicated resolved pages -->
                 </div>
             </div>
 
+            <!-- Filters Section -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-funnel me-2"></i>Filters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="post-filters" class="row g-3 align-items-end">
+                        <!-- Classification Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <label for="classification-filter" class="form-label">Classification</label>
+                            <select class="form-select filter-control" id="classification-filter" data-column="1">
+                                <option value="">All</option>
+                                <option value="Visitor">Visitor</option>
+                                <option value="Student">Student</option>
+                                <option value="Faculty">Faculty</option>
+                                <option value="Employee">Employee</option>
+                            </select>
+                        </div>
+                        <!-- Post Type/Concern Type Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <label for="concern-type-filter" class="form-label">Concern Type</label>
+                            <select class="form-select filter-control" id="concern-type-filter" data-column="3">
+                                <option value="">All</option>
+                                <option value="Inquiry">Inquiry</option>
+                                <option value="Feedback">Feedback</option>
+                                <option value="Suggestion">Suggestion</option>
+                            </select>
+                        </div>
+                        <!-- Department Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12" id="department-filter-container">
+                            <label for="department-filter" class="form-label">Department</label>
+                            <select class="form-select filter-control" id="department-filter" data-column="5">
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                        <!-- Campus Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <label for="campus-filter" class="form-label">Campus</label>
+                            <select class="form-select filter-control" id="campus-filter" data-column="6">
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
             <div class="card shadow-sm border-0 student-table-container">
                 <div class="card-header bg-white py-3">
@@ -175,6 +218,7 @@
     <script src="/js/dashboard/forward-post.js"></script>
     <script src="/js/toastr-config.js"></script>
     <script src="/js/dashboard/poc-restrictions.js"></script>
+    <script src="/js/dashboard/table-filters.js"></script>
 </body>
 
 </html>

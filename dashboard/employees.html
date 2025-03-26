@@ -32,24 +32,66 @@
 <body>
     <div id="navbar-placeholder"></div>
     <div id="sidebar-placeholder"></div>
+
     <!-- Main Content -->
     <main class="mt-3 p-2">
         <div class="container">
-            <!-- Filtering Controls with left alignment -->
             <div class="d-flex align-items-center mb-4 filter-container">
                 <h3>Employee Posts</h3>
                 <div class="btn-group ms-auto">
-                    <button class="btn btn-outline-success active" data-filter="all">All</button>
+                    <button class="btn btn-outline-primary active" data-filter="all">All Active</button>
                     <button class="btn btn-outline-danger" data-filter="pending">Pending</button>
                     <button class="btn btn-outline-warning" data-filter="ongoing">Ongoing</button>
-                    <!-- Removed resolved filter button since we have dedicated resolved pages -->
                 </div>
             </div>
 
-            <!-- Table container with the same design as latest-post.html -->
+            <!-- Filters Section -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-funnel me-2"></i>Filters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="post-filters" class="row g-3 align-items-end">
+                        <!-- All filters in one row -->
+                        <!-- Post Type/Concern Type Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <label for="concern-type-filter" class="form-label">Concern Type</label>
+                            <select class="form-select filter-control" id="concern-type-filter" data-column="3">
+                                <option value="">All</option>
+                                <option value="Inquiry">Inquiry</option>
+                                <option value="Feedback">Feedback</option>
+                                <option value="Suggestion">Suggestion</option>
+                            </select>
+                        </div>
+                        <!-- Department Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12" id="department-filter-container">
+                            <label for="department-filter" class="form-label">Department</label>
+                            <select class="form-select filter-control" id="department-filter" data-column="5">
+                                <option value="">All</option>
+                                <!-- Departments will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <!-- Campus Filter -->
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <label for="campus-filter" class="form-label">Campus</label>
+                            <select class="form-select filter-control" id="campus-filter" data-column="6">
+                                <option value="">All</option>
+                                <!-- Campuses will be loaded dynamically -->
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <div class="card shadow-sm border-0 student-table-container">
                 <div class="card-header bg-white py-3">
-                    <h5 class="mb-0">Employee & Faculty Posts</h5>
+                    <h5 class="mb-0">Employee Posts</h5>
+                    <div id="poc-notice" class="alert alert-info mt-2" style="display:none;">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span></span>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -105,26 +147,73 @@
                         <!-- Main post content -->
                         <div class="main-post p-3 border-bottom"></div>
                         <!-- Replies container -->
-                        <div class="replies-container p-3"></div>
-                        <!-- Reply form -->
-                        <div class="reply-form-container p-3 border-top bg-light">
-                            <form id="replyForm" class="reply-form">
-                                <div class="input-group">
-                                    <input type="text" class="form-control reply-input" placeholder="Write a reply...">
-                                    <button class="btn btn-primary" type="submit">
-                                        <i class="bi bi-send-fill"></i>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                        <div class="replies-container p-3" style="height: 300px; overflow-y: auto;"></div>
                     </div>
+                </div>
+                <div class="reply-form-container p-3 border-top bg-light">
+                    <form id="replyForm" class="reply-form">
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" id="attachButton">
+                                <i class="bi bi-paperclip"></i>
+                            </button>
+                            <input type="file" id="attachFile" style="display: none;">
+                            <input type="text" class="form-control reply-input" placeholder="Write a reply...">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </div>
+                        <div id="attachmentPreview" class="mt-2" style="display: none;">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark me-2"></i>
+                                <span id="fileName"></span>
+                                <button type="button" class="btn btn-link text-danger p-0 ms-2" id="removeAttachment">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- No changes needed to the HTML structure, but making sure it loads posts only from Faculty (3) and Employee (4) -->
-    <!-- This will be handled in the posts.js file -->
+    <!-- Forward Post Modal -->
+    <div class="modal fade" id="forwardPostModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Forward Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="forwardForm">
+                        <div class="mb-3">
+                            <label for="forwardDepartment" class="form-label">Department</label>
+                            <select class="form-select" id="forwardDepartment" required>
+                                <option value="">Select Department</option>
+                                <!-- Departments will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="forwardCampus" class="form-label">Campus</label>
+                            <select class="form-select" id="forwardCampus" required>
+                                <option value="">Select Campus</option>
+                                <!-- Campuses will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="forwardNote" class="form-label">Note (Optional)</label>
+                            <textarea class="form-control" id="forwardNote" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitForward">Forward</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -139,6 +228,7 @@
     <script src="/js/dashboard/forward-post.js"></script>
     <script src="/js/toastr-config.js"></script>
     <script src="/js/dashboard/poc-restrictions.js"></script>
+    <script src="/js/dashboard/table-filters.js"></script>
 </body>
 
 </html>

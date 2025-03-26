@@ -75,20 +75,17 @@ body {
 /* Notification badge */
 .notification-badge {
     position: absolute;
-    top: -0.5rem;
-    right: -0.5rem;
-    background-color: #ff3b30;
+    top: -5px;
+    right: -5px;
+    background-color: #dc3545;
     color: white;
-    font-size: 0.625rem;
-    font-weight: bold;
-    width: 1.25rem;
-    height: 1.25rem;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid white;
-    animation: pulse-subtle 2s infinite;
+    padding: 0.25em 0.5em;
+    font-size: 0.75em;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+    animation: badge-pulse 0.5s ease-in-out 2;
 }
 
 @keyframes pulse-subtle {
@@ -384,4 +381,22 @@ body {
     .mt-5 {
         margin-top: 2rem !important;
     }
+}
+
+/* Add this at the end of your CSS file */
+
+@keyframes badge-pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.badge-pulse {
+    animation: badge-pulse 0.5s ease-in-out 2;
 }

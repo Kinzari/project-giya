@@ -697,3 +697,86 @@ input.page-number-input::-webkit-outer-spin-button {
     cursor: not-allowed;
     opacity: 0.6;
 }
+
+/* Table Styling */
+table.dataTable {
+    border-collapse: collapse !important;
+    border: none !important;
+}
+
+table.dataTable thead th {
+    border-bottom: none !important;
+    background-color: #155f37 !important;
+    color: white !important;
+    text-align: left !important;
+}
+
+table.dataTable thead th.sorting:after,
+table.dataTable thead th.sorting_asc:after,
+table.dataTable thead th.sorting_desc:after {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+table.dataTable tbody tr:hover {
+    background-color: rgba(21, 95, 55, 0.05) !important;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #155f37 !important;
+    border-color: #155f37 !important;
+}
+
+.pagination .page-link {
+    color: #155f37;
+}
+
+.pagination .page-link:hover {
+    color: #0d3d23;
+}
+
+/* Status badges */
+.btn-solid-primary,
+.badge-primary {
+    background-color: #155f37 !important;
+    color: white !important;
+    border-color: #155f37 !important;
+}
+
+.btn-solid-danger,
+.badge-danger {
+    background-color: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+}
+
+.btn-solid-warning,
+.badge-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+    border-color: #ffc107 !important;
+}
+
+/* Filter styling */
+.filter-container {
+    margin-bottom: 1.5rem;
+}
+
+.filter-lock-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+.locked-filter .form-select {
+    background-color: rgba(0, 0, 0, 0.03);
+    cursor: not-allowed;
+}
+
+.locked-filter label::after {
+    content: " (Locked)";
+    color: #6c757d;
+    font-size: 0.85em;
+    font-style: italic;
+}

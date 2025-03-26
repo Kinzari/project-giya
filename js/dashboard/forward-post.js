@@ -1,39 +1,36 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Load the forward modal HTML
     fetch('/dashboard/components/forward-modal.html')
         .then(response => response.text())
         .then(html => {
             document.body.insertAdjacentHTML('beforeend', html);
             setupForwardingFunctionality();
         })
-        .catch(error => console.error('Error loading forward modal:', error));
+        .catch(error => {
+            // Handle error silently
+        });
 });
 
 function setupForwardingFunctionality() {
-    // Setup click handler for the forward button
     document.addEventListener('click', function(event) {
         if (event.target.matches('#forwardPostBtn') || event.target.closest('#forwardPostBtn')) {
             openForwardModal();
         }
     });
 
-    // Setup confirm forward button handler
     document.addEventListener('click', function(event) {
         if (event.target.matches('#confirmForwardBtn')) {
             forwardCurrentPost();
         }
     });
 
-    // Only admins should see the forward button
     const userType = sessionStorage.getItem('user_typeId');
-    if (userType !== '6') { // Admin user_typeId = 6
+    if (userType !== '6') {
         const forwardBtns = document.querySelectorAll('#forwardPostBtn');
         forwardBtns.forEach(btn => {
             btn.style.display = 'none';
         });
     }
 
-    // Populate departments and campuses when the modal opens
     const forwardPostModal = document.getElementById('forwardPostModal');
     if (forwardPostModal) {
         forwardPostModal.addEventListener('show.bs.modal', function () {
@@ -48,11 +45,9 @@ function openForwardModal() {
         return;
     }
 
-    // Reset form
     const form = document.getElementById('forwardPostForm');
     if (form) form.reset();
 
-    // Open modal
     const modal = new bootstrap.Modal(document.getElementById('forwardPostModal'));
     modal.show();
 }
@@ -61,7 +56,6 @@ async function loadDepartmentsAndCampuses() {
     try {
         const baseURL = sessionStorage.getItem('baseURL');
 
-        // Get departments from giya.php
         const departmentsResponse = await axios.get(`${baseURL}giya.php?action=get_departments`);
         if (departmentsResponse.data.success) {
             populateSelect('forwardDepartment', departmentsResponse.data.departments);
@@ -69,7 +63,6 @@ async function loadDepartmentsAndCampuses() {
             toastr.error('Failed to load departments');
         }
 
-        // Get campuses from giya.php
         const campusesResponse = await axios.get(`${baseURL}giya.php?action=get_campuses`);
         if (campusesResponse.data.success) {
             populateSelect('forwardCampus', campusesResponse.data.campuses);
@@ -85,12 +78,10 @@ function populateSelect(selectId, options) {
     const select = document.getElementById(selectId);
     if (!select) return;
 
-    // Keep the first "Select..." option
     const defaultOption = select.options[0];
     select.innerHTML = '';
     select.appendChild(defaultOption);
 
-    // Add options
     if (Array.isArray(options)) {
         options.forEach(option => {
             const value = option.department_id || option.campus_id;
@@ -113,7 +104,6 @@ async function forwardCurrentPost() {
             return;
         }
 
-        // Make sure only admins can forward posts
         const userType = sessionStorage.getItem('user_typeId');
         if (userType !== '6') {
             toastr.error('Only administrators can forward posts');
@@ -123,7 +113,6 @@ async function forwardCurrentPost() {
         const departmentSelect = document.getElementById('forwardDepartment');
         const campusSelect = document.getElementById('forwardCampus');
 
-        // Remove reference to notes input
         if (!departmentSelect || !campusSelect) {
             toastr.error('Form elements not found');
             return;
@@ -166,14 +155,11 @@ async function forwardCurrentPost() {
         if (response.data.success) {
             toastr.success('Post forwarded successfully');
 
-            // Close the forward modal
             const forwardModal = bootstrap.Modal.getInstance(document.getElementById('forwardPostModal'));
             if (forwardModal) forwardModal.hide();
 
-            // Refresh post details - no need for the hideForwardMessage flag anymore
             await showPostDetails(currentPostId);
 
-            // Refresh tables
             refreshTables();
         } else {
             toastr.error(response.data.message || 'Failed to forward post');

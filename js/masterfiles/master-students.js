@@ -1,8 +1,9 @@
 let studentsTable;
 let currentStudentData = null;
-const baseStudentApiUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+const baseApiUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
 
 function handleAjaxError(xhr, status, error) {
+    console.error('AJAX Error:', xhr, status, error);
     Swal.fire({
         title: 'Error',
         text: 'An error occurred while communicating with the server',
@@ -21,13 +22,18 @@ function showSuccessMessage(message) {
 }
 
 function loadDepartmentsDropdown(selectId, selectedId = null) {
-    const baseApiUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+    const userType = sessionStorage.getItem('user_typeId');
     $.ajax({
         url: `${baseApiUrl}masterfile.php?action=departments`,
         type: 'GET',
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success && response.data) {
-                let options = '<option value="">Select Department</option>';
+                let options = selectId === 'departmentFilter' ?
+                    '<option value="">All Departments</option>' :
+                    '<option value="">Select Department</option>';
                 response.data.forEach(dept => {
                     const isSelected = selectedId && dept.department_id == selectedId ? 'selected' : '';
                     options += `<option value="${dept.department_id}" ${isSelected}>${dept.department_name}</option>`;
@@ -35,15 +41,20 @@ function loadDepartmentsDropdown(selectId, selectedId = null) {
                 $(`#${selectId}`).html(options);
             }
         },
-        error: handleAjaxError
+        error: function() {
+            $(`#${selectId}`).html('<option value="">Error loading departments</option>');
+        }
     });
 }
 
 function loadCoursesForDepartment(departmentId, selectId, selectedId = null) {
-    const baseApiUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+    const userType = sessionStorage.getItem('user_typeId');
     $.ajax({
         url: `${baseApiUrl}masterfile.php?action=courses_by_department&department_id=${departmentId}`,
         type: 'GET',
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success && response.data) {
                 let options = '<option value="">Select Course</option>';
@@ -54,39 +65,44 @@ function loadCoursesForDepartment(departmentId, selectId, selectedId = null) {
                 $(`#${selectId}`).html(options);
             }
         },
-        error: handleAjaxError
+        error: function() {
+            $(`#${selectId}`).html('<option value="">Error loading courses</option>');
+        }
     });
 }
 
 $(document).ready(function() {
-    initBasicStudentsTable();
+    initStudentsTable();
+    loadDepartmentsDropdown('department');
+    loadDepartmentsDropdown('departmentFilter');
     setupEventHandlers();
     checkModals();
 });
 
-function initBasicStudentsTable() {
+function initStudentsTable() {
     try {
         if ($.fn.DataTable.isDataTable('#studentsTable')) {
             $('#studentsTable').DataTable().destroy();
         }
-        $('#studentsTable').empty();
-        $('#studentsTable').append('<thead><tr>' +
-            '<th>School ID</th>' +
-            '<th>Name</th>' +
-            '<th>Status</th>' +
-            '<th>Actions</th>' +
-            '</tr></thead><tbody></tbody>');
+
+        const userType = sessionStorage.getItem('user_typeId');
+
         studentsTable = $('#studentsTable').DataTable({
             ajax: {
-                url: `${baseStudentApiUrl}masterfile.php?action=students`,
+                url: `${baseApiUrl}masterfile.php?action=students`,
                 dataSrc: function(response) {
                     if (!response || !response.success) {
+                        console.error('Error loading students:', response?.message || 'Unknown error');
                         return [];
                     }
                     return response.data || [];
                 },
                 error: function(xhr, error, thrown) {
+                    console.error('Error loading students:', error, thrown);
                     return [];
+                },
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('X-User-Type', userType || '6');
                 }
             },
             columns: [
@@ -94,18 +110,23 @@ function initBasicStudentsTable() {
                 {
                     data: null,
                     render: function(data) {
-                        let middleInitial = '';
+                        let fullName = `${data.user_lastname}, ${data.user_firstname}`;
                         if (data.user_middlename) {
-                            middleInitial = data.user_middlename.charAt(0) + '. ';
+                            fullName += ` ${data.user_middlename.charAt(0)}.`;
                         }
-                        return `${data.user_lastname}, ${data.user_firstname} ${middleInitial}`;
+                        return fullName;
                     }
                 },
+                { data: 'course_name' },
+                { data: 'department_name' },
+                { data: 'schoolyear' },
                 {
                     data: 'user_status',
                     render: function(data, type, row) {
                         const isActive = Number(data) === 1;
+                        const badgeClass = isActive ? "bg-success" : "bg-danger";
                         const statusText = isActive ? "Active" : "Inactive";
+
                         return `
                             <button class="btn btn-sm status-btn ${isActive ? 'btn-success' : 'btn-danger'}"
                                 data-id="${row.user_id}"
@@ -119,16 +140,16 @@ function initBasicStudentsTable() {
                     orderable: false,
                     render: function(data) {
                         return `<div class="d-flex gap-1">
-                            <button class="btn btn-sm btn-primary view-btn" data-id="${data.user_id}">
+                            <button class="btn btn-sm btn-primary view-student" data-id="${data.user_id}">
                                 <i class="bi bi-eye"></i>
                             </button>
-                            <button class="btn btn-sm btn-primary edit-btn" data-id="${data.user_id}">
+                            <button class="btn btn-sm btn-primary edit-student" data-id="${data.user_id}">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <button class="btn btn-sm btn-warning reset-btn" data-id="${data.user_id}">
+                            <button class="btn btn-sm btn-warning reset-student-pw" data-id="${data.user_id}">
                                 <i class="bi bi-key"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger delete-btn" data-id="${data.user_id}">
+                            <button class="btn btn-sm btn-danger delete-student" data-id="${data.user_id}">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>`;
@@ -137,9 +158,9 @@ function initBasicStudentsTable() {
             ],
             responsive: true,
             language: {
-                emptyTable: "No data available",
-                zeroRecords: "No matching records found",
-                searchPlaceholder: "Search records...",
+                emptyTable: "No students available",
+                zeroRecords: "No matching students found",
+                searchPlaceholder: "Search students...",
                 search: "",
                 lengthMenu: "_MENU_ per page",
                 paginate: {
@@ -153,52 +174,51 @@ function initBasicStudentsTable() {
                     .addClass('form-control-search');
             }
         });
-        $('#studentsTable tbody').on('click', 'tr', function(e) {
-            if (!$(e.target).closest('button').length) {
-                const data = studentsTable.row(this).data();
-                if (data) {
-                    showStudentDetails(data.user_id);
-                }
-            }
-        });
-        $('#studentsTable tbody').css('cursor', 'pointer');
+
         setupActionButtonEvents();
-    } catch (error) {}
+    } catch (error) {
+        console.error('Error initializing students table:', error);
+    }
 }
 
 function setupActionButtonEvents() {
-    $('#studentsTable').on('click', '.view-btn', function(e) {
+    $('#studentsTable').on('click', '.view-student', function(e) {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
         showStudentDetails(id);
     });
-    $('#studentsTable').on('click', '.edit-btn', function(e) {
+
+    $('#studentsTable').on('click', '.edit-student', function(e) {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
         showStudentForm(id);
     });
-    $('#studentsTable').on('click', '.delete-btn', function(e) {
+
+    $('#studentsTable').on('click', '.delete-student', function(e) {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
         deleteStudent(id);
     });
-    $('#studentsTable').on('click', '.reset-btn', function(e) {
+
+    $('#studentsTable').on('click', '.reset-student-pw', function(e) {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
         $('#resetPasswordStudentId').val(id);
         $('#resetPasswordModal').modal('show');
     });
+
     $('#studentsTable').on('click', '.status-btn', function(e) {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
-        const isCurrentlyActive = $(this).data('active') === 1;
+        const isCurrentlyActive = $(this).data('active') == 1;
         const newStatus = isCurrentlyActive ? 0 : 1;
         const statusText = isCurrentlyActive ? 'deactivate' : 'activate';
+
         Swal.fire({
             title: `${isCurrentlyActive ? 'Deactivate' : 'Activate'} Student?`,
             text: `Are you sure you want to ${statusText} this student account?`,
@@ -219,40 +239,47 @@ function setupEventHandlers() {
     $('#addStudentBtn').on('click', function() {
         showStudentForm();
     });
+
+    $('#studentForm').on('submit', function(e) {
+        e.preventDefault();
+        if (validateStudentForm()) {
+            saveStudent();
+        }
+    });
+
     $('#confirmResetPassword').on('click', function() {
         const studentId = $('#resetPasswordStudentId').val();
         resetStudentPassword(studentId);
     });
-    $(document).on('submit', '#studentForm', function(e) {
-        e.preventDefault();
-        saveStudent();
-    });
-    $('#detailsEdit').on('click', function() {
-        $('#studentDetailsModal').modal('hide');
-        if (currentStudentData) {
-            showStudentForm(currentStudentData.user_id);
+
+    $('#department').on('change', function() {
+        const departmentId = $(this).val();
+        if (departmentId) {
+            loadCoursesForDepartment(departmentId, 'course');
+        } else {
+            $('#course').html('<option value="">Select Course</option>');
         }
     });
-    $('#detailsDelete').on('click', function() {
-        $('#studentDetailsModal').modal('hide');
-        if (currentStudentData) {
-            deleteStudent(currentStudentData.user_id);
-        }
-    });
-    $('#detailsResetPassword').on('click', function() {
-        $('#studentDetailsModal').modal('hide');
-        if (currentStudentData) {
-            $('#resetPasswordStudentId').val(currentStudentData.user_id);
-            $('#resetPasswordModal').modal('show');
+
+    $('#departmentFilter').on('change', function() {
+        const departmentId = $(this).val();
+        if (departmentId) {
+            studentsTable.column(3).search($(this).find('option:selected').text()).draw();
+        } else {
+            studentsTable.column(3).search('').draw();
         }
     });
 }
 
 function showStudentDetails(studentId) {
+    const userType = sessionStorage.getItem('user_typeId');
     $.ajax({
-        url: `${baseStudentApiUrl}masterfile.php?action=get_student`,
+        url: `${baseApiUrl}masterfile.php?action=get_student`,
         type: 'GET',
         data: { id: studentId },
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success && response.data) {
                 const student = response.data;
@@ -319,10 +346,14 @@ function showStudentForm(studentId = null) {
     $('#studentModalTitle').text(isEdit ? 'Edit Student' : 'Add New Student');
     $('#studentForm').empty();
     if (isEdit) {
+        const userType = sessionStorage.getItem('user_typeId');
         $.ajax({
-            url: `${baseStudentApiUrl}masterfile.php?action=get_student`,
+            url: `${baseApiUrl}masterfile.php?action=get_student`,
             type: 'GET',
             data: { id: studentId },
+            headers: {
+                'X-User-Type': userType || '6'
+            },
             success: function(response) {
                 if (response.success && response.data) {
                     const student = response.data;
@@ -340,62 +371,6 @@ function showStudentForm(studentId = null) {
         const studentModal = new bootstrap.Modal(document.getElementById('studentModal'));
         studentModal.show();
     }
-}
-
-function initStudentsTableStandard() {
-    if ($.fn.DataTable.isDataTable('#studentsTable')) {
-        $('#studentsTable').DataTable().destroy();
-    }
-    studentsTable = $('#studentsTable').DataTable({
-        ajax: {
-            url: `${baseStudentApiUrl}masterfile.php?action=students`,
-            dataSrc: function(response) {
-                if (!response || !response.success) {
-                    return [];
-                }
-                return response.data || [];
-            },
-            error: function(xhr, status, error) {
-                handleAjaxError(xhr, status, error);
-                return [];
-            }
-        },
-        columns: columns,
-        processing: true,
-        serverSide: false,
-        responsive: true,
-        dom: '<"row mb-4"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
-             '<"row"<"col-sm-12"tr>>' +
-             '<"row mt-4"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8 d-flex justify-content-end"p>>',
-        language: {
-            emptyTable: "No data available",
-            zeroRecords: "No matching records found",
-            searchPlaceholder: "Search records...",
-            lengthMenu: "_MENU_ per page",
-            paginate: {
-                previous: "<i class='bi bi-chevron-left'></i>",
-                next: "<i class='bi bi-chevron-right'></i>"
-            }
-        },
-        drawCallback: function() {
-            $('.dataTables_paginate > .pagination').addClass('pagination-md border-0');
-            $('.dataTables_paginate').addClass('mt-3');
-            $('.page-item .page-link').css({
-                'border': 'none',
-                'padding': '0.5rem 1rem',
-                'margin': '0 0.2rem'
-            });
-        },
-        initComplete: function() {
-            $('#studentsTable tbody').on('click', 'tr', function() {
-                const data = studentsTable.row(this).data();
-                if (data) {
-                    showStudentDetails(data.user_id);
-                }
-            });
-            $('#studentsTable tbody tr').css('cursor', 'pointer');
-        }
-    });
 }
 
 function renderStudentForm(student = null) {
@@ -496,10 +471,14 @@ function renderStudentForm(student = null) {
 }
 
 function toggleStudentStatus(studentId, isActive) {
+    const userType = sessionStorage.getItem('user_typeId');
     $.ajax({
-        url: `${baseStudentApiUrl}masterfile.php?action=toggle_student_status`,
+        url: `${baseApiUrl}masterfile.php?action=toggle_student_status`,
         type: 'POST',
         data: { id: studentId, status: isActive },
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success) {
                 const statusText = isActive ? 'activated' : 'deactivated';
@@ -515,12 +494,16 @@ function toggleStudentStatus(studentId, isActive) {
 }
 
 function resetStudentPassword(studentId) {
+    const userType = sessionStorage.getItem('user_typeId');
     const requestData = { user_id: studentId };
     $.ajax({
-        url: `${baseStudentApiUrl}giya.php?action=reset_password`,
+        url: `${baseApiUrl}giya.php?action=reset_password`,
         type: 'POST',
         data: requestData,
         dataType: 'json',
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             $('#resetPasswordModal').modal('hide');
             if (response.success) {
@@ -553,10 +536,14 @@ function deleteStudent(studentId) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
+            const userType = sessionStorage.getItem('user_typeId');
             $.ajax({
-                url: `${baseStudentApiUrl}/masterfile.php?action=student_delete`,
+                url: `${baseApiUrl}masterfile.php?action=student_delete`, // Fix: removed leading slash
                 type: 'POST',
                 data: { id: studentId },
+                headers: {
+                    'X-User-Type': userType || '6'
+                },
                 success: function(response) {
                     if (response.success) {
                         showSuccessMessage('Student deleted successfully');
@@ -573,6 +560,8 @@ function deleteStudent(studentId) {
 
 function saveStudent() {
     if (!validateStudentForm()) return;
+
+    const userType = sessionStorage.getItem('user_typeId');
     const studentId = $('#studentId').val();
     const data = {
         schoolId: $('#studentSchoolId').val(),
@@ -586,16 +575,21 @@ function saveStudent() {
         yearLevel: $('#studentYearLevel').val(),
         email: $('#studentEmail').val()
     };
+
     if (studentId) {
         data.id = studentId;
         data.active = $('#studentActive').is(':checked') ? 1 : 0;
     } else {
         data.active = 1;
     }
+
     $.ajax({
-        url: `${baseStudentApiUrl}masterfile.php?action=save_student`,
+        url: `${baseApiUrl}masterfile.php?action=save_student`,
         type: 'POST',
         data: data,
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success) {
                 showSuccessMessage(studentId ? 'Student updated successfully!' : 'Student added successfully!');

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIYA - Manage Visitors</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/dashboard.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="/css/table-styles.css" />
+    <script src="/js/dashboard/components.js"></script>
+</head>
+
+<body>
+    <div id="navbar-placeholder"></div>
+    <div id="sidebar-placeholder"></div>
+
+    <main class="mt-3 p-2">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Manage Visitors</h3>
+                <!-- Removed Add Visitor button -->
+            </div>
+
+            <!-- Removed campus filter section -->
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="visitorsTable" class="table table-hover border-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Contact</th>
+                                    <th>Campus</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Visitor Modal -->
+    <div class="modal fade" id="visitorModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="visitorModalLabel">Add Visitor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="visitorForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">First Name*</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Last Name*</label>
+                                <input type="text" class="form-control" id="lastName" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="middleName" class="form-label">Middle Name</label>
+                                <input type="text" class="form-control" id="middleName">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="suffix" class="form-label">Suffix</label>
+                                <input type="text" class="form-control" id="suffix" placeholder="Jr, Sr, III, etc">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email*</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="contact" class="form-label">Contact Number*</label>
+                                <input type="tel" class="form-control" id="contact" placeholder="09xxxxxxxxx" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="campus" class="form-label">Campus*</label>
+                                <select class="form-select" id="campus" required>
+                                    <option value="">Select Campus</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" id="isActive" checked>
+                                    <label class="form-check-label" for="isActive">Active account</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password">
+                                <small class="text-muted">Leave blank to keep current password (default:
+                                    phinma-coc)</small>
+                            </div>
+                        </div>
+                        <div class="border-top pt-3 text-end">
+                            <button type="button" class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary ms-2">Save Visitor</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visitor Details Modal -->
+    <div class="modal fade" id="visitorDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Visitor Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Visitor ID:</strong> <span id="detailsVisitorId"></span></p>
+                    <p><strong>Full Name:</strong> <span id="detailsFullName"></span></p>
+                    <p><strong>Email:</strong> <span id="detailsEmail"></span></p>
+                    <p><strong>Contact:</strong> <span id="detailsContact"></span></p>
+                    <p><strong>Campus:</strong> <span id="detailsCampus"></span></p>
+                    <p><strong>Status:</strong> <span id="detailsStatusBadge" class="badge"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" id="detailsResetPassword">Reset Password</button>
+                    <button type="button" class="btn btn-primary" id="detailsEdit">Edit</button>
+                    <button type="button" class="btn btn-danger" id="detailsDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reset Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to reset this account's password to the default (phinma-coc)?</p>
+                    <input type="hidden" id="resetPasswordVisitorId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="confirmResetPassword">Reset Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/dashboard/poc-restrictions.js"></script>
+    <script src="/js/masterfiles/master-visitors.js"></script>
+</body>
+
+</html>

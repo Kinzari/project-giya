@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1>API Connection Tester</h1>
+        <p>Use this tool to verify API connectivity to the GIYA system.</p>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Quick View API Test</div>
+                    <div class="card-body">
+                        <form id="testForm">
+                            <div class="mb-3">
+                                <label class="form-label">API Base URL</label>
+                                <input type="text" class="form-control" id="baseUrl"
+                                    placeholder="http://localhost/api/">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Student/Visitor ID or Email</label>
+                                <input type="text" class="form-control" id="identifier" placeholder="Enter ID or email">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Test Connection</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Results</div>
+                    <div class="card-body">
+                        <div id="status" class="alert alert-info">Enter information and click Test Connection</div>
+                        <h5>Response Details:</h5>
+                        <pre id="results">No data yet</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.getElementById('testForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const baseUrl = document.getElementById('baseUrl').value.trim() || 'http://localhost/api/';
+            const identifier = document.getElementById('identifier').value.trim();
+            const statusEl = document.getElementById('status');
+            const resultsEl = document.getElementById('results');
+
+            if (!identifier) {
+                statusEl.className = 'alert alert-warning';
+                statusEl.textContent = 'Please enter an identifier';
+                return;
+            }
+
+            // Save to sessionStorage for future use
+            sessionStorage.setItem('baseURL', baseUrl);
+
+            statusEl.className = 'alert alert-info';
+            statusEl.textContent = 'Testing connection...';
+
+            try {
+                const url = `${baseUrl}posts.php?action=get_quick_view&identifier=${encodeURIComponent(identifier)}`;
+                console.log('Testing URL:', url);
+
+                const response = await axios.get(url, { timeout: 10000 });
+                console.log('Response:', response);
+
+                statusEl.className = 'alert alert-success';
+                statusEl.textContent = 'Connection successful! Server responded properly.';
+
+                resultsEl.textContent = JSON.stringify(response.data, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                statusEl.className = 'alert alert-danger';
+
+                if (error.response) {
+                    // Server responded with error
+                    statusEl.textContent = `Server error: ${error.response.status} ${error.response.statusText}`;
+                    resultsEl.textContent = JSON.stringify(error.response.data, null, 2);
+                } else if (error.request) {
+                    // No response received
+                    statusEl.textContent = 'No response from server. Check URL and server status.';
+                    resultsEl.textContent = 'Connection timeout or server unreachable.';
+                } else {
+                    // Request setup error
+                    statusEl.textContent = `Error: ${error.message}`;
+                    resultsEl.textContent = error.stack || error.toString();
+                }
+            }
+        });
+
+        // Pre-fill the base URL field with any saved value
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedBaseUrl = sessionStorage.getItem('baseURL');
+            if (savedBaseUrl) {
+                document.getElementById('baseUrl').value = savedBaseUrl;
+            } else {
+                // Default based on current location
+                const hostname = window.location.hostname;
+                const protocol = window.location.protocol;
+                if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                    document.getElementById('baseUrl').value = 'http://localhost/api/';
+                } else {
+                    document.getElementById('baseUrl').value = `${protocol}//${hostname}/api/`;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

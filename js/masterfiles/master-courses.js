@@ -32,6 +32,7 @@ function initBasicCoursesTable(departmentId = null) {
             '<th>Actions</th>' +
             '</tr></thead><tbody></tbody>');
 
+        const userType = sessionStorage.getItem('user_typeId');
         let ajaxUrl = `${baseUrl}masterfile.php?action=courses`;
         if (departmentId) {
             ajaxUrl += `&department_id=${departmentId}`;
@@ -47,7 +48,11 @@ function initBasicCoursesTable(departmentId = null) {
                     return response.data || [];
                 },
                 error: function(xhr, error, thrown) {
+                    console.error('Error loading courses:', error, thrown);
                     return [];
+                },
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('X-User-Type', userType || '6');
                 }
             },
             columns: [
@@ -108,6 +113,7 @@ function initBasicCoursesTable(departmentId = null) {
 
         setupActionButtonEvents();
     } catch (error) {
+        console.error('Error initializing courses table:', error);
     }
 }
 
@@ -210,10 +216,15 @@ function createCourseDetailsModal() {
 }
 
 function showCourseDetails(courseId) {
+    const userType = sessionStorage.getItem('user_typeId');
+
     $.ajax({
         url: `${baseUrl}masterfile.php?action=get_course`,
         type: 'GET',
         data: { id: courseId },
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success && response.data) {
                 const course = response.data;
@@ -242,10 +253,15 @@ function showCourseDetails(courseId) {
 }
 
 function editCourse(courseId) {
+    const userType = sessionStorage.getItem('user_typeId');
+
     $.ajax({
         url: `${baseUrl}masterfile.php?action=get_course`,
         type: 'GET',
         data: { id: courseId },
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success && response.data) {
                 const course = response.data;
@@ -290,10 +306,15 @@ function deleteCourse(courseId) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
+            const userType = sessionStorage.getItem('user_typeId');
+
             $.ajax({
                 url: `${baseUrl}masterfile.php?action=course_delete`,
                 type: 'POST',
                 data: { id: courseId },
+                headers: {
+                    'X-User-Type': userType || '6'
+                },
                 success: function(response) {
                     if (response.success) {
                         showSuccessMessage('Course deleted successfully');
@@ -309,6 +330,7 @@ function deleteCourse(courseId) {
 }
 
 function saveCourse() {
+    const userType = sessionStorage.getItem('user_typeId');
     const formData = {
         courseName: $('#courseName').val(),
         departmentId: $('#department').val(),
@@ -320,6 +342,9 @@ function saveCourse() {
         url: `${baseUrl}masterfile.php?action=submit_course`,
         type: 'POST',
         data: formData,
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success) {
                 $('#courseModal').modal('hide');
@@ -364,5 +389,34 @@ function handleAjaxError(xhr, status, error) {
         title: 'Error',
         text: 'An error occurred while communicating with the server',
         icon: 'error'
+    });
+}
+
+function loadDepartmentsDropdown(selectId, selectedId = null) {
+    const userType = sessionStorage.getItem('user_typeId');
+
+    $.ajax({
+        url: `${baseUrl}masterfile.php?action=departments`,
+        type: 'GET',
+        headers: {
+            'X-User-Type': userType || '6'
+        },
+        success: function(response) {
+            if (response.success && response.data) {
+                const departments = response.data;
+                const select = $(`#${selectId}`);
+                select.empty();
+                select.append('<option value="">Select Department</option>');
+                departments.forEach(department => {
+                    const selected = selectedId && selectedId == department.department_id ? 'selected' : '';
+                    select.append(`<option value="${department.department_id}" ${selected}>${department.department_name}</option>`);
+                });
+            } else {
+                $(`#${selectId}`).html('<option value="">Error loading departments</option>');
+            }
+        },
+        error: function() {
+            $(`#${selectId}`).html('<option value="">Error loading departments</option>');
+        }
     });
 }

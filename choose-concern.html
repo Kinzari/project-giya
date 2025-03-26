@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="css/toastr.css">
+    <!-- Add the new notifications CSS file -->
+    <link rel="stylesheet" href="css/notifications.css">
 </head>
 
 <body class="bg-light">
@@ -46,12 +48,18 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="d-grid gap-3">
-                            <button class="btn btn-custom-green concern-btn py-3 fs-5"
-                                data-type="inquiry">INQUIRY (PANGUTANA)</button>
-                            <button class="btn btn-custom-green concern-btn py-3 fs-5"
-                                data-type="feedback">COMPLAIN (REKLAMO)</button>
-                            <button class="btn btn-custom-green concern-btn py-3 fs-5"
-                                data-type="suggestion">SUGGESTION (SUGYOT)</button>
+                            <button class="btn btn-custom-green concern-btn py-3 fs-5" data-type="inquiry">
+                                INQUIRY
+                                <div class="small fst-italic">(PANGUTANA)</div>
+                            </button>
+                            <button class="btn btn-custom-green concern-btn py-3 fs-5" data-type="feedback">
+                                COMPLAIN
+                                <div class="small fst-italic">(REKLAMO)</div>
+                            </button>
+                            <button class="btn btn-custom-green concern-btn py-3 fs-5" data-type="suggestion">
+                                SUGGESTION
+                                <div class="small fst-italic">(SUGYOT)</div>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -270,8 +278,8 @@
         </div>
     </div>
 
-    <!-- Inquiry Status Button with notification badge -->
-    <button id="inquiryStatusFloatBtn" class="floating-btn">
+    <!-- Inquiry Status Button with notification badge - improved structure -->
+    <button id="inquiryStatusFloatBtn" class="floating-btn" aria-label="View inquiries status">
         <i class="fas fa-list-check"></i>
         <span id="notificationBadge" class="notification-badge d-none">0</span>
     </button>
@@ -287,6 +295,28 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="js/toastr-config.js"></script>
     <script src="js/auth-helper.js"></script>
+    <script src="js/notification-helper.js"></script>
+    <script>
+        // Add inline troubleshooting script for notification badge
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM loaded, notification badge element:', document.getElementById('notificationBadge'));
+
+            // Check if there are stored notifications
+            const storedCount = sessionStorage.getItem('unreadNotifications');
+            console.log('Stored notification count:', storedCount);
+
+            if (storedCount && parseInt(storedCount) > 0) {
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    badge.textContent = storedCount;
+                    badge.classList.remove('d-none');
+                    badge.style.display = 'inline-block';
+                    badge.style.visibility = 'visible';
+                    console.log('Manually displayed notification badge');
+                }
+            }
+        });
+    </script>
     <script src="js/choose-concern.js"></script>
 </body>
 

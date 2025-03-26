@@ -23,6 +23,7 @@ function initBasicDepartmentsTable() {
             '</tr></thead><tbody></tbody>');
 
         const baseUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+        const userType = sessionStorage.getItem('user_typeId');
 
         departmentsTable = $('#departmentsTable').DataTable({
             ajax: {
@@ -34,7 +35,12 @@ function initBasicDepartmentsTable() {
                     return response.data || [];
                 },
                 error: function(xhr, error, thrown) {
+                    console.error("Error loading departments:", error, thrown);
                     return [];
+                },
+                // Add authentication headers
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('X-User-Type', userType || '6');
                 }
             },
             columns: [
@@ -102,6 +108,7 @@ function initBasicDepartmentsTable() {
 
         setupActionButtonEvents();
     } catch (error) {
+        console.error("Error initializing departments table:", error);
     }
 }
 
@@ -196,11 +203,15 @@ function createDepartmentDetailsModal() {
 
 function showDepartmentDetails(departmentId) {
     const baseUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+    const userType = sessionStorage.getItem('user_typeId');
 
     $.ajax({
         url: `${baseUrl}masterfile.php?action=get_department`,
         type: 'GET',
         data: { id: departmentId },
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success && response.data) {
                 const dept = response.data;
@@ -230,11 +241,15 @@ function showDepartmentDetails(departmentId) {
 
 function editDepartment(departmentId) {
     const baseUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+    const userType = sessionStorage.getItem('user_typeId');
 
     $.ajax({
         url: `${baseUrl}masterfile.php?action=get_department`,
         type: 'GET',
         data: { id: departmentId },
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success && response.data) {
                 const dept = response.data;
@@ -275,11 +290,15 @@ function deleteDepartment(departmentId) {
     }).then((result) => {
         if (result.isConfirmed) {
             const baseUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+            const userType = sessionStorage.getItem('user_typeId');
 
             $.ajax({
                 url: `${baseUrl}masterfile.php?action=department_delete`,
                 type: 'POST',
                 data: { id: departmentId },
+                headers: {
+                    'X-User-Type': userType || '6'
+                },
                 success: function(response) {
                     if (response.success) {
                         showSuccessMessage('Department deleted successfully');
@@ -302,11 +321,15 @@ function saveDepartment() {
     };
 
     const baseUrl = sessionStorage.getItem('baseURL') || 'http://localhost/api/';
+    const userType = sessionStorage.getItem('user_typeId');
 
     $.ajax({
         url: `${baseUrl}masterfile.php?action=submit_department`,
         type: 'POST',
         data: formData,
+        headers: {
+            'X-User-Type': userType || '6'
+        },
         success: function(response) {
             if (response.success) {
                 $('#departmentModal').modal('hide');
